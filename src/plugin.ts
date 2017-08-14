@@ -1,6 +1,6 @@
 import {Ruleset, createGroup, IReactiveValidationGroup, PropertyStateChangedEvent} from "treacherous";
 import {viewStrategyRegistry, ElementHelper, ValidationState} from "treacherous-view";
-import Vue from "vue";
+import {Vue} from "vue/types/vue";
 
 declare module "vue/types/options" {
     interface ComponentOptions<V extends Vue> {

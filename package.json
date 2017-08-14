@@ -1,0 +1,21 @@
+{
+  "name": "treacherous-vue",
+  "version": "0.0.0",
+  "description": "A vue plugin to use the treacherous validation system",
+  "author": "LP",
+  "license": "MIT",
+  "dependencies": {
+    "vue": "latest",
+    "treacherous": "^0.16.1",
+    "treacherous-view": "^0.3.1"
+  },
+  "devDependencies": {
+    "gulp": "^3.9.1",
+    "gulp-typescript": "~3.1.0",
+    "merge2": "^1.1.0",
+    "typescript": "^2.4.2",
+    "run-sequence": "^2.1.0",
+    "require-dir": "^0.3.0",
+    "del": "^3.0.0"
+  }
+}
