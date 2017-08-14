@@ -1,0 +1,16 @@
+<section>
+    <div>
+        <label>Name</label>
+        <input v-model="name" placeholder="Name" v-show-error validate-property="name" />
+    </div>
+    <div>
+        <label>Age</label>
+        <input v-model="age" placeholder="Age" v-show-error validate-property="age" />
+    </div>
+    <div v-for="(hobby, index) in hobbies">
+        <div>
+            <label>Hobby</label>
+            <input v-model="hobby.name" placeholder="Hobby" v-show-error v-bind:validate-property="'hobbies[' + index + '].name'" />
+        </div>
+    </div>
+</section>

@@ -34,5 +34,12 @@ gulp.task("compile:system", function() {
     return compileFor("system");
 });
 
-gulp.task("compile", ["compile:commonjs", "compile:amd", "compile:system"]);
+gulp.task("compile:umd", function() {
+    return compileFor("umd");
+});
+
+gulp.task("compile", [
+    "compile:commonjs", "compile:amd", 
+    "compile:system", "compile:umd"
+]);
 
