@@ -4,6 +4,6 @@ import Vue  from "vue/dist/vue";
 
 Vue.use(new TreacherousPlugin());
 
-new Vue({
+let app = new Vue({
     el: "#app"
 });

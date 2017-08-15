@@ -4,6 +4,7 @@
   "description": "A vue plugin to use the treacherous validation system",
   "author": "LP",
   "license": "MIT",
+  "main": "dist/commonjs/plugin.js",
   "dependencies": {
     "vue": "latest",
     "treacherous": "^0.16.1",

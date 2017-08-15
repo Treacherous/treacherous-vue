@@ -1,6 +1,9 @@
-define(["require", "exports", "treacherous", "treacherous-view"], function (require, exports, treacherous_1, treacherous_view_1) {
+define(["require", "exports", "treacherous", "treacherous-view", "treacherous", "treacherous-view"], function (require, exports, treacherous_1, treacherous_view_1, treacherous_2, treacherous_view_2) {
     "use strict";
     Object.defineProperty(exports, "__esModule", { value: true });
+    exports.createRuleset = treacherous_2.createRuleset;
+    exports.ruleRegistry = treacherous_2.ruleRegistry;
+    exports.viewStrategyRegistry = treacherous_view_2.viewStrategyRegistry;
     var TreacherousPlugin = (function () {
         function TreacherousPlugin() {
             this.mixins = {
@@ -14,7 +17,8 @@ define(["require", "exports", "treacherous", "treacherous-view"], function (requ
             };
             this.showError = {
                 bind: function (element, binding, vnode) {
-                    var validationGroup = vnode.context.validationGroup;
+                    var context = vnode.context;
+                    var validationGroup = context.validationGroup;
                     if (!validationGroup) {
                         return;
                     }
@@ -46,6 +50,21 @@ define(["require", "exports", "treacherous", "treacherous-view"], function (requ
                         return args.property == propertyRoute;
                     };
                     var sub = validationGroup.propertyStateChangedEvent.subscribe(handlePropertyStateChange, propertyPredicate);
+                    if (!context[TreacherousPlugin.ValidationSubKey]) {
+                        context[TreacherousPlugin.ValidationSubKey] = {};
+                    }
+                    context[TreacherousPlugin.ValidationSubKey][propertyRoute] = sub;
+                },
+                unbind: function (element, binding, vnode) {
+                    var context = vnode.context;
+                    var propertyRoute = treacherous_view_1.ElementHelper.getPropertyRouteFrom(element);
+                    if (!propertyRoute) {
+                        return;
+                    }
+                    var outstandingSub = context[TreacherousPlugin.ValidationSubKey][propertyRoute];
+                    if (outstandingSub) {
+                        outstandingSub();
+                    }
                 }
             };
         }
@@ -53,6 +72,7 @@ define(["require", "exports", "treacherous", "treacherous-view"], function (requ
             Vue.mixin(this.mixins);
             Vue.directive('show-error', this.showError);
         };
+        TreacherousPlugin.ValidationSubKey = "validation-subscriptions";
         return TreacherousPlugin;
     }());
     exports.TreacherousPlugin = TreacherousPlugin;

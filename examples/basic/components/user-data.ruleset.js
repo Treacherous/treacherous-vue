@@ -1,4 +1,4 @@
-import {createRuleset} from "treacherous";
+import {createRuleset} from "../../../dist/commonjs/plugin";
 
 export function generateRuleset()
 {

@@ -3,7 +3,7 @@ var webpack = require('webpack-stream');
 var examplesDir = "examples";
 
 gulp.task('examples:basic', function() {
-  return gulp.src(`${examplesDir}/basic/index.js`)
+  return gulp.src(`${examplesDir}/basic/app.js`)
     .pipe(webpack({
         module: {
             rules: [
@@ -16,3 +16,5 @@ gulp.task('examples:basic', function() {
     }))
     .pipe(gulp.dest(`${examplesDir}/basic`));
 });
+
+gulp.task('examples', ["examples:basic"]);

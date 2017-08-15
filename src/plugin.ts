@@ -1,7 +1,9 @@
 import {Ruleset, createGroup, IReactiveValidationGroup, PropertyStateChangedEvent} from "treacherous";
 import {viewStrategyRegistry, ElementHelper, ValidationState} from "treacherous-view";
-import {Vue} from "vue/types/vue";
+export {createRuleset, ruleRegistry} from "treacherous";
+export {viewStrategyRegistry} from "treacherous-view";
 
+import {Vue} from "vue/types/vue";
 declare module "vue/types/options" {
     interface ComponentOptions<V extends Vue> {
         ruleset?: Ruleset;
@@ -10,58 +12,74 @@ declare module "vue/types/options" {
 
 export class TreacherousPlugin {
 
-  public install(Vue: any, options: any) {
-    Vue.mixin(this.mixins);
-    Vue.directive('show-error', this.showError);
-  }
+    private static ValidationSubKey = "validation-subscriptions";
 
-  private mixins = {
-    created: function () {
-      if(!this.$options.ruleset)
-      { return; }
-
-      let ruleset = this.$options.ruleset;
-      this.validationGroup = createGroup().asReactiveGroup().build(this, ruleset);
+    public install(Vue: any, options: any) {
+        Vue.mixin(this.mixins);
+        Vue.directive('show-error', this.showError);
     }
-  };
 
-  private showError = {
-    bind: function (element: HTMLElement, binding: any, vnode: any) {
-        let validationGroup = <IReactiveValidationGroup>vnode.context.validationGroup;
-        if(!validationGroup) { return; }
+    private mixins = {
+        created: function () {
+            if(!this.$options.ruleset)
+            { return; }
 
-        let propertyRoute = ElementHelper.getPropertyRouteFrom(element);
-        if(!propertyRoute) { return; }
+            let ruleset = this.$options.ruleset;
+            this.validationGroup = createGroup().asReactiveGroup().build(this, ruleset);
+        }
+    };
 
-        let strategyName = ElementHelper.getStrategyFrom(element);
-        let viewStrategy = viewStrategyRegistry.getStrategyNamed(strategyName || "inline");
-        if(!viewStrategy) { return; }
+    private showError = {
+        bind: function (element: HTMLElement, binding: any, vnode: any) {
+            let context = vnode.context;
+            let validationGroup = <IReactiveValidationGroup>context.validationGroup;
+            if(!validationGroup) { return; }
 
-        let validationState = ValidationState.unknown;
-        let viewOptions = ElementHelper.getOptionsFrom(element) || {};
+            let propertyRoute = ElementHelper.getPropertyRouteFrom(element);
+            if(!propertyRoute) { return; }
 
-        let handlePossibleError = (error: any) => {
-            if(!error)
-            {
-                viewStrategy.propertyBecomeValid(element, propertyRoute, validationState, viewOptions);
-                validationState = ValidationState.valid;
-            }
-            else
-            {
-                viewStrategy.propertyBecomeInvalid(element, error, propertyRoute, validationState, viewOptions);
-                validationState = ValidationState.invalid;
-            }
-        };
+            let strategyName = ElementHelper.getStrategyFrom(element);
+            let viewStrategy = viewStrategyRegistry.getStrategyNamed(strategyName || "inline");
+            if(!viewStrategy) { return; }
 
-        let handlePropertyStateChange = (args: PropertyStateChangedEvent) => {
-            handlePossibleError(args.error);
-        };
+            let validationState = ValidationState.unknown;
+            let viewOptions = ElementHelper.getOptionsFrom(element) || {};
 
-        let propertyPredicate = (args: PropertyStateChangedEvent) => {
-            return args.property == propertyRoute
-        };
+            let handlePossibleError = (error: any) => {
+                if(!error)
+                {
+                    viewStrategy.propertyBecomeValid(element, propertyRoute, validationState, viewOptions);
+                    validationState = ValidationState.valid;
+                }
+                else
+                {
+                    viewStrategy.propertyBecomeInvalid(element, error, propertyRoute, validationState, viewOptions);
+                    validationState = ValidationState.invalid;
+                }
+            };
 
-        let sub = validationGroup.propertyStateChangedEvent.subscribe(handlePropertyStateChange, propertyPredicate);
-      }
-  }  
+            let handlePropertyStateChange = (args: PropertyStateChangedEvent) => {
+                handlePossibleError(args.error);
+            };
+
+            let propertyPredicate = (args: PropertyStateChangedEvent) => {
+                return args.property == propertyRoute
+            };
+
+            let sub = validationGroup.propertyStateChangedEvent.subscribe(handlePropertyStateChange, propertyPredicate);
+            
+            if(!context[TreacherousPlugin.ValidationSubKey])
+            { context[TreacherousPlugin.ValidationSubKey] = {}; }
+
+            context[TreacherousPlugin.ValidationSubKey][propertyRoute] = sub;
+        },
+        unbind: function (element: HTMLElement, binding: any, vnode: any) {
+            let context = vnode.context;
+            let propertyRoute = ElementHelper.getPropertyRouteFrom(element);
+            if(!propertyRoute) { return; }
+
+            let outstandingSub = context[TreacherousPlugin.ValidationSubKey][propertyRoute];
+            if(outstandingSub) { outstandingSub(); }
+        }
+    }  
 }
