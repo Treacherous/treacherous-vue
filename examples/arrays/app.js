@@ -1,7 +1,6 @@
-import Vue  from "vue/dist/vue";
+import "./components/user-data.component";
 import {TreacherousPlugin} from "../../dist/commonjs/plugin"
-
-import "./components/basic.component";
+import Vue  from "vue/dist/vue";
 
 Vue.use(new TreacherousPlugin());
 

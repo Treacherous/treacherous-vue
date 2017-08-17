@@ -398,7 +398,7 @@ exports.ComparerHelper = ComparerHelper;
 /* 4 */
 /***/ (function(module, exports, __webpack_require__) {
 
-var property_resolver_1 = __webpack_require__(57);
+var property_resolver_1 = __webpack_require__(61);
 exports.PropertyResolver = property_resolver_1.PropertyResolver;
 
 
@@ -10818,7 +10818,7 @@ return Vue$3;
 
 })));
 
-/* WEBPACK VAR INJECTION */}.call(exports, __webpack_require__(55)))
+/* WEBPACK VAR INJECTION */}.call(exports, __webpack_require__(56)))
 
 /***/ }),
 /* 9 */
@@ -10928,7 +10928,7 @@ exports.TreacherousPlugin = TreacherousPlugin;
 
 Object.defineProperty(exports, "__esModule", { value: true });
 var tslib_1 = __webpack_require__(0);
-tslib_1.__exportStar(__webpack_require__(56), exports);
+tslib_1.__exportStar(__webpack_require__(60), exports);
 tslib_1.__exportStar(__webpack_require__(26), exports);
 tslib_1.__exportStar(__webpack_require__(19), exports);
 tslib_1.__exportStar(__webpack_require__(43), exports);
@@ -10942,14 +10942,14 @@ tslib_1.__exportStar(__webpack_require__(3), exports);
 tslib_1.__exportStar(__webpack_require__(1), exports);
 tslib_1.__exportStar(__webpack_require__(11), exports);
 tslib_1.__exportStar(__webpack_require__(12), exports);
-tslib_1.__exportStar(__webpack_require__(59), exports);
+tslib_1.__exportStar(__webpack_require__(63), exports);
 tslib_1.__exportStar(__webpack_require__(25), exports);
 tslib_1.__exportStar(__webpack_require__(14), exports);
 tslib_1.__exportStar(__webpack_require__(46), exports);
 tslib_1.__exportStar(__webpack_require__(45), exports);
 tslib_1.__exportStar(__webpack_require__(2), exports);
 tslib_1.__exportStar(__webpack_require__(44), exports);
-tslib_1.__exportStar(__webpack_require__(60), exports);
+tslib_1.__exportStar(__webpack_require__(64), exports);
 tslib_1.__exportStar(__webpack_require__(28), exports);
 tslib_1.__exportStar(__webpack_require__(29), exports);
 tslib_1.__exportStar(__webpack_require__(30), exports);
@@ -11226,7 +11226,7 @@ exports.ModelStateChangedEvent = ModelStateChangedEvent;
 function __export(m) {
     for (var p in m) if (!exports.hasOwnProperty(p)) exports[p] = m[p];
 }
-__export(__webpack_require__(58));
+__export(__webpack_require__(62));
 __export(__webpack_require__(18));
 
 
@@ -12436,16 +12436,16 @@ function __export(m) {
     for (var p in m) if (!exports.hasOwnProperty(p)) exports[p] = m[p];
 }
 Object.defineProperty(exports, "__esModule", { value: true });
-__export(__webpack_require__(61));
+__export(__webpack_require__(65));
 __export(__webpack_require__(7));
-__export(__webpack_require__(62));
+__export(__webpack_require__(66));
 __export(__webpack_require__(52));
 __export(__webpack_require__(49));
 __export(__webpack_require__(51));
 __export(__webpack_require__(50));
-__export(__webpack_require__(63));
+__export(__webpack_require__(67));
 __export(__webpack_require__(53));
-__export(__webpack_require__(64));
+__export(__webpack_require__(68));
 
 
 /***/ }),
@@ -12628,24 +12628,50 @@ exports.SummaryHandler = SummaryHandler;
 
 "use strict";
 Object.defineProperty(__webpack_exports__, "__esModule", { value: true });
-/* harmony import */ var __WEBPACK_IMPORTED_MODULE_0_vue_dist_vue__ = __webpack_require__(8);
-/* harmony import */ var __WEBPACK_IMPORTED_MODULE_0_vue_dist_vue___default = __webpack_require__.n(__WEBPACK_IMPORTED_MODULE_0_vue_dist_vue__);
+/* harmony import */ var __WEBPACK_IMPORTED_MODULE_0__components_user_data_component__ = __webpack_require__(55);
 /* harmony import */ var __WEBPACK_IMPORTED_MODULE_1__dist_commonjs_plugin__ = __webpack_require__(9);
 /* harmony import */ var __WEBPACK_IMPORTED_MODULE_1__dist_commonjs_plugin___default = __webpack_require__.n(__WEBPACK_IMPORTED_MODULE_1__dist_commonjs_plugin__);
-/* harmony import */ var __WEBPACK_IMPORTED_MODULE_2__components_basic_component__ = __webpack_require__(65);
+/* harmony import */ var __WEBPACK_IMPORTED_MODULE_2_vue_dist_vue__ = __webpack_require__(8);
+/* harmony import */ var __WEBPACK_IMPORTED_MODULE_2_vue_dist_vue___default = __webpack_require__.n(__WEBPACK_IMPORTED_MODULE_2_vue_dist_vue__);
 
 
 
 
+__WEBPACK_IMPORTED_MODULE_2_vue_dist_vue___default.a.use(new __WEBPACK_IMPORTED_MODULE_1__dist_commonjs_plugin__["TreacherousPlugin"]());
 
-__WEBPACK_IMPORTED_MODULE_0_vue_dist_vue___default.a.use(new __WEBPACK_IMPORTED_MODULE_1__dist_commonjs_plugin__["TreacherousPlugin"]());
-
-let app = new __WEBPACK_IMPORTED_MODULE_0_vue_dist_vue___default.a({
+let app = new __WEBPACK_IMPORTED_MODULE_2_vue_dist_vue___default.a({
     el: "#app"
 });
 
 /***/ }),
 /* 55 */
+/***/ (function(module, __webpack_exports__, __webpack_require__) {
+
+"use strict";
+/* harmony import */ var __WEBPACK_IMPORTED_MODULE_0_vue_dist_vue__ = __webpack_require__(8);
+/* harmony import */ var __WEBPACK_IMPORTED_MODULE_0_vue_dist_vue___default = __webpack_require__.n(__WEBPACK_IMPORTED_MODULE_0_vue_dist_vue__);
+/* harmony import */ var __WEBPACK_IMPORTED_MODULE_1__user_data_model__ = __webpack_require__(57);
+/* harmony import */ var __WEBPACK_IMPORTED_MODULE_2__hobby_model__ = __webpack_require__(58);
+/* harmony import */ var __WEBPACK_IMPORTED_MODULE_3__user_data_ruleset__ = __webpack_require__(59);
+/* harmony import */ var __WEBPACK_IMPORTED_MODULE_4__user_data_html__ = __webpack_require__(69);
+/* harmony import */ var __WEBPACK_IMPORTED_MODULE_4__user_data_html___default = __webpack_require__.n(__WEBPACK_IMPORTED_MODULE_4__user_data_html__);
+
+
+
+
+
+
+
+__WEBPACK_IMPORTED_MODULE_0_vue_dist_vue___default.a.component('user-data', {
+    ruleset: Object(__WEBPACK_IMPORTED_MODULE_3__user_data_ruleset__["a" /* generateRuleset */])(),
+    data: () => new __WEBPACK_IMPORTED_MODULE_1__user_data_model__["a" /* UserData */]("Bob", 20, [ 
+        new __WEBPACK_IMPORTED_MODULE_2__hobby_model__["a" /* Hobby */]("reading"), new __WEBPACK_IMPORTED_MODULE_2__hobby_model__["a" /* Hobby */]("skateboarding") 
+    ]),
+    template: __WEBPACK_IMPORTED_MODULE_4__user_data_html___default.a
+});
+
+/***/ }),
+/* 56 */
 /***/ (function(module, exports) {
 
 var g;
@@ -12672,7 +12698,64 @@ module.exports = g;
 
 
 /***/ }),
-/* 56 */
+/* 57 */
+/***/ (function(module, __webpack_exports__, __webpack_require__) {
+
+"use strict";
+/* harmony export (immutable) */ __webpack_exports__["a"] = UserData;
+function UserData(name, age, hobbies)
+{
+    this.name = name;
+    this.age = age;
+    this.hobbies = hobbies
+}
+
+/***/ }),
+/* 58 */
+/***/ (function(module, __webpack_exports__, __webpack_require__) {
+
+"use strict";
+/* harmony export (immutable) */ __webpack_exports__["a"] = Hobby;
+function Hobby(name)
+{
+    this.name = name;
+}
+
+/***/ }),
+/* 59 */
+/***/ (function(module, __webpack_exports__, __webpack_require__) {
+
+"use strict";
+/* harmony export (immutable) */ __webpack_exports__["a"] = generateRuleset;
+/* harmony import */ var __WEBPACK_IMPORTED_MODULE_0__dist_commonjs_plugin__ = __webpack_require__(9);
+/* harmony import */ var __WEBPACK_IMPORTED_MODULE_0__dist_commonjs_plugin___default = __webpack_require__.n(__WEBPACK_IMPORTED_MODULE_0__dist_commonjs_plugin__);
+
+
+function generateRuleset()
+{
+    var hobbyRuleset = Object(__WEBPACK_IMPORTED_MODULE_0__dist_commonjs_plugin__["createRuleset"])()
+        .forProperty("name")
+            .addRule("required")
+            .addRule("minLength", 2)
+            .addRule("maxLength", 20)
+        .build();
+
+    var modelRuleset = Object(__WEBPACK_IMPORTED_MODULE_0__dist_commonjs_plugin__["createRuleset"])()
+        .forProperty("name")
+            .addRule("required")
+            .addRule("minLength", 2)
+        .forProperty("age")
+            .addRule("required")
+            .addRule("number")
+        .forProperty("hobbies")
+            .addRulesetForEach(hobbyRuleset)
+        .build();
+
+    return modelRuleset;
+}
+
+/***/ }),
+/* 60 */
 /***/ (function(module, exports, __webpack_require__) {
 
 "use strict";
@@ -12698,7 +12781,7 @@ exports.createGroup = createGroup;
 
 
 /***/ }),
-/* 57 */
+/* 61 */
 /***/ (function(module, exports) {
 
 var PropertyResolver = (function () {
@@ -12806,7 +12889,7 @@ exports.PropertyResolver = PropertyResolver;
 
 
 /***/ }),
-/* 58 */
+/* 62 */
 /***/ (function(module, exports, __webpack_require__) {
 
 var event_listener_1 = __webpack_require__(18);
@@ -12864,7 +12947,7 @@ exports.EventHandler = EventHandler;
 
 
 /***/ }),
-/* 59 */
+/* 63 */
 /***/ (function(module, exports, __webpack_require__) {
 
 "use strict";
@@ -12881,7 +12964,7 @@ exports.ValidationError = ValidationError;
 
 
 /***/ }),
-/* 60 */
+/* 64 */
 /***/ (function(module, exports, __webpack_require__) {
 
 "use strict";
@@ -12922,7 +13005,7 @@ exports.AdvancedRegexValidationRule = AdvancedRegexValidationRule;
 
 
 /***/ }),
-/* 61 */
+/* 65 */
 /***/ (function(module, exports, __webpack_require__) {
 
 "use strict";
@@ -12935,7 +13018,7 @@ exports.viewStrategyRegistry.registerStrategy(new inline_strategy_1.InlineStrate
 
 
 /***/ }),
-/* 62 */
+/* 66 */
 /***/ (function(module, exports, __webpack_require__) {
 
 "use strict";
@@ -12964,7 +13047,7 @@ exports.ElementHelper = ElementHelper;
 
 
 /***/ }),
-/* 63 */
+/* 67 */
 /***/ (function(module, exports, __webpack_require__) {
 
 "use strict";
@@ -12979,7 +13062,7 @@ var ValidationState;
 
 
 /***/ }),
-/* 64 */
+/* 68 */
 /***/ (function(module, exports, __webpack_require__) {
 
 "use strict";
@@ -13008,40 +13091,10 @@ exports.ViewSummary = ViewSummary;
 
 
 /***/ }),
-/* 65 */
-/***/ (function(module, __webpack_exports__, __webpack_require__) {
-
-"use strict";
-/* harmony import */ var __WEBPACK_IMPORTED_MODULE_0_vue_dist_vue__ = __webpack_require__(8);
-/* harmony import */ var __WEBPACK_IMPORTED_MODULE_0_vue_dist_vue___default = __webpack_require__.n(__WEBPACK_IMPORTED_MODULE_0_vue_dist_vue__);
-/* harmony import */ var __WEBPACK_IMPORTED_MODULE_1__dist_commonjs_plugin__ = __webpack_require__(9);
-/* harmony import */ var __WEBPACK_IMPORTED_MODULE_1__dist_commonjs_plugin___default = __webpack_require__.n(__WEBPACK_IMPORTED_MODULE_1__dist_commonjs_plugin__);
-/* harmony import */ var __WEBPACK_IMPORTED_MODULE_2__basic_html__ = __webpack_require__(66);
-/* harmony import */ var __WEBPACK_IMPORTED_MODULE_2__basic_html___default = __webpack_require__.n(__WEBPACK_IMPORTED_MODULE_2__basic_html__);
-
-
-
-
-
-function generateRuleset() {
-    return Object(__WEBPACK_IMPORTED_MODULE_1__dist_commonjs_plugin__["createRuleset"])()
-        .forProperty("name")
-            .addRule("required")
-            .addRule("minLength", 2)
-        .build()
-}
-
-__WEBPACK_IMPORTED_MODULE_0_vue_dist_vue___default.a.component('basic', {
-    ruleset: generateRuleset(),
-    data: () => { return { name: "Bob" } },
-    template: __WEBPACK_IMPORTED_MODULE_2__basic_html___default.a
-});
-
-/***/ }),
-/* 66 */
+/* 69 */
 /***/ (function(module, exports) {
 
-module.exports = "<section>\r\n    <div>\r\n        <label>Name</label>\r\n        <input v-model=\"name\" v-show-error validate-property=\"name\" placeholder=\"Name\" />\r\n    </div>\r\n</section>"
+module.exports = "<section>\r\n    <div>\r\n        <label>Name</label>\r\n        <input v-model=\"name\" placeholder=\"Name\" v-show-error validate-property=\"name\" />\r\n    </div>\r\n    <div>\r\n        <label>Age</label>\r\n        <input v-model=\"age\" placeholder=\"Age\" v-show-error validate-property=\"age\" />\r\n    </div>\r\n    <div v-for=\"(hobby, index) in hobbies\">\r\n        <div>\r\n            <label>Hobby</label>\r\n            <input v-model=\"hobby.name\" placeholder=\"Hobby\" v-show-error v-bind:validate-property=\"'hobbies[' + index + '].name'\" />\r\n        </div>\r\n    </div>\r\n</section>"
 
 /***/ })
 /******/ ]);

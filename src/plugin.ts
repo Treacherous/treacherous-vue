@@ -1,4 +1,4 @@
-import {Ruleset, createGroup, IReactiveValidationGroup, PropertyStateChangedEvent} from "treacherous";
+import {Ruleset, createGroup, IValidationGroup, IReactiveValidationGroup, PropertyStateChangedEvent} from "treacherous";
 import {viewStrategyRegistry, ElementHelper, ValidationState} from "treacherous-view";
 export {createRuleset, ruleRegistry} from "treacherous";
 export {viewStrategyRegistry} from "treacherous-view";
@@ -25,7 +25,21 @@ export class TreacherousPlugin {
             { return; }
 
             let ruleset = this.$options.ruleset;
-            this.validationGroup = createGroup().asReactiveGroup().build(this, ruleset);
+            let validationGroup = createGroup().asReactiveGroup().build(this, ruleset);
+            
+            let modelStateUpdater = function(isValid: boolean) {
+                this.$emit("update:is-valid", isValid);
+            }
+
+            this.validationGroup = validationGroup;
+            this.modelStateSub = validationGroup.modelStateChangedEvent.subscribe(modelStateUpdater);
+        },
+        beforeDestroy: function() {
+            if(!this.$options.ruleset)
+            { return; }
+
+            this.modelStateSub();
+            (<IValidationGroup>this.validationGroup).release();
         }
     };
 

@@ -15,7 +15,19 @@ var TreacherousPlugin = (function () {
                     return;
                 }
                 var ruleset = this.$options.ruleset;
-                this.validationGroup = treacherous_1.createGroup().asReactiveGroup().build(this, ruleset);
+                var validationGroup = treacherous_1.createGroup().asReactiveGroup().build(this, ruleset);
+                var modelStateUpdater = function (isValid) {
+                    this.$emit("update:is-valid", isValid);
+                };
+                this.validationGroup = validationGroup;
+                this.modelStateSub = validationGroup.modelStateChangedEvent.subscribe(modelStateUpdater);
+            },
+            beforeDestroy: function () {
+                if (!this.$options.ruleset) {
+                    return;
+                }
+                this.modelStateSub();
+                this.validationGroup.release();
             }
         };
         this.showError = {
