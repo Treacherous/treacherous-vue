@@ -281,7 +281,7 @@ exports.TypeHelper = TypeHelper;
 "use strict";
 
 Object.defineProperty(exports, "__esModule", { value: true });
-var property_resolver_1 = __webpack_require__(4);
+var property_resolver_1 = __webpack_require__(6);
 var RuleResolver = (function () {
     function RuleResolver(propertyResolver) {
         if (propertyResolver === void 0) { propertyResolver = new property_resolver_1.PropertyResolver(); }
@@ -396,347 +396,6 @@ exports.ComparerHelper = ComparerHelper;
 
 /***/ }),
 /* 4 */
-/***/ (function(module, exports, __webpack_require__) {
-
-var property_resolver_1 = __webpack_require__(61);
-exports.PropertyResolver = property_resolver_1.PropertyResolver;
-
-
-/***/ }),
-/* 5 */
-/***/ (function(module, exports, __webpack_require__) {
-
-"use strict";
-
-Object.defineProperty(exports, "__esModule", { value: true });
-var tslib_1 = __webpack_require__(0);
-var rule_resolver_1 = __webpack_require__(2);
-var type_helper_1 = __webpack_require__(1);
-var promise_counter_1 = __webpack_require__(14);
-var property_state_changed_event_1 = __webpack_require__(15);
-var model_state_changed_event_1 = __webpack_require__(16);
-var event_js_1 = __webpack_require__(17);
-// TODO: This class could be simplified
-var ValidationGroup = (function () {
-    function ValidationGroup(fieldErrorProcessor, ruleResolver, modelResolverFactory, model, ruleset) {
-        if (ruleResolver === void 0) { ruleResolver = new rule_resolver_1.RuleResolver(); }
-        var _this = this;
-        this.fieldErrorProcessor = fieldErrorProcessor;
-        this.ruleResolver = ruleResolver;
-        this.modelResolverFactory = modelResolverFactory;
-        this.ruleset = ruleset;
-        this.propertyErrors = {};
-        this.validatePropertyWithRuleLinks = function (propertyName, propertyRules) { return tslib_1.__awaiter(_this, void 0, void 0, function () {
-            var activePromise, possibleErrors, hadErrors, eventArgs, stillHasErrors, previousError, eventArgs;
-            return tslib_1.__generator(this, function (_a) {
-                switch (_a.label) {
-                    case 0:
-                        activePromise = this.fieldErrorProcessor.checkFieldForErrors(this.modelResolver, propertyName, propertyRules);
-                        return [4 /*yield*/, this.promiseCounter.countPromise(activePromise)];
-                    case 1:
-                        possibleErrors = _a.sent();
-                        hadErrors = this.hasErrors();
-                        if (!possibleErrors) {
-                            if (this.propertyErrors[propertyName]) {
-                                delete this.propertyErrors[propertyName];
-                                eventArgs = new property_state_changed_event_1.PropertyStateChangedEvent(propertyName, true);
-                                this.propertyStateChangedEvent.publish(eventArgs);
-                                stillHasErrors = hadErrors && this.hasErrors();
-                                if (!stillHasErrors) {
-                                    this.modelStateChangedEvent.publish(new model_state_changed_event_1.ModelStateChangedEvent(true));
-                                }
-                            }
-                            return [2 /*return*/, this.promiseCounter.waitForCompletion()];
-                        }
-                        previousError = this.propertyErrors[propertyName];
-                        this.propertyErrors[propertyName] = possibleErrors;
-                        if (possibleErrors != previousError) {
-                            eventArgs = new property_state_changed_event_1.PropertyStateChangedEvent(propertyName, false, possibleErrors);
-                            this.propertyStateChangedEvent.publish(eventArgs);
-                            if (!hadErrors) {
-                                this.modelStateChangedEvent.publish(new model_state_changed_event_1.ModelStateChangedEvent(false));
-                            }
-                        }
-                        return [2 /*return*/, this.promiseCounter.waitForCompletion()];
-                }
-            });
-        }); };
-        this.validatePropertyWithRuleSet = function (propertyRoute, ruleset) {
-            var transformedPropertyName;
-            for (var childPropertyName in ruleset.rules) {
-                transformedPropertyName = propertyRoute + "." + childPropertyName;
-                _this.validatePropertyWithRules(transformedPropertyName, ruleset.getRulesForProperty(childPropertyName));
-            }
-        };
-        this.validatePropertyWithRules = function (propertyRoute, rules) {
-            var ruleLinks = [];
-            var ruleSets = [];
-            var currentValue;
-            try {
-                currentValue = _this.modelResolver.resolve(propertyRoute);
-            }
-            catch (ex) {
-                console.warn("Failed to resolve property " + propertyRoute + " during validation. Does it exist in your model?");
-                throw (ex);
-            }
-            var routeEachRule = function (ruleLinkOrSet) {
-                if (ValidationGroup.isForEach(ruleLinkOrSet)) {
-                    var isCurrentlyAnArray = type_helper_1.TypeHelper.isArrayType(currentValue);
-                    if (isCurrentlyAnArray) {
-                        currentValue.forEach(function (element, index) {
-                            var childPropertyName = propertyRoute + "[" + index + "]";
-                            _this.validatePropertyWithRules(childPropertyName, [ruleLinkOrSet.internalRule]);
-                        });
-                    }
-                    else {
-                        if (ValidationGroup.isRuleset(ruleLinkOrSet.internalRule)) {
-                            ruleSets.push(ruleLinkOrSet.internalRule);
-                        }
-                        else {
-                            ruleLinks.push(ruleLinkOrSet.internalRule);
-                        }
-                    }
-                }
-                else if (ValidationGroup.isRuleset(ruleLinkOrSet)) {
-                    ruleSets.push(ruleLinkOrSet);
-                }
-                else {
-                    ruleLinks.push(ruleLinkOrSet);
-                }
-            };
-            rules.forEach(routeEachRule);
-            _this.validatePropertyWithRuleLinks(propertyRoute, ruleLinks);
-            ruleSets.forEach(function (ruleSet) {
-                _this.validatePropertyWithRuleSet(propertyRoute, ruleSet);
-            });
-        };
-        this.startValidateProperty = function (propertyRoute) { return tslib_1.__awaiter(_this, void 0, void 0, function () {
-            var rulesForProperty;
-            return tslib_1.__generator(this, function (_a) {
-                switch (_a.label) {
-                    case 0:
-                        if (!(this.ruleset.compositeRules !== {})) return [3 /*break*/, 2];
-                        return [4 /*yield*/, this.validateCompositeRules()];
-                    case 1:
-                        _a.sent();
-                        _a.label = 2;
-                    case 2:
-                        if (this.ruleset.compositeRules[propertyRoute] !== undefined) {
-                            return [2 /*return*/];
-                        }
-                        rulesForProperty = this.ruleResolver.resolvePropertyRules(propertyRoute, this.ruleset);
-                        if (!rulesForProperty) {
-                            return [2 /*return*/];
-                        }
-                        return [2 /*return*/, this.validatePropertyWithRules(propertyRoute, rulesForProperty)];
-                }
-            });
-        }); };
-        this.validateCompositeRule = function (compositeRule) { return tslib_1.__awaiter(_this, void 0, void 0, function () {
-            var hadErrors, isValid, eventArgs, stillHasErrors, previousError, currentError, eventArgs;
-            return tslib_1.__generator(this, function (_a) {
-                switch (_a.label) {
-                    case 0:
-                        hadErrors = this.hasErrors();
-                        return [4 /*yield*/, compositeRule.validate(this.modelResolver)];
-                    case 1:
-                        isValid = _a.sent();
-                        if (isValid) {
-                            if (this.propertyErrors[compositeRule.virtualPropertyName]) {
-                                delete this.propertyErrors[compositeRule.virtualPropertyName];
-                                eventArgs = new property_state_changed_event_1.PropertyStateChangedEvent(compositeRule.virtualPropertyName, true);
-                                this.propertyStateChangedEvent.publish(eventArgs);
-                            }
-                            stillHasErrors = hadErrors && this.hasErrors();
-                            if (!stillHasErrors) {
-                                this.modelStateChangedEvent.publish(new model_state_changed_event_1.ModelStateChangedEvent(true));
-                            }
-                            return [2 /*return*/];
-                        }
-                        previousError = this.propertyErrors[compositeRule.virtualPropertyName];
-                        currentError = compositeRule.getMessage(this.modelResolver);
-                        this.propertyErrors[compositeRule.virtualPropertyName] = currentError;
-                        if (currentError != previousError) {
-                            eventArgs = new property_state_changed_event_1.PropertyStateChangedEvent(compositeRule.virtualPropertyName, false, currentError);
-                            this.propertyStateChangedEvent.publish(eventArgs);
-                            if (!hadErrors) {
-                                this.modelStateChangedEvent.publish(new model_state_changed_event_1.ModelStateChangedEvent(false));
-                            }
-                        }
-                        return [2 /*return*/, this.propertyErrors[compositeRule.virtualPropertyName]];
-                }
-            });
-        }); };
-        this.validateCompositeRules = function () { return tslib_1.__awaiter(_this, void 0, void 0, function () {
-            var propertyName, compositeRule;
-            return tslib_1.__generator(this, function (_a) {
-                for (propertyName in this.ruleset.compositeRules) {
-                    compositeRule = this.ruleset.compositeRules[propertyName];
-                    this.validateCompositeRule(compositeRule);
-                }
-                return [2 /*return*/];
-            });
-        }); };
-        this.startValidateModel = function () {
-            for (var parameterName in _this.ruleset.rules) {
-                _this.startValidateProperty(parameterName);
-            }
-        };
-        this.changeValidationTarget = function (model) {
-            _this.modelResolver = _this.modelResolverFactory.createModelResolver(model);
-        };
-        this.validateProperty = function (propertyRoute) { return tslib_1.__awaiter(_this, void 0, void 0, function () {
-            return tslib_1.__generator(this, function (_a) {
-                switch (_a.label) {
-                    case 0: return [4 /*yield*/, this.startValidateProperty(propertyRoute)];
-                    case 1:
-                        _a.sent();
-                        return [4 /*yield*/, this.promiseCounter.waitForCompletion()];
-                    case 2:
-                        _a.sent();
-                        return [2 /*return*/, !this.propertyErrors[propertyRoute]];
-                }
-            });
-        }); };
-        this.validate = function () { return tslib_1.__awaiter(_this, void 0, void 0, function () {
-            return tslib_1.__generator(this, function (_a) {
-                switch (_a.label) {
-                    case 0: return [4 /*yield*/, this.startValidateModel()];
-                    case 1:
-                        _a.sent();
-                        return [4 /*yield*/, this.promiseCounter.waitForCompletion()];
-                    case 2:
-                        _a.sent();
-                        return [2 /*return*/, !this.hasErrors()];
-                }
-            });
-        }); };
-        this.getModelErrors = function (revalidate) {
-            if (revalidate === void 0) { revalidate = false; }
-            return tslib_1.__awaiter(_this, void 0, void 0, function () {
-                return tslib_1.__generator(this, function (_a) {
-                    switch (_a.label) {
-                        case 0:
-                            if (!revalidate) return [3 /*break*/, 2];
-                            return [4 /*yield*/, this.startValidateModel()];
-                        case 1:
-                            _a.sent();
-                            _a.label = 2;
-                        case 2: return [4 /*yield*/, this.promiseCounter.waitForCompletion()];
-                        case 3:
-                            _a.sent();
-                            return [2 /*return*/, this.propertyErrors];
-                    }
-                });
-            });
-        };
-        this.getPropertyError = function (propertyRoute, revalidate) {
-            if (revalidate === void 0) { revalidate = false; }
-            return tslib_1.__awaiter(_this, void 0, void 0, function () {
-                return tslib_1.__generator(this, function (_a) {
-                    switch (_a.label) {
-                        case 0:
-                            if (revalidate) {
-                                this.startValidateProperty(propertyRoute);
-                            }
-                            return [4 /*yield*/, this.promiseCounter.waitForCompletion()];
-                        case 1:
-                            _a.sent();
-                            return [2 /*return*/, this.propertyErrors[propertyRoute]];
-                    }
-                });
-            });
-        };
-        this.getPropertyDisplayName = function (propertyRoute) {
-            return _this.ruleset.getPropertyDisplayName(propertyRoute);
-        };
-        this.isPropertyInGroup = function (propertyRoute) {
-            var applicableRules = _this.ruleResolver.resolvePropertyRules(propertyRoute, _this.ruleset);
-            return (applicableRules != null);
-        };
-        this.release = function () { };
-        this.propertyStateChangedEvent = new event_js_1.EventHandler(this);
-        this.modelStateChangedEvent = new event_js_1.EventHandler(this);
-        this.promiseCounter = new promise_counter_1.PromiseCounter();
-        this.modelResolver = this.modelResolverFactory.createModelResolver(model);
-    }
-    ValidationGroup.isRuleset = function (possibleRuleset) {
-        return (typeof (possibleRuleset.addRule) == "function");
-    };
-    ValidationGroup.isForEach = function (possibleForEach) {
-        return possibleForEach.isForEach;
-    };
-    ValidationGroup.prototype.hasErrors = function () {
-        return (Object.keys(this.propertyErrors).length > 0);
-    };
-    return ValidationGroup;
-}());
-exports.ValidationGroup = ValidationGroup;
-
-
-/***/ }),
-/* 6 */
-/***/ (function(module, exports, __webpack_require__) {
-
-"use strict";
-
-Object.defineProperty(exports, "__esModule", { value: true });
-var model_resolver_1 = __webpack_require__(25);
-var property_resolver_1 = __webpack_require__(4);
-var ModelResolverFactory = (function () {
-    function ModelResolverFactory(propertyResolver) {
-        if (propertyResolver === void 0) { propertyResolver = new property_resolver_1.PropertyResolver(); }
-        var _this = this;
-        this.propertyResolver = propertyResolver;
-        this.createModelResolver = function (model) {
-            return new model_resolver_1.ModelResolver(_this.propertyResolver, model);
-        };
-    }
-    return ModelResolverFactory;
-}());
-exports.ModelResolverFactory = ModelResolverFactory;
-
-
-/***/ }),
-/* 7 */
-/***/ (function(module, exports, __webpack_require__) {
-
-"use strict";
-
-Object.defineProperty(exports, "__esModule", { value: true });
-var ClassHelper = (function () {
-    function ClassHelper() {
-    }
-    return ClassHelper;
-}());
-ClassHelper.hasClass = function (element, className) {
-    if (element.classList) {
-        return element.classList.contains(className);
-    }
-    return !!element.className.match(new RegExp("(\\s|^)" + className + "(\\s|$)"));
-};
-ClassHelper.addClass = function (element, className) {
-    if (element.classList) {
-        element.classList.add(className);
-    }
-    else if (!ClassHelper.hasClass(element, className)) {
-        element.errorClassName += " " + className;
-    }
-};
-ClassHelper.removeClass = function (element, className) {
-    if (element.classList) {
-        element.classList.remove(className);
-    }
-    else if (ClassHelper.hasClass(element, className)) {
-        var reg = new RegExp("(\\s|^)" + className + "(\\s|$)");
-        element.errorClassName = element.className.replace(reg, ' ');
-    }
-};
-exports.ClassHelper = ClassHelper;
-
-
-/***/ }),
-/* 8 */
 /***/ (function(module, exports, __webpack_require__) {
 
 /* WEBPACK VAR INJECTION */(function(global) {/*!
@@ -10818,10 +10477,10 @@ return Vue$3;
 
 })));
 
-/* WEBPACK VAR INJECTION */}.call(exports, __webpack_require__(56)))
+/* WEBPACK VAR INJECTION */}.call(exports, __webpack_require__(55)))
 
 /***/ }),
-/* 9 */
+/* 5 */
 /***/ (function(module, exports, __webpack_require__) {
 
 "use strict";
@@ -10834,90 +10493,425 @@ exports.createRuleset = treacherous_2.createRuleset;
 exports.ruleRegistry = treacherous_2.ruleRegistry;
 var treacherous_view_2 = __webpack_require__(48);
 exports.viewStrategyRegistry = treacherous_view_2.viewStrategyRegistry;
-var TreacherousPlugin = (function () {
-    function TreacherousPlugin() {
-        this.mixins = {
-            created: function () {
-                if (!this.$options.ruleset) {
-                    return;
-                }
-                var ruleset = this.$options.ruleset;
-                var validationGroup = treacherous_1.createGroup().asReactiveGroup().build(this, ruleset);
-                var modelStateUpdater = function (isValid) {
-                    this.$emit("update:is-valid", isValid);
-                };
-                this.validationGroup = validationGroup;
-                this.modelStateSub = validationGroup.modelStateChangedEvent.subscribe(modelStateUpdater);
-            },
-            beforeDestroy: function () {
-                if (!this.$options.ruleset) {
-                    return;
-                }
-                this.modelStateSub();
-                this.validationGroup.release();
+var ValidationSubKey = "validation-subscriptions";
+var install = function (Vue, options) {
+    Vue.mixin(mixins);
+    Vue.directive('show-error', showErrorDirective);
+};
+var mixins = {
+    created: function () {
+        if (!this.$options.ruleset) {
+            return;
+        }
+        var context = this;
+        var ruleset = context.$options.ruleset;
+        var validationGroup = treacherous_1.createGroup().asReactiveGroup().build(context, ruleset);
+        context.validationGroup = validationGroup;
+    },
+    beforeDestroy: function () {
+        if (!this.$options.ruleset) {
+            return;
+        }
+        var context = this;
+        context.validationGroup.release();
+    }
+};
+var showErrorDirective = {
+    bind: function (element, binding, vnode) {
+        var context = vnode.context;
+        var validationGroup = context.validationGroup;
+        if (!validationGroup) {
+            return;
+        }
+        var propertyRoute = treacherous_view_1.ElementHelper.getPropertyRouteFrom(element);
+        if (!propertyRoute) {
+            return;
+        }
+        var strategyName = treacherous_view_1.ElementHelper.getStrategyFrom(element);
+        var viewStrategy = treacherous_view_1.viewStrategyRegistry.getStrategyNamed(strategyName || "inline");
+        if (!viewStrategy) {
+            return;
+        }
+        var validationState = treacherous_view_1.ValidationState.unknown;
+        var viewOptions = treacherous_view_1.ElementHelper.getOptionsFrom(element) || {};
+        var handlePossibleError = function (error) {
+            if (!error) {
+                viewStrategy.propertyBecomeValid(element, propertyRoute, validationState, viewOptions);
+                validationState = treacherous_view_1.ValidationState.valid;
+            }
+            else {
+                viewStrategy.propertyBecomeInvalid(element, error, propertyRoute, validationState, viewOptions);
+                validationState = treacherous_view_1.ValidationState.invalid;
             }
         };
-        this.showError = {
-            bind: function (element, binding, vnode) {
-                var context = vnode.context;
-                var validationGroup = context.validationGroup;
-                if (!validationGroup) {
-                    return;
+        var handlePropertyStateChange = function (args) {
+            handlePossibleError(args.error);
+        };
+        var propertyPredicate = function (args) {
+            return args.property == propertyRoute;
+        };
+        var sub = validationGroup.propertyStateChangedEvent.subscribe(handlePropertyStateChange, propertyPredicate);
+        if (!context[ValidationSubKey]) {
+            context[ValidationSubKey] = {};
+        }
+        context[ValidationSubKey][propertyRoute] = sub;
+    },
+    unbind: function (element, binding, vnode) {
+        var context = vnode.context;
+        var propertyRoute = treacherous_view_1.ElementHelper.getPropertyRouteFrom(element);
+        if (!propertyRoute) {
+            return;
+        }
+        var outstandingSub = context[ValidationSubKey][propertyRoute];
+        if (outstandingSub) {
+            outstandingSub();
+        }
+    }
+};
+exports.default = {
+    install: install
+};
+
+
+/***/ }),
+/* 6 */
+/***/ (function(module, exports, __webpack_require__) {
+
+var property_resolver_1 = __webpack_require__(57);
+exports.PropertyResolver = property_resolver_1.PropertyResolver;
+
+
+/***/ }),
+/* 7 */
+/***/ (function(module, exports, __webpack_require__) {
+
+"use strict";
+
+Object.defineProperty(exports, "__esModule", { value: true });
+var tslib_1 = __webpack_require__(0);
+var rule_resolver_1 = __webpack_require__(2);
+var type_helper_1 = __webpack_require__(1);
+var promise_counter_1 = __webpack_require__(14);
+var property_state_changed_event_1 = __webpack_require__(15);
+var model_state_changed_event_1 = __webpack_require__(16);
+var event_js_1 = __webpack_require__(17);
+// TODO: This class could be simplified
+var ValidationGroup = (function () {
+    function ValidationGroup(fieldErrorProcessor, ruleResolver, modelResolverFactory, model, ruleset) {
+        if (ruleResolver === void 0) { ruleResolver = new rule_resolver_1.RuleResolver(); }
+        var _this = this;
+        this.fieldErrorProcessor = fieldErrorProcessor;
+        this.ruleResolver = ruleResolver;
+        this.modelResolverFactory = modelResolverFactory;
+        this.ruleset = ruleset;
+        this.propertyErrors = {};
+        this.validatePropertyWithRuleLinks = function (propertyName, propertyRules) { return tslib_1.__awaiter(_this, void 0, void 0, function () {
+            var activePromise, possibleErrors, hadErrors, eventArgs, stillHasErrors, previousError, eventArgs;
+            return tslib_1.__generator(this, function (_a) {
+                switch (_a.label) {
+                    case 0:
+                        activePromise = this.fieldErrorProcessor.checkFieldForErrors(this.modelResolver, propertyName, propertyRules);
+                        return [4 /*yield*/, this.promiseCounter.countPromise(activePromise)];
+                    case 1:
+                        possibleErrors = _a.sent();
+                        hadErrors = this.hasErrors();
+                        if (!possibleErrors) {
+                            if (this.propertyErrors[propertyName]) {
+                                delete this.propertyErrors[propertyName];
+                                eventArgs = new property_state_changed_event_1.PropertyStateChangedEvent(propertyName, true);
+                                this.propertyStateChangedEvent.publish(eventArgs);
+                                stillHasErrors = hadErrors && this.hasErrors();
+                                if (!stillHasErrors) {
+                                    this.modelStateChangedEvent.publish(new model_state_changed_event_1.ModelStateChangedEvent(true));
+                                }
+                            }
+                            return [2 /*return*/, this.promiseCounter.waitForCompletion()];
+                        }
+                        previousError = this.propertyErrors[propertyName];
+                        this.propertyErrors[propertyName] = possibleErrors;
+                        if (possibleErrors != previousError) {
+                            eventArgs = new property_state_changed_event_1.PropertyStateChangedEvent(propertyName, false, possibleErrors);
+                            this.propertyStateChangedEvent.publish(eventArgs);
+                            if (!hadErrors) {
+                                this.modelStateChangedEvent.publish(new model_state_changed_event_1.ModelStateChangedEvent(false));
+                            }
+                        }
+                        return [2 /*return*/, this.promiseCounter.waitForCompletion()];
                 }
-                var propertyRoute = treacherous_view_1.ElementHelper.getPropertyRouteFrom(element);
-                if (!propertyRoute) {
-                    return;
-                }
-                var strategyName = treacherous_view_1.ElementHelper.getStrategyFrom(element);
-                var viewStrategy = treacherous_view_1.viewStrategyRegistry.getStrategyNamed(strategyName || "inline");
-                if (!viewStrategy) {
-                    return;
-                }
-                var validationState = treacherous_view_1.ValidationState.unknown;
-                var viewOptions = treacherous_view_1.ElementHelper.getOptionsFrom(element) || {};
-                var handlePossibleError = function (error) {
-                    if (!error) {
-                        viewStrategy.propertyBecomeValid(element, propertyRoute, validationState, viewOptions);
-                        validationState = treacherous_view_1.ValidationState.valid;
+            });
+        }); };
+        this.validatePropertyWithRuleSet = function (propertyRoute, ruleset) {
+            var transformedPropertyName;
+            for (var childPropertyName in ruleset.rules) {
+                transformedPropertyName = propertyRoute + "." + childPropertyName;
+                _this.validatePropertyWithRules(transformedPropertyName, ruleset.getRulesForProperty(childPropertyName));
+            }
+        };
+        this.validatePropertyWithRules = function (propertyRoute, rules) {
+            var ruleLinks = [];
+            var ruleSets = [];
+            var currentValue;
+            try {
+                currentValue = _this.modelResolver.resolve(propertyRoute);
+            }
+            catch (ex) {
+                console.warn("Failed to resolve property " + propertyRoute + " during validation. Does it exist in your model?");
+                throw (ex);
+            }
+            var routeEachRule = function (ruleLinkOrSet) {
+                if (ValidationGroup.isForEach(ruleLinkOrSet)) {
+                    var isCurrentlyAnArray = type_helper_1.TypeHelper.isArrayType(currentValue);
+                    if (isCurrentlyAnArray) {
+                        currentValue.forEach(function (element, index) {
+                            var childPropertyName = propertyRoute + "[" + index + "]";
+                            _this.validatePropertyWithRules(childPropertyName, [ruleLinkOrSet.internalRule]);
+                        });
                     }
                     else {
-                        viewStrategy.propertyBecomeInvalid(element, error, propertyRoute, validationState, viewOptions);
-                        validationState = treacherous_view_1.ValidationState.invalid;
+                        if (ValidationGroup.isRuleset(ruleLinkOrSet.internalRule)) {
+                            ruleSets.push(ruleLinkOrSet.internalRule);
+                        }
+                        else {
+                            ruleLinks.push(ruleLinkOrSet.internalRule);
+                        }
                     }
-                };
-                var handlePropertyStateChange = function (args) {
-                    handlePossibleError(args.error);
-                };
-                var propertyPredicate = function (args) {
-                    return args.property == propertyRoute;
-                };
-                var sub = validationGroup.propertyStateChangedEvent.subscribe(handlePropertyStateChange, propertyPredicate);
-                if (!context[TreacherousPlugin.ValidationSubKey]) {
-                    context[TreacherousPlugin.ValidationSubKey] = {};
                 }
-                context[TreacherousPlugin.ValidationSubKey][propertyRoute] = sub;
-            },
-            unbind: function (element, binding, vnode) {
-                var context = vnode.context;
-                var propertyRoute = treacherous_view_1.ElementHelper.getPropertyRouteFrom(element);
-                if (!propertyRoute) {
-                    return;
+                else if (ValidationGroup.isRuleset(ruleLinkOrSet)) {
+                    ruleSets.push(ruleLinkOrSet);
                 }
-                var outstandingSub = context[TreacherousPlugin.ValidationSubKey][propertyRoute];
-                if (outstandingSub) {
-                    outstandingSub();
+                else {
+                    ruleLinks.push(ruleLinkOrSet);
                 }
+            };
+            rules.forEach(routeEachRule);
+            _this.validatePropertyWithRuleLinks(propertyRoute, ruleLinks);
+            ruleSets.forEach(function (ruleSet) {
+                _this.validatePropertyWithRuleSet(propertyRoute, ruleSet);
+            });
+        };
+        this.startValidateProperty = function (propertyRoute) { return tslib_1.__awaiter(_this, void 0, void 0, function () {
+            var rulesForProperty;
+            return tslib_1.__generator(this, function (_a) {
+                switch (_a.label) {
+                    case 0:
+                        if (!(this.ruleset.compositeRules !== {})) return [3 /*break*/, 2];
+                        return [4 /*yield*/, this.validateCompositeRules()];
+                    case 1:
+                        _a.sent();
+                        _a.label = 2;
+                    case 2:
+                        if (this.ruleset.compositeRules[propertyRoute] !== undefined) {
+                            return [2 /*return*/];
+                        }
+                        rulesForProperty = this.ruleResolver.resolvePropertyRules(propertyRoute, this.ruleset);
+                        if (!rulesForProperty) {
+                            return [2 /*return*/];
+                        }
+                        return [2 /*return*/, this.validatePropertyWithRules(propertyRoute, rulesForProperty)];
+                }
+            });
+        }); };
+        this.validateCompositeRule = function (compositeRule) { return tslib_1.__awaiter(_this, void 0, void 0, function () {
+            var hadErrors, isValid, eventArgs, stillHasErrors, previousError, currentError, eventArgs;
+            return tslib_1.__generator(this, function (_a) {
+                switch (_a.label) {
+                    case 0:
+                        hadErrors = this.hasErrors();
+                        return [4 /*yield*/, compositeRule.validate(this.modelResolver)];
+                    case 1:
+                        isValid = _a.sent();
+                        if (isValid) {
+                            if (this.propertyErrors[compositeRule.virtualPropertyName]) {
+                                delete this.propertyErrors[compositeRule.virtualPropertyName];
+                                eventArgs = new property_state_changed_event_1.PropertyStateChangedEvent(compositeRule.virtualPropertyName, true);
+                                this.propertyStateChangedEvent.publish(eventArgs);
+                            }
+                            stillHasErrors = hadErrors && this.hasErrors();
+                            if (!stillHasErrors) {
+                                this.modelStateChangedEvent.publish(new model_state_changed_event_1.ModelStateChangedEvent(true));
+                            }
+                            return [2 /*return*/];
+                        }
+                        previousError = this.propertyErrors[compositeRule.virtualPropertyName];
+                        currentError = compositeRule.getMessage(this.modelResolver);
+                        this.propertyErrors[compositeRule.virtualPropertyName] = currentError;
+                        if (currentError != previousError) {
+                            eventArgs = new property_state_changed_event_1.PropertyStateChangedEvent(compositeRule.virtualPropertyName, false, currentError);
+                            this.propertyStateChangedEvent.publish(eventArgs);
+                            if (!hadErrors) {
+                                this.modelStateChangedEvent.publish(new model_state_changed_event_1.ModelStateChangedEvent(false));
+                            }
+                        }
+                        return [2 /*return*/, this.propertyErrors[compositeRule.virtualPropertyName]];
+                }
+            });
+        }); };
+        this.validateCompositeRules = function () { return tslib_1.__awaiter(_this, void 0, void 0, function () {
+            var propertyName, compositeRule;
+            return tslib_1.__generator(this, function (_a) {
+                for (propertyName in this.ruleset.compositeRules) {
+                    compositeRule = this.ruleset.compositeRules[propertyName];
+                    this.validateCompositeRule(compositeRule);
+                }
+                return [2 /*return*/];
+            });
+        }); };
+        this.startValidateModel = function () {
+            for (var parameterName in _this.ruleset.rules) {
+                _this.startValidateProperty(parameterName);
             }
         };
+        this.changeValidationTarget = function (model) {
+            _this.modelResolver = _this.modelResolverFactory.createModelResolver(model);
+        };
+        this.validateProperty = function (propertyRoute) { return tslib_1.__awaiter(_this, void 0, void 0, function () {
+            return tslib_1.__generator(this, function (_a) {
+                switch (_a.label) {
+                    case 0: return [4 /*yield*/, this.startValidateProperty(propertyRoute)];
+                    case 1:
+                        _a.sent();
+                        return [4 /*yield*/, this.promiseCounter.waitForCompletion()];
+                    case 2:
+                        _a.sent();
+                        return [2 /*return*/, !this.propertyErrors[propertyRoute]];
+                }
+            });
+        }); };
+        this.validate = function () { return tslib_1.__awaiter(_this, void 0, void 0, function () {
+            return tslib_1.__generator(this, function (_a) {
+                switch (_a.label) {
+                    case 0: return [4 /*yield*/, this.startValidateModel()];
+                    case 1:
+                        _a.sent();
+                        return [4 /*yield*/, this.promiseCounter.waitForCompletion()];
+                    case 2:
+                        _a.sent();
+                        return [2 /*return*/, !this.hasErrors()];
+                }
+            });
+        }); };
+        this.getModelErrors = function (revalidate) {
+            if (revalidate === void 0) { revalidate = false; }
+            return tslib_1.__awaiter(_this, void 0, void 0, function () {
+                return tslib_1.__generator(this, function (_a) {
+                    switch (_a.label) {
+                        case 0:
+                            if (!revalidate) return [3 /*break*/, 2];
+                            return [4 /*yield*/, this.startValidateModel()];
+                        case 1:
+                            _a.sent();
+                            _a.label = 2;
+                        case 2: return [4 /*yield*/, this.promiseCounter.waitForCompletion()];
+                        case 3:
+                            _a.sent();
+                            return [2 /*return*/, this.propertyErrors];
+                    }
+                });
+            });
+        };
+        this.getPropertyError = function (propertyRoute, revalidate) {
+            if (revalidate === void 0) { revalidate = false; }
+            return tslib_1.__awaiter(_this, void 0, void 0, function () {
+                return tslib_1.__generator(this, function (_a) {
+                    switch (_a.label) {
+                        case 0:
+                            if (revalidate) {
+                                this.startValidateProperty(propertyRoute);
+                            }
+                            return [4 /*yield*/, this.promiseCounter.waitForCompletion()];
+                        case 1:
+                            _a.sent();
+                            return [2 /*return*/, this.propertyErrors[propertyRoute]];
+                    }
+                });
+            });
+        };
+        this.getPropertyDisplayName = function (propertyRoute) {
+            return _this.ruleset.getPropertyDisplayName(propertyRoute);
+        };
+        this.isPropertyInGroup = function (propertyRoute) {
+            var applicableRules = _this.ruleResolver.resolvePropertyRules(propertyRoute, _this.ruleset);
+            return (applicableRules != null);
+        };
+        this.release = function () { };
+        this.propertyStateChangedEvent = new event_js_1.EventHandler(this);
+        this.modelStateChangedEvent = new event_js_1.EventHandler(this);
+        this.promiseCounter = new promise_counter_1.PromiseCounter();
+        this.modelResolver = this.modelResolverFactory.createModelResolver(model);
     }
-    TreacherousPlugin.prototype.install = function (Vue, options) {
-        Vue.mixin(this.mixins);
-        Vue.directive('show-error', this.showError);
+    ValidationGroup.isRuleset = function (possibleRuleset) {
+        return (typeof (possibleRuleset.addRule) == "function");
     };
-    TreacherousPlugin.ValidationSubKey = "validation-subscriptions";
-    return TreacherousPlugin;
+    ValidationGroup.isForEach = function (possibleForEach) {
+        return possibleForEach.isForEach;
+    };
+    ValidationGroup.prototype.hasErrors = function () {
+        return (Object.keys(this.propertyErrors).length > 0);
+    };
+    return ValidationGroup;
 }());
-exports.TreacherousPlugin = TreacherousPlugin;
+exports.ValidationGroup = ValidationGroup;
+
+
+/***/ }),
+/* 8 */
+/***/ (function(module, exports, __webpack_require__) {
+
+"use strict";
+
+Object.defineProperty(exports, "__esModule", { value: true });
+var model_resolver_1 = __webpack_require__(25);
+var property_resolver_1 = __webpack_require__(6);
+var ModelResolverFactory = (function () {
+    function ModelResolverFactory(propertyResolver) {
+        if (propertyResolver === void 0) { propertyResolver = new property_resolver_1.PropertyResolver(); }
+        var _this = this;
+        this.propertyResolver = propertyResolver;
+        this.createModelResolver = function (model) {
+            return new model_resolver_1.ModelResolver(_this.propertyResolver, model);
+        };
+    }
+    return ModelResolverFactory;
+}());
+exports.ModelResolverFactory = ModelResolverFactory;
+
+
+/***/ }),
+/* 9 */
+/***/ (function(module, exports, __webpack_require__) {
+
+"use strict";
+
+Object.defineProperty(exports, "__esModule", { value: true });
+var ClassHelper = (function () {
+    function ClassHelper() {
+    }
+    return ClassHelper;
+}());
+ClassHelper.hasClass = function (element, className) {
+    if (element.classList) {
+        return element.classList.contains(className);
+    }
+    return !!element.className.match(new RegExp("(\\s|^)" + className + "(\\s|$)"));
+};
+ClassHelper.addClass = function (element, className) {
+    if (element.classList) {
+        element.classList.add(className);
+    }
+    else if (!ClassHelper.hasClass(element, className)) {
+        element.errorClassName += " " + className;
+    }
+};
+ClassHelper.removeClass = function (element, className) {
+    if (element.classList) {
+        element.classList.remove(className);
+    }
+    else if (ClassHelper.hasClass(element, className)) {
+        var reg = new RegExp("(\\s|^)" + className + "(\\s|$)");
+        element.errorClassName = element.className.replace(reg, ' ');
+    }
+};
+exports.ClassHelper = ClassHelper;
 
 
 /***/ }),
@@ -10928,12 +10922,12 @@ exports.TreacherousPlugin = TreacherousPlugin;
 
 Object.defineProperty(exports, "__esModule", { value: true });
 var tslib_1 = __webpack_require__(0);
-tslib_1.__exportStar(__webpack_require__(60), exports);
+tslib_1.__exportStar(__webpack_require__(56), exports);
 tslib_1.__exportStar(__webpack_require__(26), exports);
 tslib_1.__exportStar(__webpack_require__(19), exports);
 tslib_1.__exportStar(__webpack_require__(43), exports);
 tslib_1.__exportStar(__webpack_require__(13), exports);
-tslib_1.__exportStar(__webpack_require__(6), exports);
+tslib_1.__exportStar(__webpack_require__(8), exports);
 tslib_1.__exportStar(__webpack_require__(21), exports);
 tslib_1.__exportStar(__webpack_require__(16), exports);
 tslib_1.__exportStar(__webpack_require__(24), exports);
@@ -10942,14 +10936,14 @@ tslib_1.__exportStar(__webpack_require__(3), exports);
 tslib_1.__exportStar(__webpack_require__(1), exports);
 tslib_1.__exportStar(__webpack_require__(11), exports);
 tslib_1.__exportStar(__webpack_require__(12), exports);
-tslib_1.__exportStar(__webpack_require__(63), exports);
+tslib_1.__exportStar(__webpack_require__(59), exports);
 tslib_1.__exportStar(__webpack_require__(25), exports);
 tslib_1.__exportStar(__webpack_require__(14), exports);
 tslib_1.__exportStar(__webpack_require__(46), exports);
 tslib_1.__exportStar(__webpack_require__(45), exports);
 tslib_1.__exportStar(__webpack_require__(2), exports);
 tslib_1.__exportStar(__webpack_require__(44), exports);
-tslib_1.__exportStar(__webpack_require__(64), exports);
+tslib_1.__exportStar(__webpack_require__(60), exports);
 tslib_1.__exportStar(__webpack_require__(28), exports);
 tslib_1.__exportStar(__webpack_require__(29), exports);
 tslib_1.__exportStar(__webpack_require__(30), exports);
@@ -10969,7 +10963,7 @@ tslib_1.__exportStar(__webpack_require__(41), exports);
 tslib_1.__exportStar(__webpack_require__(22), exports);
 tslib_1.__exportStar(__webpack_require__(23), exports);
 tslib_1.__exportStar(__webpack_require__(20), exports);
-tslib_1.__exportStar(__webpack_require__(5), exports);
+tslib_1.__exportStar(__webpack_require__(7), exports);
 tslib_1.__exportStar(__webpack_require__(47), exports);
 
 
@@ -11082,9 +11076,9 @@ exports.FieldHasError = FieldHasError;
 "use strict";
 
 Object.defineProperty(exports, "__esModule", { value: true });
-var validation_group_1 = __webpack_require__(5);
+var validation_group_1 = __webpack_require__(7);
 var reactive_validation_group_builder_1 = __webpack_require__(19);
-var model_resolver_factory_1 = __webpack_require__(6);
+var model_resolver_factory_1 = __webpack_require__(8);
 var ValidationGroupBuilder = (function () {
     function ValidationGroupBuilder(fieldErrorProcessor, ruleResolver) {
         var _this = this;
@@ -11226,7 +11220,7 @@ exports.ModelStateChangedEvent = ModelStateChangedEvent;
 function __export(m) {
     for (var p in m) if (!exports.hasOwnProperty(p)) exports[p] = m[p];
 }
-__export(__webpack_require__(62));
+__export(__webpack_require__(58));
 __export(__webpack_require__(18));
 
 
@@ -11253,7 +11247,7 @@ exports.EventListener = EventListener;
 Object.defineProperty(exports, "__esModule", { value: true });
 var reactive_validation_group_1 = __webpack_require__(20);
 var model_watcher_factory_1 = __webpack_require__(21);
-var model_resolver_factory_1 = __webpack_require__(6);
+var model_resolver_factory_1 = __webpack_require__(8);
 var ReactiveValidationGroupBuilder = (function () {
     function ReactiveValidationGroupBuilder(fieldErrorProcessor, ruleResolver) {
         var _this = this;
@@ -11304,7 +11298,7 @@ exports.ReactiveValidationGroupBuilder = ReactiveValidationGroupBuilder;
 Object.defineProperty(exports, "__esModule", { value: true });
 var tslib_1 = __webpack_require__(0);
 var rule_resolver_1 = __webpack_require__(2);
-var validation_group_1 = __webpack_require__(5);
+var validation_group_1 = __webpack_require__(7);
 var ReactiveValidationGroup = (function (_super) {
     tslib_1.__extends(ReactiveValidationGroup, _super);
     function ReactiveValidationGroup(fieldErrorProcessor, ruleResolver, modelResolverFactory, modelWatcherFactory, model, ruleset, refreshRate) {
@@ -11356,7 +11350,7 @@ exports.ModelWatcherFactory = ModelWatcherFactory;
 "use strict";
 
 Object.defineProperty(exports, "__esModule", { value: true });
-var property_resolver_1 = __webpack_require__(4);
+var property_resolver_1 = __webpack_require__(6);
 var event_js_1 = __webpack_require__(17);
 var type_helper_1 = __webpack_require__(1);
 var property_watcher_1 = __webpack_require__(23);
@@ -12436,16 +12430,16 @@ function __export(m) {
     for (var p in m) if (!exports.hasOwnProperty(p)) exports[p] = m[p];
 }
 Object.defineProperty(exports, "__esModule", { value: true });
-__export(__webpack_require__(65));
-__export(__webpack_require__(7));
-__export(__webpack_require__(66));
+__export(__webpack_require__(61));
+__export(__webpack_require__(9));
+__export(__webpack_require__(62));
 __export(__webpack_require__(52));
 __export(__webpack_require__(49));
 __export(__webpack_require__(51));
 __export(__webpack_require__(50));
-__export(__webpack_require__(67));
+__export(__webpack_require__(63));
 __export(__webpack_require__(53));
-__export(__webpack_require__(68));
+__export(__webpack_require__(64));
 
 
 /***/ }),
@@ -12476,7 +12470,7 @@ exports.ViewStrategyRegistry = ViewStrategyRegistry;
 "use strict";
 
 Object.defineProperty(exports, "__esModule", { value: true });
-var class_helper_1 = __webpack_require__(7);
+var class_helper_1 = __webpack_require__(9);
 var inline_handler_1 = __webpack_require__(51);
 var InlineStrategy = (function () {
     function InlineStrategy(inlineHandler) {
@@ -12583,7 +12577,7 @@ exports.JsLiteralHelper = JsLiteralHelper;
 "use strict";
 
 Object.defineProperty(exports, "__esModule", { value: true });
-var class_helper_1 = __webpack_require__(7);
+var class_helper_1 = __webpack_require__(9);
 var SummaryHandler = (function () {
     function SummaryHandler() {
         var _this = this;
@@ -12628,50 +12622,48 @@ exports.SummaryHandler = SummaryHandler;
 
 "use strict";
 Object.defineProperty(__webpack_exports__, "__esModule", { value: true });
-/* harmony import */ var __WEBPACK_IMPORTED_MODULE_0__components_user_data_component__ = __webpack_require__(55);
-/* harmony import */ var __WEBPACK_IMPORTED_MODULE_1__dist_commonjs_plugin__ = __webpack_require__(9);
+/* harmony import */ var __WEBPACK_IMPORTED_MODULE_0_vue_dist_vue__ = __webpack_require__(4);
+/* harmony import */ var __WEBPACK_IMPORTED_MODULE_0_vue_dist_vue___default = __webpack_require__.n(__WEBPACK_IMPORTED_MODULE_0_vue_dist_vue__);
+/* harmony import */ var __WEBPACK_IMPORTED_MODULE_1__dist_commonjs_plugin__ = __webpack_require__(5);
 /* harmony import */ var __WEBPACK_IMPORTED_MODULE_1__dist_commonjs_plugin___default = __webpack_require__.n(__WEBPACK_IMPORTED_MODULE_1__dist_commonjs_plugin__);
-/* harmony import */ var __WEBPACK_IMPORTED_MODULE_2_vue_dist_vue__ = __webpack_require__(8);
-/* harmony import */ var __WEBPACK_IMPORTED_MODULE_2_vue_dist_vue___default = __webpack_require__.n(__WEBPACK_IMPORTED_MODULE_2_vue_dist_vue__);
+/* harmony import */ var __WEBPACK_IMPORTED_MODULE_2__components_basic_basic_component__ = __webpack_require__(65);
+/* harmony import */ var __WEBPACK_IMPORTED_MODULE_3__components_complex_complex_component__ = __webpack_require__(67);
 
 
 
 
-__WEBPACK_IMPORTED_MODULE_2_vue_dist_vue___default.a.use(new __WEBPACK_IMPORTED_MODULE_1__dist_commonjs_plugin__["TreacherousPlugin"]());
 
-let app = new __WEBPACK_IMPORTED_MODULE_2_vue_dist_vue___default.a({
-    el: "#app"
+
+__WEBPACK_IMPORTED_MODULE_0_vue_dist_vue___default.a.use(__WEBPACK_IMPORTED_MODULE_1__dist_commonjs_plugin___default.a);
+
+let app = new __WEBPACK_IMPORTED_MODULE_0_vue_dist_vue___default.a({
+    el: "#app",
+    data: {
+        basicState: true,
+        complexState: true
+    },
+    methods: {
+        validateBasic: function() { 
+            let context = this;
+            context.$refs.basic.validationGroup
+                .validate()
+                .then(function(isValid){
+                    context.basicState = isValid
+                });
+        },
+        validateComplex: function() {
+            let context = this;
+            context.$refs.complex.validationGroup
+                .validate()
+                .then(function(isValid){
+                    context.complexState = isValid
+                });
+        }
+    }
 });
 
 /***/ }),
 /* 55 */
-/***/ (function(module, __webpack_exports__, __webpack_require__) {
-
-"use strict";
-/* harmony import */ var __WEBPACK_IMPORTED_MODULE_0_vue_dist_vue__ = __webpack_require__(8);
-/* harmony import */ var __WEBPACK_IMPORTED_MODULE_0_vue_dist_vue___default = __webpack_require__.n(__WEBPACK_IMPORTED_MODULE_0_vue_dist_vue__);
-/* harmony import */ var __WEBPACK_IMPORTED_MODULE_1__user_data_model__ = __webpack_require__(57);
-/* harmony import */ var __WEBPACK_IMPORTED_MODULE_2__hobby_model__ = __webpack_require__(58);
-/* harmony import */ var __WEBPACK_IMPORTED_MODULE_3__user_data_ruleset__ = __webpack_require__(59);
-/* harmony import */ var __WEBPACK_IMPORTED_MODULE_4__user_data_html__ = __webpack_require__(69);
-/* harmony import */ var __WEBPACK_IMPORTED_MODULE_4__user_data_html___default = __webpack_require__.n(__WEBPACK_IMPORTED_MODULE_4__user_data_html__);
-
-
-
-
-
-
-
-__WEBPACK_IMPORTED_MODULE_0_vue_dist_vue___default.a.component('user-data', {
-    ruleset: Object(__WEBPACK_IMPORTED_MODULE_3__user_data_ruleset__["a" /* generateRuleset */])(),
-    data: () => new __WEBPACK_IMPORTED_MODULE_1__user_data_model__["a" /* UserData */]("Bob", 20, [ 
-        new __WEBPACK_IMPORTED_MODULE_2__hobby_model__["a" /* Hobby */]("reading"), new __WEBPACK_IMPORTED_MODULE_2__hobby_model__["a" /* Hobby */]("skateboarding") 
-    ]),
-    template: __WEBPACK_IMPORTED_MODULE_4__user_data_html___default.a
-});
-
-/***/ }),
-/* 56 */
 /***/ (function(module, exports) {
 
 var g;
@@ -12698,64 +12690,7 @@ module.exports = g;
 
 
 /***/ }),
-/* 57 */
-/***/ (function(module, __webpack_exports__, __webpack_require__) {
-
-"use strict";
-/* harmony export (immutable) */ __webpack_exports__["a"] = UserData;
-function UserData(name, age, hobbies)
-{
-    this.name = name;
-    this.age = age;
-    this.hobbies = hobbies
-}
-
-/***/ }),
-/* 58 */
-/***/ (function(module, __webpack_exports__, __webpack_require__) {
-
-"use strict";
-/* harmony export (immutable) */ __webpack_exports__["a"] = Hobby;
-function Hobby(name)
-{
-    this.name = name;
-}
-
-/***/ }),
-/* 59 */
-/***/ (function(module, __webpack_exports__, __webpack_require__) {
-
-"use strict";
-/* harmony export (immutable) */ __webpack_exports__["a"] = generateRuleset;
-/* harmony import */ var __WEBPACK_IMPORTED_MODULE_0__dist_commonjs_plugin__ = __webpack_require__(9);
-/* harmony import */ var __WEBPACK_IMPORTED_MODULE_0__dist_commonjs_plugin___default = __webpack_require__.n(__WEBPACK_IMPORTED_MODULE_0__dist_commonjs_plugin__);
-
-
-function generateRuleset()
-{
-    var hobbyRuleset = Object(__WEBPACK_IMPORTED_MODULE_0__dist_commonjs_plugin__["createRuleset"])()
-        .forProperty("name")
-            .addRule("required")
-            .addRule("minLength", 2)
-            .addRule("maxLength", 20)
-        .build();
-
-    var modelRuleset = Object(__WEBPACK_IMPORTED_MODULE_0__dist_commonjs_plugin__["createRuleset"])()
-        .forProperty("name")
-            .addRule("required")
-            .addRule("minLength", 2)
-        .forProperty("age")
-            .addRule("required")
-            .addRule("number")
-        .forProperty("hobbies")
-            .addRulesetForEach(hobbyRuleset)
-        .build();
-
-    return modelRuleset;
-}
-
-/***/ }),
-/* 60 */
+/* 56 */
 /***/ (function(module, exports, __webpack_require__) {
 
 "use strict";
@@ -12781,7 +12716,7 @@ exports.createGroup = createGroup;
 
 
 /***/ }),
-/* 61 */
+/* 57 */
 /***/ (function(module, exports) {
 
 var PropertyResolver = (function () {
@@ -12889,7 +12824,7 @@ exports.PropertyResolver = PropertyResolver;
 
 
 /***/ }),
-/* 62 */
+/* 58 */
 /***/ (function(module, exports, __webpack_require__) {
 
 var event_listener_1 = __webpack_require__(18);
@@ -12947,7 +12882,7 @@ exports.EventHandler = EventHandler;
 
 
 /***/ }),
-/* 63 */
+/* 59 */
 /***/ (function(module, exports, __webpack_require__) {
 
 "use strict";
@@ -12964,7 +12899,7 @@ exports.ValidationError = ValidationError;
 
 
 /***/ }),
-/* 64 */
+/* 60 */
 /***/ (function(module, exports, __webpack_require__) {
 
 "use strict";
@@ -13005,7 +12940,7 @@ exports.AdvancedRegexValidationRule = AdvancedRegexValidationRule;
 
 
 /***/ }),
-/* 65 */
+/* 61 */
 /***/ (function(module, exports, __webpack_require__) {
 
 "use strict";
@@ -13018,7 +12953,7 @@ exports.viewStrategyRegistry.registerStrategy(new inline_strategy_1.InlineStrate
 
 
 /***/ }),
-/* 66 */
+/* 62 */
 /***/ (function(module, exports, __webpack_require__) {
 
 "use strict";
@@ -13047,7 +12982,7 @@ exports.ElementHelper = ElementHelper;
 
 
 /***/ }),
-/* 67 */
+/* 63 */
 /***/ (function(module, exports, __webpack_require__) {
 
 "use strict";
@@ -13062,7 +12997,7 @@ var ValidationState;
 
 
 /***/ }),
-/* 68 */
+/* 64 */
 /***/ (function(module, exports, __webpack_require__) {
 
 "use strict";
@@ -13091,7 +13026,127 @@ exports.ViewSummary = ViewSummary;
 
 
 /***/ }),
+/* 65 */
+/***/ (function(module, __webpack_exports__, __webpack_require__) {
+
+"use strict";
+/* harmony import */ var __WEBPACK_IMPORTED_MODULE_0_vue_dist_vue__ = __webpack_require__(4);
+/* harmony import */ var __WEBPACK_IMPORTED_MODULE_0_vue_dist_vue___default = __webpack_require__.n(__WEBPACK_IMPORTED_MODULE_0_vue_dist_vue__);
+/* harmony import */ var __WEBPACK_IMPORTED_MODULE_1__dist_commonjs_plugin__ = __webpack_require__(5);
+/* harmony import */ var __WEBPACK_IMPORTED_MODULE_1__dist_commonjs_plugin___default = __webpack_require__.n(__WEBPACK_IMPORTED_MODULE_1__dist_commonjs_plugin__);
+/* harmony import */ var __WEBPACK_IMPORTED_MODULE_2__basic_html__ = __webpack_require__(66);
+/* harmony import */ var __WEBPACK_IMPORTED_MODULE_2__basic_html___default = __webpack_require__.n(__WEBPACK_IMPORTED_MODULE_2__basic_html__);
+
+
+
+
+
+function generateRuleset() {
+    return Object(__WEBPACK_IMPORTED_MODULE_1__dist_commonjs_plugin__["createRuleset"])()
+        .forProperty("name")
+            .addRule("required")
+            .addRule("minLength", 2)
+        .build()
+}
+
+__WEBPACK_IMPORTED_MODULE_0_vue_dist_vue___default.a.component('basic', {
+    ruleset: generateRuleset(),
+    data: () => { return { name: "Bob" } },
+    template: __WEBPACK_IMPORTED_MODULE_2__basic_html___default.a
+});
+
+/***/ }),
+/* 66 */
+/***/ (function(module, exports) {
+
+module.exports = "<section>\r\n    <div>\r\n        <label>Name</label>\r\n        <input v-model=\"name\" v-show-error validate-property=\"name\" placeholder=\"Name\" />\r\n    </div>\r\n</section>"
+
+/***/ }),
+/* 67 */
+/***/ (function(module, __webpack_exports__, __webpack_require__) {
+
+"use strict";
+/* harmony import */ var __WEBPACK_IMPORTED_MODULE_0_vue_dist_vue__ = __webpack_require__(4);
+/* harmony import */ var __WEBPACK_IMPORTED_MODULE_0_vue_dist_vue___default = __webpack_require__.n(__WEBPACK_IMPORTED_MODULE_0_vue_dist_vue__);
+/* harmony import */ var __WEBPACK_IMPORTED_MODULE_1__user_data_model__ = __webpack_require__(68);
+/* harmony import */ var __WEBPACK_IMPORTED_MODULE_2__hobby_model__ = __webpack_require__(69);
+/* harmony import */ var __WEBPACK_IMPORTED_MODULE_3__user_data_ruleset__ = __webpack_require__(70);
+/* harmony import */ var __WEBPACK_IMPORTED_MODULE_4__complex_html__ = __webpack_require__(71);
+/* harmony import */ var __WEBPACK_IMPORTED_MODULE_4__complex_html___default = __webpack_require__.n(__WEBPACK_IMPORTED_MODULE_4__complex_html__);
+
+
+
+
+
+
+
+__WEBPACK_IMPORTED_MODULE_0_vue_dist_vue___default.a.component('complex', {
+    ruleset: Object(__WEBPACK_IMPORTED_MODULE_3__user_data_ruleset__["a" /* generateRuleset */])(),
+    data: () => new __WEBPACK_IMPORTED_MODULE_1__user_data_model__["a" /* UserData */]("Bob", 20, [ 
+        new __WEBPACK_IMPORTED_MODULE_2__hobby_model__["a" /* Hobby */]("reading"), new __WEBPACK_IMPORTED_MODULE_2__hobby_model__["a" /* Hobby */]("skateboarding") 
+    ]),
+    template: __WEBPACK_IMPORTED_MODULE_4__complex_html___default.a
+});
+
+/***/ }),
+/* 68 */
+/***/ (function(module, __webpack_exports__, __webpack_require__) {
+
+"use strict";
+/* harmony export (immutable) */ __webpack_exports__["a"] = UserData;
+function UserData(name, age, hobbies)
+{
+    this.name = name;
+    this.age = age;
+    this.hobbies = hobbies
+}
+
+/***/ }),
 /* 69 */
+/***/ (function(module, __webpack_exports__, __webpack_require__) {
+
+"use strict";
+/* harmony export (immutable) */ __webpack_exports__["a"] = Hobby;
+function Hobby(name)
+{
+    this.name = name;
+}
+
+/***/ }),
+/* 70 */
+/***/ (function(module, __webpack_exports__, __webpack_require__) {
+
+"use strict";
+/* harmony export (immutable) */ __webpack_exports__["a"] = generateRuleset;
+/* harmony import */ var __WEBPACK_IMPORTED_MODULE_0__dist_commonjs_plugin__ = __webpack_require__(5);
+/* harmony import */ var __WEBPACK_IMPORTED_MODULE_0__dist_commonjs_plugin___default = __webpack_require__.n(__WEBPACK_IMPORTED_MODULE_0__dist_commonjs_plugin__);
+
+
+function generateRuleset()
+{
+    var hobbyRuleset = Object(__WEBPACK_IMPORTED_MODULE_0__dist_commonjs_plugin__["createRuleset"])()
+        .forProperty("name")
+            .addRule("required")
+            .addRule("minLength", 2)
+            .addRule("maxLength", 20)
+        .build();
+
+    var modelRuleset = Object(__WEBPACK_IMPORTED_MODULE_0__dist_commonjs_plugin__["createRuleset"])()
+        .forProperty("name")
+            .addRule("required")
+            .addRule("minLength", 2)
+        .forProperty("age")
+            .addRule("required")
+            .addRule("number")
+        .forProperty("hobbies")
+            .addRulesetForEach(hobbyRuleset)
+        .build();
+
+    return modelRuleset;
+}
+
+/***/ }),
+/* 71 */
 /***/ (function(module, exports) {
 
 module.exports = "<section>\r\n    <div>\r\n        <label>Name</label>\r\n        <input v-model=\"name\" placeholder=\"Name\" v-show-error validate-property=\"name\" />\r\n    </div>\r\n    <div>\r\n        <label>Age</label>\r\n        <input v-model=\"age\" placeholder=\"Age\" v-show-error validate-property=\"age\" />\r\n    </div>\r\n    <div v-for=\"(hobby, index) in hobbies\">\r\n        <div>\r\n            <label>Hobby</label>\r\n            <input v-model=\"hobby.name\" placeholder=\"Hobby\" v-show-error v-bind:validate-property=\"'hobbies[' + index + '].name'\" />\r\n        </div>\r\n    </div>\r\n</section>"

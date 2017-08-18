@@ -7,9 +7,7 @@ declare module "vue/types/options" {
         ruleset?: Ruleset;
     }
 }
-export declare class TreacherousPlugin {
-    private static ValidationSubKey;
-    install(Vue: any, options: any): void;
-    private mixins;
-    private showError;
-}
+declare const _default: {
+    install: (Vue: any, options: any) => void;
+};
+export default _default;

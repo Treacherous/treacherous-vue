@@ -1,28 +1,18 @@
 var gulp = require('gulp');
 var webpack = require('webpack-stream');
-var examplesDir = "examples";
+var examplesDir = "example";
 
-function buildExample(exampleName) {
-    return gulp.src(`${examplesDir}/${exampleName}/app.js`)
-    .pipe(webpack({
-        module: {
-            rules: [
-                { test: /\.html$/, use: [ "raw-loader" ] }
-            ]
-        },
-        output: {
-            filename: "compiled.js"
-        }
-    }))
-    .pipe(gulp.dest(`${examplesDir}/${exampleName}`));
-}
-
-gulp.task('examples:basic', function() {
-  return buildExample("basic");
+gulp.task('example', function() {
+    return gulp.src(`${examplesDir}/app.js`)
+        .pipe(webpack({
+            module: {
+                rules: [
+                    { test: /\.html$/, use: [ "raw-loader" ] }
+                ]
+            },
+            output: {
+                filename: "compiled.js"
+            }
+        }))
+        .pipe(gulp.dest(`${examplesDir}`));
 });
-
-gulp.task("examples:arrays", function() {
-    return buildExample("arrays");
-});
-
-gulp.task('examples', ["examples:basic", "examples:arrays"]);

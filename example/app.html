@@ -1,0 +1,26 @@
+<html>
+    <head>
+        <title>Basic Example</title>
+        <link rel="stylesheet" type="text/css" href="app.css" />
+    </head>
+    <body>
+        <div id="app">
+            <section>
+                <h2>Basic Usage</h2>
+                <basic id="basic-form" ref="basic"></basic>
+                <button id="basic-submit" @click="validateBasic">Progmatically Validate Example</button>
+                <p id="basic-state">{{basicState ? 'Is Valid' : 'Isnt Valid'}}</p>
+            </section>
+            <section>
+                <h2>Complex Usage</h2>
+                <complex id="complex-form" ref="complex"></complex>
+                <button id="complex-submit" @click="validateComplex">Progmatically Validate Example</button>
+                <p id="complex-state">{{complexState ? 'Is Valid' : 'Isnt Valid'}}</p>
+            </section>
+        </div>
+        
+
+        <script type="text/javascript" src="compiled.js">
+        </script>
+    </body>
+</html>
