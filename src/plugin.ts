@@ -1,6 +1,7 @@
 import {Ruleset, createGroup, IValidationGroup, IReactiveValidationGroup, PropertyStateChangedEvent} from "treacherous";
 import {viewStrategyRegistry, ElementHelper, ValidationState} from "treacherous-view";
 export {createRuleset, ruleRegistry} from "treacherous";
+import {ViewSummary} from "treacherous-view";
 export {viewStrategyRegistry} from "treacherous-view";
 
 import {Vue} from "vue/types/vue";
@@ -11,11 +12,7 @@ declare module "vue/types/options" {
 }
 
 const ValidationSubKey = "validation-subscriptions";
-
-const install = function(Vue: any, options: any) {
-    Vue.mixin(mixins);
-    Vue.directive('show-error', showErrorDirective);
-}
+const SummarySubKey = "summary-subscriptions";
 
 const mixins = {
     created: function () {
@@ -27,6 +24,12 @@ const mixins = {
         let validationGroup = createGroup().asReactiveGroup().build(context, ruleset);
         
         context.validationGroup = validationGroup;
+
+        let metadata: any = {};
+        context._validationMetadata = metadata;
+
+        metadata[ValidationSubKey] = {};        
+        metadata[SummarySubKey] = [];
     },
     beforeDestroy: function() {
         if(!this.$options.ruleset)
@@ -42,6 +45,8 @@ const showErrorDirective = {
         let context = vnode.context;
         let validationGroup = <IReactiveValidationGroup>context.validationGroup;
         if(!validationGroup) { return; }
+
+        let metadata = context._validationMetadata;
 
         let propertyRoute = ElementHelper.getPropertyRouteFrom(element);
         if(!propertyRoute) { return; }
@@ -75,20 +80,86 @@ const showErrorDirective = {
         };
 
         let sub = validationGroup.propertyStateChangedEvent.subscribe(handlePropertyStateChange, propertyPredicate);
-        
-        if(!context[ValidationSubKey])
-        { context[ValidationSubKey] = {}; }
-
-        context[ValidationSubKey][propertyRoute] = sub;
+        metadata[ValidationSubKey][propertyRoute] = sub;
     },
     unbind: function (element: HTMLElement, binding: any, vnode: any) {
         let context = vnode.context;
         let propertyRoute = ElementHelper.getPropertyRouteFrom(element);
         if(!propertyRoute) { return; }
 
-        let outstandingSub = context[ValidationSubKey][propertyRoute];
+        let metadata = context._validationMetadata;
+        let outstandingSub = metadata[ValidationSubKey][propertyRoute];
         if(outstandingSub) { outstandingSub(); }
     }
+}
+
+const summaryDirective = {
+    bind: function (element: HTMLElement, binding: any, vnode: any) {
+        let context = vnode.context;
+        let metadata = context._validationMetadata;
+        console.log("CONTEXT IN SUMMARY");
+        console.log(context);
+        console.log(metadata);
+        let validationGroups: any = null;
+
+        if(binding.value != null)
+        { validationGroups = binding.value; }
+        else
+        { validationGroups = context.validationGroup; }
+            
+        if(!validationGroups) { return; }
+        
+        let isArray = Array.isArray(validationGroups);
+
+        let getDisplayName = (propertyRoute: string) => {
+            if(!isArray)
+            { return (<IValidationGroup>validationGroups).getPropertyDisplayName(propertyRoute); }
+
+            let finalName = propertyRoute;
+            validationGroups.forEach((validationGroup: IValidationGroup) => {
+               let returnedName = validationGroup.getPropertyDisplayName(propertyRoute);
+               if(returnedName != propertyRoute)
+               { finalName = returnedName; }
+            });
+
+            return finalName;
+        };
+
+        let viewOptions = ElementHelper.getOptionsFrom(element) || {};
+        let viewSummary = new ViewSummary();
+        viewSummary.setupContainer(element);
+        
+        var handleStateChange = (eventArgs: PropertyStateChangedEvent) => {
+            var displayName = validationGroups.getPropertyDisplayName(eventArgs.property);
+            if(eventArgs.isValid)
+            { viewSummary.propertyBecomeValid(element, displayName); }
+            else
+            { viewSummary.propertyBecomeInvalid(element, eventArgs.error, displayName); }
+        };
+
+        if(isArray)
+        {
+            validationGroups.forEach((validationGroup: IReactiveValidationGroup) => {
+                let sub = validationGroup.propertyStateChangedEvent.subscribe(handleStateChange);
+                context[SummarySubKey].push(sub);
+            });
+        }
+        else
+        {
+            let sub = validationGroups.propertyStateChangedEvent.subscribe(handleStateChange);
+            context[SummarySubKey].push(sub);
+        }        
+    },
+    unbind: function (element: HTMLElement, binding: any, vnode: any) {
+        let context = vnode.context;
+        context[SummarySubKey].foreach((x: Function) => x());
+    }
+}
+
+const install = function(Vue: any, options: any) {
+    Vue.mixin(mixins);
+    Vue.directive('show-error', showErrorDirective);
+    Vue.directive('validation-summary', summaryDirective);
 }
 
 export default {

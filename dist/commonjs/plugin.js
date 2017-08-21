@@ -6,12 +6,10 @@ var treacherous_2 = require("treacherous");
 exports.createRuleset = treacherous_2.createRuleset;
 exports.ruleRegistry = treacherous_2.ruleRegistry;
 var treacherous_view_2 = require("treacherous-view");
-exports.viewStrategyRegistry = treacherous_view_2.viewStrategyRegistry;
+var treacherous_view_3 = require("treacherous-view");
+exports.viewStrategyRegistry = treacherous_view_3.viewStrategyRegistry;
 var ValidationSubKey = "validation-subscriptions";
-var install = function (Vue, options) {
-    Vue.mixin(mixins);
-    Vue.directive('show-error', showErrorDirective);
-};
+var SummarySubKey = "summary-subscriptions";
 var mixins = {
     created: function () {
         if (!this.$options.ruleset) {
@@ -21,6 +19,10 @@ var mixins = {
         var ruleset = context.$options.ruleset;
         var validationGroup = treacherous_1.createGroup().asReactiveGroup().build(context, ruleset);
         context.validationGroup = validationGroup;
+        var metadata = {};
+        context._validationMetadata = metadata;
+        metadata[ValidationSubKey] = {};
+        metadata[SummarySubKey] = [];
     },
     beforeDestroy: function () {
         if (!this.$options.ruleset) {
@@ -37,6 +39,7 @@ var showErrorDirective = {
         if (!validationGroup) {
             return;
         }
+        var metadata = context._validationMetadata;
         var propertyRoute = treacherous_view_1.ElementHelper.getPropertyRouteFrom(element);
         if (!propertyRoute) {
             return;
@@ -65,10 +68,7 @@ var showErrorDirective = {
             return args.property == propertyRoute;
         };
         var sub = validationGroup.propertyStateChangedEvent.subscribe(handlePropertyStateChange, propertyPredicate);
-        if (!context[ValidationSubKey]) {
-            context[ValidationSubKey] = {};
-        }
-        context[ValidationSubKey][propertyRoute] = sub;
+        metadata[ValidationSubKey][propertyRoute] = sub;
     },
     unbind: function (element, binding, vnode) {
         var context = vnode.context;
@@ -76,11 +76,76 @@ var showErrorDirective = {
         if (!propertyRoute) {
             return;
         }
-        var outstandingSub = context[ValidationSubKey][propertyRoute];
+        var metadata = context._validationMetadata;
+        var outstandingSub = metadata[ValidationSubKey][propertyRoute];
         if (outstandingSub) {
             outstandingSub();
         }
     }
+};
+var summaryDirective = {
+    bind: function (element, binding, vnode) {
+        var context = vnode.context;
+        var metadata = context._validationMetadata;
+        console.log("CONTEXT IN SUMMARY");
+        console.log(context);
+        console.log(metadata);
+        var validationGroups = null;
+        if (binding.value != null) {
+            validationGroups = binding.value;
+        }
+        else {
+            validationGroups = context.validationGroup;
+        }
+        if (!validationGroups) {
+            return;
+        }
+        var isArray = Array.isArray(validationGroups);
+        var getDisplayName = function (propertyRoute) {
+            if (!isArray) {
+                return validationGroups.getPropertyDisplayName(propertyRoute);
+            }
+            var finalName = propertyRoute;
+            validationGroups.forEach(function (validationGroup) {
+                var returnedName = validationGroup.getPropertyDisplayName(propertyRoute);
+                if (returnedName != propertyRoute) {
+                    finalName = returnedName;
+                }
+            });
+            return finalName;
+        };
+        var viewOptions = treacherous_view_1.ElementHelper.getOptionsFrom(element) || {};
+        var viewSummary = new treacherous_view_2.ViewSummary();
+        viewSummary.setupContainer(element);
+        var handleStateChange = function (eventArgs) {
+            var displayName = validationGroups.getPropertyDisplayName(eventArgs.property);
+            if (eventArgs.isValid) {
+                viewSummary.propertyBecomeValid(element, displayName);
+            }
+            else {
+                viewSummary.propertyBecomeInvalid(element, eventArgs.error, displayName);
+            }
+        };
+        if (isArray) {
+            validationGroups.forEach(function (validationGroup) {
+                var sub = validationGroup.propertyStateChangedEvent.subscribe(handleStateChange);
+                context[SummarySubKey].push(sub);
+            });
+        }
+        else {
+            var sub = validationGroups.propertyStateChangedEvent.subscribe(handleStateChange);
+            context[SummarySubKey].push(sub);
+        }
+    },
+    unbind: function (element, binding, vnode) {
+        var context = vnode.context;
+        context[SummarySubKey].foreach(function (x) { return x(); });
+    }
+};
+var install = function (Vue, options) {
+    Vue.mixin(mixins);
+    Vue.directive('show-error', showErrorDirective);
+    Vue.directive('validation-summary', summaryDirective);
 };
 exports.default = {
     install: install

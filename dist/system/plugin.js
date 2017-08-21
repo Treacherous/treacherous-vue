@@ -1,7 +1,7 @@
 System.register(["treacherous", "treacherous-view"], function (exports_1, context_1) {
     "use strict";
     var __moduleName = context_1 && context_1.id;
-    var treacherous_1, treacherous_view_1, ValidationSubKey, install, mixins, showErrorDirective;
+    var treacherous_1, treacherous_view_1, treacherous_view_2, ValidationSubKey, SummarySubKey, mixins, showErrorDirective, summaryDirective, install;
     return {
         setters: [
             function (treacherous_1_1) {
@@ -13,6 +13,7 @@ System.register(["treacherous", "treacherous-view"], function (exports_1, contex
             },
             function (treacherous_view_1_1) {
                 treacherous_view_1 = treacherous_view_1_1;
+                treacherous_view_2 = treacherous_view_1_1;
                 exports_1({
                     "viewStrategyRegistry": treacherous_view_1_1["viewStrategyRegistry"]
                 });
@@ -20,10 +21,7 @@ System.register(["treacherous", "treacherous-view"], function (exports_1, contex
         ],
         execute: function () {
             ValidationSubKey = "validation-subscriptions";
-            install = function (Vue, options) {
-                Vue.mixin(mixins);
-                Vue.directive('show-error', showErrorDirective);
-            };
+            SummarySubKey = "summary-subscriptions";
             mixins = {
                 created: function () {
                     if (!this.$options.ruleset) {
@@ -33,6 +31,10 @@ System.register(["treacherous", "treacherous-view"], function (exports_1, contex
                     var ruleset = context.$options.ruleset;
                     var validationGroup = treacherous_1.createGroup().asReactiveGroup().build(context, ruleset);
                     context.validationGroup = validationGroup;
+                    var metadata = {};
+                    context._validationMetadata = metadata;
+                    metadata[ValidationSubKey] = {};
+                    metadata[SummarySubKey] = [];
                 },
                 beforeDestroy: function () {
                     if (!this.$options.ruleset) {
@@ -49,6 +51,7 @@ System.register(["treacherous", "treacherous-view"], function (exports_1, contex
                     if (!validationGroup) {
                         return;
                     }
+                    var metadata = context._validationMetadata;
                     var propertyRoute = treacherous_view_1.ElementHelper.getPropertyRouteFrom(element);
                     if (!propertyRoute) {
                         return;
@@ -77,10 +80,7 @@ System.register(["treacherous", "treacherous-view"], function (exports_1, contex
                         return args.property == propertyRoute;
                     };
                     var sub = validationGroup.propertyStateChangedEvent.subscribe(handlePropertyStateChange, propertyPredicate);
-                    if (!context[ValidationSubKey]) {
-                        context[ValidationSubKey] = {};
-                    }
-                    context[ValidationSubKey][propertyRoute] = sub;
+                    metadata[ValidationSubKey][propertyRoute] = sub;
                 },
                 unbind: function (element, binding, vnode) {
                     var context = vnode.context;
@@ -88,11 +88,76 @@ System.register(["treacherous", "treacherous-view"], function (exports_1, contex
                     if (!propertyRoute) {
                         return;
                     }
-                    var outstandingSub = context[ValidationSubKey][propertyRoute];
+                    var metadata = context._validationMetadata;
+                    var outstandingSub = metadata[ValidationSubKey][propertyRoute];
                     if (outstandingSub) {
                         outstandingSub();
                     }
                 }
+            };
+            summaryDirective = {
+                bind: function (element, binding, vnode) {
+                    var context = vnode.context;
+                    var metadata = context._validationMetadata;
+                    console.log("CONTEXT IN SUMMARY");
+                    console.log(context);
+                    console.log(metadata);
+                    var validationGroups = null;
+                    if (binding.value != null) {
+                        validationGroups = binding.value;
+                    }
+                    else {
+                        validationGroups = context.validationGroup;
+                    }
+                    if (!validationGroups) {
+                        return;
+                    }
+                    var isArray = Array.isArray(validationGroups);
+                    var getDisplayName = function (propertyRoute) {
+                        if (!isArray) {
+                            return validationGroups.getPropertyDisplayName(propertyRoute);
+                        }
+                        var finalName = propertyRoute;
+                        validationGroups.forEach(function (validationGroup) {
+                            var returnedName = validationGroup.getPropertyDisplayName(propertyRoute);
+                            if (returnedName != propertyRoute) {
+                                finalName = returnedName;
+                            }
+                        });
+                        return finalName;
+                    };
+                    var viewOptions = treacherous_view_1.ElementHelper.getOptionsFrom(element) || {};
+                    var viewSummary = new treacherous_view_2.ViewSummary();
+                    viewSummary.setupContainer(element);
+                    var handleStateChange = function (eventArgs) {
+                        var displayName = validationGroups.getPropertyDisplayName(eventArgs.property);
+                        if (eventArgs.isValid) {
+                            viewSummary.propertyBecomeValid(element, displayName);
+                        }
+                        else {
+                            viewSummary.propertyBecomeInvalid(element, eventArgs.error, displayName);
+                        }
+                    };
+                    if (isArray) {
+                        validationGroups.forEach(function (validationGroup) {
+                            var sub = validationGroup.propertyStateChangedEvent.subscribe(handleStateChange);
+                            context[SummarySubKey].push(sub);
+                        });
+                    }
+                    else {
+                        var sub = validationGroups.propertyStateChangedEvent.subscribe(handleStateChange);
+                        context[SummarySubKey].push(sub);
+                    }
+                },
+                unbind: function (element, binding, vnode) {
+                    var context = vnode.context;
+                    context[SummarySubKey].foreach(function (x) { return x(); });
+                }
+            };
+            install = function (Vue, options) {
+                Vue.mixin(mixins);
+                Vue.directive('show-error', showErrorDirective);
+                Vue.directive('validation-summary', summaryDirective);
             };
             exports_1("default", {
                 install: install

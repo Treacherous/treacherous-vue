@@ -1,26 +1,40 @@
 <html>
     <head>
-        <title>Basic Example</title>
+        <title>Treacherous Vue Examples</title>        
+        <link rel="stylesheet" type="text/css" href="https://cdnjs.cloudflare.com/ajax/libs/skeleton/2.0.4/skeleton.min.css" />
         <link rel="stylesheet" type="text/css" href="app.css" />
     </head>
     <body>
-        <div id="app">
-            <section>
-                <h2>Basic Usage</h2>
+        <div id="app" class="container">
+            <fieldset>
+                <h3>Basic Usage</h3>
+                <p>
+                    This shows the most basic example where you have a single component which validates a single field,
+                    there is also a button to manually trigger progmatic validation, which covers most basic use cases.
+                </p>
                 <basic id="basic-form" ref="basic"></basic>
-                <button id="basic-submit" @click="validateBasic">Progmatically Validate Example</button>
-                <p id="basic-state">{{basicState ? 'Is Valid' : 'Isnt Valid'}}</p>
-            </section>
-            <section>
-                <h2>Complex Usage</h2>
-                <complex id="complex-form" ref="complex"></complex>
-                <button id="complex-submit" @click="validateComplex">Progmatically Validate Example</button>
-                <p id="complex-state">{{complexState ? 'Is Valid' : 'Isnt Valid'}}</p>
-            </section>
-        </div>
-        
+                <button id="basic-submit" v-bind:class="{ valid: basicState, invalid: !basicState }" @click="validateBasic">Progmatically Validate - {{basicState ? 'Is' : 'Isnt'}} Valid</button>
+            </fieldset>
 
-        <script type="text/javascript" src="compiled.js">
-        </script>
+            <fieldset>
+                <h3>More Complex Usage</h3>
+                <p>
+                    This shows how to use complex models which may have nested properties or arrays,
+                    there is also a button to manually trigger progmatic validation.
+                </p>
+                <complex id="complex-form" ref="complex"></complex>
+                <button id="complex-submit" v-bind:class="{ valid: complexState, invalid: !complexState }" @click="validateComplex">Progmatically Validate - {{complexState ? 'Is' : 'Isnt'}} Valid</button>
+            </fieldset>
+
+            <fieldset>
+                <h3>Validation Summaries</h3>
+                <p>In some cases you will have multiple components on the page which have their own validation concerns, but want to display all the validation errors as a singular summary to the user.</p>
+                <p>Because the validation groups come from refs, they are not available initially available until the parent has been mounted. This is why we have the <code>v-if</code> here to stop the 
+                    directive running until the validation groups have been setup.</p>
+                <div id="complex-state-summary" v-if="validationSummaryGroups != null" v-validation-summary="validationSummaryGroups"></div>
+            </fieldset>
+        </div>
+
+        <script type="text/javascript" src="compiled.js"></script>
     </body>
 </html>

@@ -10486,18 +10486,16 @@ return Vue$3;
 "use strict";
 
 Object.defineProperty(exports, "__esModule", { value: true });
-var treacherous_1 = __webpack_require__(10);
-var treacherous_view_1 = __webpack_require__(48);
-var treacherous_2 = __webpack_require__(10);
+var treacherous_1 = __webpack_require__(11);
+var treacherous_view_1 = __webpack_require__(9);
+var treacherous_2 = __webpack_require__(11);
 exports.createRuleset = treacherous_2.createRuleset;
 exports.ruleRegistry = treacherous_2.ruleRegistry;
-var treacherous_view_2 = __webpack_require__(48);
-exports.viewStrategyRegistry = treacherous_view_2.viewStrategyRegistry;
+var treacherous_view_2 = __webpack_require__(9);
+var treacherous_view_3 = __webpack_require__(9);
+exports.viewStrategyRegistry = treacherous_view_3.viewStrategyRegistry;
 var ValidationSubKey = "validation-subscriptions";
-var install = function (Vue, options) {
-    Vue.mixin(mixins);
-    Vue.directive('show-error', showErrorDirective);
-};
+var SummarySubKey = "summary-subscriptions";
 var mixins = {
     created: function () {
         if (!this.$options.ruleset) {
@@ -10507,6 +10505,10 @@ var mixins = {
         var ruleset = context.$options.ruleset;
         var validationGroup = treacherous_1.createGroup().asReactiveGroup().build(context, ruleset);
         context.validationGroup = validationGroup;
+        var metadata = {};
+        context._validationMetadata = metadata;
+        metadata[ValidationSubKey] = {};
+        metadata[SummarySubKey] = [];
     },
     beforeDestroy: function () {
         if (!this.$options.ruleset) {
@@ -10523,6 +10525,7 @@ var showErrorDirective = {
         if (!validationGroup) {
             return;
         }
+        var metadata = context._validationMetadata;
         var propertyRoute = treacherous_view_1.ElementHelper.getPropertyRouteFrom(element);
         if (!propertyRoute) {
             return;
@@ -10551,10 +10554,7 @@ var showErrorDirective = {
             return args.property == propertyRoute;
         };
         var sub = validationGroup.propertyStateChangedEvent.subscribe(handlePropertyStateChange, propertyPredicate);
-        if (!context[ValidationSubKey]) {
-            context[ValidationSubKey] = {};
-        }
-        context[ValidationSubKey][propertyRoute] = sub;
+        metadata[ValidationSubKey][propertyRoute] = sub;
     },
     unbind: function (element, binding, vnode) {
         var context = vnode.context;
@@ -10562,11 +10562,76 @@ var showErrorDirective = {
         if (!propertyRoute) {
             return;
         }
-        var outstandingSub = context[ValidationSubKey][propertyRoute];
+        var metadata = context._validationMetadata;
+        var outstandingSub = metadata[ValidationSubKey][propertyRoute];
         if (outstandingSub) {
             outstandingSub();
         }
     }
+};
+var summaryDirective = {
+    bind: function (element, binding, vnode) {
+        var context = vnode.context;
+        var metadata = context._validationMetadata;
+        console.log("CONTEXT IN SUMMARY");
+        console.log(context);
+        console.log(metadata);
+        var validationGroups = null;
+        if (binding.value != null) {
+            validationGroups = binding.value;
+        }
+        else {
+            validationGroups = context.validationGroup;
+        }
+        if (!validationGroups) {
+            return;
+        }
+        var isArray = Array.isArray(validationGroups);
+        var getDisplayName = function (propertyRoute) {
+            if (!isArray) {
+                return validationGroups.getPropertyDisplayName(propertyRoute);
+            }
+            var finalName = propertyRoute;
+            validationGroups.forEach(function (validationGroup) {
+                var returnedName = validationGroup.getPropertyDisplayName(propertyRoute);
+                if (returnedName != propertyRoute) {
+                    finalName = returnedName;
+                }
+            });
+            return finalName;
+        };
+        var viewOptions = treacherous_view_1.ElementHelper.getOptionsFrom(element) || {};
+        var viewSummary = new treacherous_view_2.ViewSummary();
+        viewSummary.setupContainer(element);
+        var handleStateChange = function (eventArgs) {
+            var displayName = validationGroups.getPropertyDisplayName(eventArgs.property);
+            if (eventArgs.isValid) {
+                viewSummary.propertyBecomeValid(element, displayName);
+            }
+            else {
+                viewSummary.propertyBecomeInvalid(element, eventArgs.error, displayName);
+            }
+        };
+        if (isArray) {
+            validationGroups.forEach(function (validationGroup) {
+                var sub = validationGroup.propertyStateChangedEvent.subscribe(handleStateChange);
+                context[SummarySubKey].push(sub);
+            });
+        }
+        else {
+            var sub = validationGroups.propertyStateChangedEvent.subscribe(handleStateChange);
+            context[SummarySubKey].push(sub);
+        }
+    },
+    unbind: function (element, binding, vnode) {
+        var context = vnode.context;
+        context[SummarySubKey].foreach(function (x) { return x(); });
+    }
+};
+var install = function (Vue, options) {
+    Vue.mixin(mixins);
+    Vue.directive('show-error', showErrorDirective);
+    Vue.directive('validation-summary', summaryDirective);
 };
 exports.default = {
     install: install
@@ -10591,10 +10656,10 @@ Object.defineProperty(exports, "__esModule", { value: true });
 var tslib_1 = __webpack_require__(0);
 var rule_resolver_1 = __webpack_require__(2);
 var type_helper_1 = __webpack_require__(1);
-var promise_counter_1 = __webpack_require__(14);
-var property_state_changed_event_1 = __webpack_require__(15);
-var model_state_changed_event_1 = __webpack_require__(16);
-var event_js_1 = __webpack_require__(17);
+var promise_counter_1 = __webpack_require__(15);
+var property_state_changed_event_1 = __webpack_require__(16);
+var model_state_changed_event_1 = __webpack_require__(17);
+var event_js_1 = __webpack_require__(18);
 // TODO: This class could be simplified
 var ValidationGroup = (function () {
     function ValidationGroup(fieldErrorProcessor, ruleResolver, modelResolverFactory, model, ruleset) {
@@ -10860,7 +10925,7 @@ exports.ValidationGroup = ValidationGroup;
 "use strict";
 
 Object.defineProperty(exports, "__esModule", { value: true });
-var model_resolver_1 = __webpack_require__(25);
+var model_resolver_1 = __webpack_require__(26);
 var property_resolver_1 = __webpack_require__(6);
 var ModelResolverFactory = (function () {
     function ModelResolverFactory(propertyResolver) {
@@ -10878,6 +10943,28 @@ exports.ModelResolverFactory = ModelResolverFactory;
 
 /***/ }),
 /* 9 */
+/***/ (function(module, exports, __webpack_require__) {
+
+"use strict";
+
+function __export(m) {
+    for (var p in m) if (!exports.hasOwnProperty(p)) exports[p] = m[p];
+}
+Object.defineProperty(exports, "__esModule", { value: true });
+__export(__webpack_require__(61));
+__export(__webpack_require__(10));
+__export(__webpack_require__(62));
+__export(__webpack_require__(52));
+__export(__webpack_require__(49));
+__export(__webpack_require__(51));
+__export(__webpack_require__(50));
+__export(__webpack_require__(63));
+__export(__webpack_require__(53));
+__export(__webpack_require__(64));
+
+
+/***/ }),
+/* 10 */
 /***/ (function(module, exports, __webpack_require__) {
 
 "use strict";
@@ -10915,59 +11002,6 @@ exports.ClassHelper = ClassHelper;
 
 
 /***/ }),
-/* 10 */
-/***/ (function(module, exports, __webpack_require__) {
-
-"use strict";
-
-Object.defineProperty(exports, "__esModule", { value: true });
-var tslib_1 = __webpack_require__(0);
-tslib_1.__exportStar(__webpack_require__(56), exports);
-tslib_1.__exportStar(__webpack_require__(26), exports);
-tslib_1.__exportStar(__webpack_require__(19), exports);
-tslib_1.__exportStar(__webpack_require__(43), exports);
-tslib_1.__exportStar(__webpack_require__(13), exports);
-tslib_1.__exportStar(__webpack_require__(8), exports);
-tslib_1.__exportStar(__webpack_require__(21), exports);
-tslib_1.__exportStar(__webpack_require__(16), exports);
-tslib_1.__exportStar(__webpack_require__(24), exports);
-tslib_1.__exportStar(__webpack_require__(15), exports);
-tslib_1.__exportStar(__webpack_require__(3), exports);
-tslib_1.__exportStar(__webpack_require__(1), exports);
-tslib_1.__exportStar(__webpack_require__(11), exports);
-tslib_1.__exportStar(__webpack_require__(12), exports);
-tslib_1.__exportStar(__webpack_require__(59), exports);
-tslib_1.__exportStar(__webpack_require__(25), exports);
-tslib_1.__exportStar(__webpack_require__(14), exports);
-tslib_1.__exportStar(__webpack_require__(46), exports);
-tslib_1.__exportStar(__webpack_require__(45), exports);
-tslib_1.__exportStar(__webpack_require__(2), exports);
-tslib_1.__exportStar(__webpack_require__(44), exports);
-tslib_1.__exportStar(__webpack_require__(60), exports);
-tslib_1.__exportStar(__webpack_require__(28), exports);
-tslib_1.__exportStar(__webpack_require__(29), exports);
-tslib_1.__exportStar(__webpack_require__(30), exports);
-tslib_1.__exportStar(__webpack_require__(31), exports);
-tslib_1.__exportStar(__webpack_require__(32), exports);
-tslib_1.__exportStar(__webpack_require__(42), exports);
-tslib_1.__exportStar(__webpack_require__(33), exports);
-tslib_1.__exportStar(__webpack_require__(34), exports);
-tslib_1.__exportStar(__webpack_require__(35), exports);
-tslib_1.__exportStar(__webpack_require__(36), exports);
-tslib_1.__exportStar(__webpack_require__(37), exports);
-tslib_1.__exportStar(__webpack_require__(38), exports);
-tslib_1.__exportStar(__webpack_require__(39), exports);
-tslib_1.__exportStar(__webpack_require__(40), exports);
-tslib_1.__exportStar(__webpack_require__(27), exports);
-tslib_1.__exportStar(__webpack_require__(41), exports);
-tslib_1.__exportStar(__webpack_require__(22), exports);
-tslib_1.__exportStar(__webpack_require__(23), exports);
-tslib_1.__exportStar(__webpack_require__(20), exports);
-tslib_1.__exportStar(__webpack_require__(7), exports);
-tslib_1.__exportStar(__webpack_require__(47), exports);
-
-
-/***/ }),
 /* 11 */
 /***/ (function(module, exports, __webpack_require__) {
 
@@ -10975,7 +11009,60 @@ tslib_1.__exportStar(__webpack_require__(47), exports);
 
 Object.defineProperty(exports, "__esModule", { value: true });
 var tslib_1 = __webpack_require__(0);
-var field_has_error_1 = __webpack_require__(12);
+tslib_1.__exportStar(__webpack_require__(56), exports);
+tslib_1.__exportStar(__webpack_require__(27), exports);
+tslib_1.__exportStar(__webpack_require__(20), exports);
+tslib_1.__exportStar(__webpack_require__(44), exports);
+tslib_1.__exportStar(__webpack_require__(14), exports);
+tslib_1.__exportStar(__webpack_require__(8), exports);
+tslib_1.__exportStar(__webpack_require__(22), exports);
+tslib_1.__exportStar(__webpack_require__(17), exports);
+tslib_1.__exportStar(__webpack_require__(25), exports);
+tslib_1.__exportStar(__webpack_require__(16), exports);
+tslib_1.__exportStar(__webpack_require__(3), exports);
+tslib_1.__exportStar(__webpack_require__(1), exports);
+tslib_1.__exportStar(__webpack_require__(12), exports);
+tslib_1.__exportStar(__webpack_require__(13), exports);
+tslib_1.__exportStar(__webpack_require__(59), exports);
+tslib_1.__exportStar(__webpack_require__(26), exports);
+tslib_1.__exportStar(__webpack_require__(15), exports);
+tslib_1.__exportStar(__webpack_require__(47), exports);
+tslib_1.__exportStar(__webpack_require__(46), exports);
+tslib_1.__exportStar(__webpack_require__(2), exports);
+tslib_1.__exportStar(__webpack_require__(45), exports);
+tslib_1.__exportStar(__webpack_require__(60), exports);
+tslib_1.__exportStar(__webpack_require__(29), exports);
+tslib_1.__exportStar(__webpack_require__(30), exports);
+tslib_1.__exportStar(__webpack_require__(31), exports);
+tslib_1.__exportStar(__webpack_require__(32), exports);
+tslib_1.__exportStar(__webpack_require__(33), exports);
+tslib_1.__exportStar(__webpack_require__(43), exports);
+tslib_1.__exportStar(__webpack_require__(34), exports);
+tslib_1.__exportStar(__webpack_require__(35), exports);
+tslib_1.__exportStar(__webpack_require__(36), exports);
+tslib_1.__exportStar(__webpack_require__(37), exports);
+tslib_1.__exportStar(__webpack_require__(38), exports);
+tslib_1.__exportStar(__webpack_require__(39), exports);
+tslib_1.__exportStar(__webpack_require__(40), exports);
+tslib_1.__exportStar(__webpack_require__(41), exports);
+tslib_1.__exportStar(__webpack_require__(28), exports);
+tslib_1.__exportStar(__webpack_require__(42), exports);
+tslib_1.__exportStar(__webpack_require__(23), exports);
+tslib_1.__exportStar(__webpack_require__(24), exports);
+tslib_1.__exportStar(__webpack_require__(21), exports);
+tslib_1.__exportStar(__webpack_require__(7), exports);
+tslib_1.__exportStar(__webpack_require__(48), exports);
+
+
+/***/ }),
+/* 12 */
+/***/ (function(module, exports, __webpack_require__) {
+
+"use strict";
+
+Object.defineProperty(exports, "__esModule", { value: true });
+var tslib_1 = __webpack_require__(0);
+var field_has_error_1 = __webpack_require__(13);
 var FieldErrorProcessor = (function () {
     function FieldErrorProcessor(ruleRegistry) {
         this.ruleRegistry = ruleRegistry;
@@ -11050,7 +11137,7 @@ exports.FieldErrorProcessor = FieldErrorProcessor;
 
 
 /***/ }),
-/* 12 */
+/* 13 */
 /***/ (function(module, exports, __webpack_require__) {
 
 "use strict";
@@ -11070,14 +11157,14 @@ exports.FieldHasError = FieldHasError;
 
 
 /***/ }),
-/* 13 */
+/* 14 */
 /***/ (function(module, exports, __webpack_require__) {
 
 "use strict";
 
 Object.defineProperty(exports, "__esModule", { value: true });
 var validation_group_1 = __webpack_require__(7);
-var reactive_validation_group_builder_1 = __webpack_require__(19);
+var reactive_validation_group_builder_1 = __webpack_require__(20);
 var model_resolver_factory_1 = __webpack_require__(8);
 var ValidationGroupBuilder = (function () {
     function ValidationGroupBuilder(fieldErrorProcessor, ruleResolver) {
@@ -11117,7 +11204,7 @@ exports.ValidationGroupBuilder = ValidationGroupBuilder;
 
 
 /***/ }),
-/* 14 */
+/* 15 */
 /***/ (function(module, exports, __webpack_require__) {
 
 "use strict";
@@ -11179,7 +11266,7 @@ exports.PromiseCounter = PromiseCounter;
 
 
 /***/ }),
-/* 15 */
+/* 16 */
 /***/ (function(module, exports, __webpack_require__) {
 
 "use strict";
@@ -11197,7 +11284,7 @@ exports.PropertyStateChangedEvent = PropertyStateChangedEvent;
 
 
 /***/ }),
-/* 16 */
+/* 17 */
 /***/ (function(module, exports, __webpack_require__) {
 
 "use strict";
@@ -11213,7 +11300,7 @@ exports.ModelStateChangedEvent = ModelStateChangedEvent;
 
 
 /***/ }),
-/* 17 */
+/* 18 */
 /***/ (function(module, exports, __webpack_require__) {
 
 /* This is an auto-generated file by gulp-es6-exporter */
@@ -11221,11 +11308,11 @@ function __export(m) {
     for (var p in m) if (!exports.hasOwnProperty(p)) exports[p] = m[p];
 }
 __export(__webpack_require__(58));
-__export(__webpack_require__(18));
+__export(__webpack_require__(19));
 
 
 /***/ }),
-/* 18 */
+/* 19 */
 /***/ (function(module, exports) {
 
 var EventListener = (function () {
@@ -11239,14 +11326,14 @@ exports.EventListener = EventListener;
 
 
 /***/ }),
-/* 19 */
+/* 20 */
 /***/ (function(module, exports, __webpack_require__) {
 
 "use strict";
 
 Object.defineProperty(exports, "__esModule", { value: true });
-var reactive_validation_group_1 = __webpack_require__(20);
-var model_watcher_factory_1 = __webpack_require__(21);
+var reactive_validation_group_1 = __webpack_require__(21);
+var model_watcher_factory_1 = __webpack_require__(22);
 var model_resolver_factory_1 = __webpack_require__(8);
 var ReactiveValidationGroupBuilder = (function () {
     function ReactiveValidationGroupBuilder(fieldErrorProcessor, ruleResolver) {
@@ -11290,7 +11377,7 @@ exports.ReactiveValidationGroupBuilder = ReactiveValidationGroupBuilder;
 
 
 /***/ }),
-/* 20 */
+/* 21 */
 /***/ (function(module, exports, __webpack_require__) {
 
 "use strict";
@@ -11325,13 +11412,13 @@ exports.ReactiveValidationGroup = ReactiveValidationGroup;
 
 
 /***/ }),
-/* 21 */
+/* 22 */
 /***/ (function(module, exports, __webpack_require__) {
 
 "use strict";
 
 Object.defineProperty(exports, "__esModule", { value: true });
-var model_watcher_1 = __webpack_require__(22);
+var model_watcher_1 = __webpack_require__(23);
 var ModelWatcherFactory = (function () {
     function ModelWatcherFactory() {
         this.createModelWatcher = function () {
@@ -11344,17 +11431,17 @@ exports.ModelWatcherFactory = ModelWatcherFactory;
 
 
 /***/ }),
-/* 22 */
+/* 23 */
 /***/ (function(module, exports, __webpack_require__) {
 
 "use strict";
 
 Object.defineProperty(exports, "__esModule", { value: true });
 var property_resolver_1 = __webpack_require__(6);
-var event_js_1 = __webpack_require__(17);
+var event_js_1 = __webpack_require__(18);
 var type_helper_1 = __webpack_require__(1);
-var property_watcher_1 = __webpack_require__(23);
-var property_changed_event_1 = __webpack_require__(24);
+var property_watcher_1 = __webpack_require__(24);
+var property_changed_event_1 = __webpack_require__(25);
 var ModelWatcher = (function () {
     function ModelWatcher(propertyResolver) {
         if (propertyResolver === void 0) { propertyResolver = new property_resolver_1.PropertyResolver(); }
@@ -11536,7 +11623,7 @@ exports.ModelWatcher = ModelWatcher;
 
 
 /***/ }),
-/* 23 */
+/* 24 */
 /***/ (function(module, exports, __webpack_require__) {
 
 "use strict";
@@ -11553,7 +11640,7 @@ exports.PropertyWatcher = PropertyWatcher;
 
 
 /***/ }),
-/* 24 */
+/* 25 */
 /***/ (function(module, exports, __webpack_require__) {
 
 "use strict";
@@ -11571,7 +11658,7 @@ exports.PropertyChangedEvent = PropertyChangedEvent;
 
 
 /***/ }),
-/* 25 */
+/* 26 */
 /***/ (function(module, exports, __webpack_require__) {
 
 "use strict";
@@ -11592,28 +11679,28 @@ exports.ModelResolver = ModelResolver;
 
 
 /***/ }),
-/* 26 */
+/* 27 */
 /***/ (function(module, exports, __webpack_require__) {
 
 "use strict";
 
 Object.defineProperty(exports, "__esModule", { value: true });
-var rule_registry_1 = __webpack_require__(27);
-var date_validation_rule_1 = __webpack_require__(28);
-var decimal_validation_rule_1 = __webpack_require__(29);
-var email_validation_rule_1 = __webpack_require__(30);
-var equal_validation_rule_1 = __webpack_require__(31);
-var iso_date_validation_rule_1 = __webpack_require__(32);
-var max_length_validation_rule_1 = __webpack_require__(33);
-var max_value_validation_rule_1 = __webpack_require__(34);
-var min_length_validation_rule_1 = __webpack_require__(35);
-var min_value_validation_rule_1 = __webpack_require__(36);
-var not_equal_validation_rule_1 = __webpack_require__(37);
-var number_validation_rule_1 = __webpack_require__(38);
-var regex_validation_rule_1 = __webpack_require__(39);
-var required_validation_rule_1 = __webpack_require__(40);
-var step_validation_rule_1 = __webpack_require__(41);
-var matches_validation_rule_1 = __webpack_require__(42);
+var rule_registry_1 = __webpack_require__(28);
+var date_validation_rule_1 = __webpack_require__(29);
+var decimal_validation_rule_1 = __webpack_require__(30);
+var email_validation_rule_1 = __webpack_require__(31);
+var equal_validation_rule_1 = __webpack_require__(32);
+var iso_date_validation_rule_1 = __webpack_require__(33);
+var max_length_validation_rule_1 = __webpack_require__(34);
+var max_value_validation_rule_1 = __webpack_require__(35);
+var min_length_validation_rule_1 = __webpack_require__(36);
+var min_value_validation_rule_1 = __webpack_require__(37);
+var not_equal_validation_rule_1 = __webpack_require__(38);
+var number_validation_rule_1 = __webpack_require__(39);
+var regex_validation_rule_1 = __webpack_require__(40);
+var required_validation_rule_1 = __webpack_require__(41);
+var step_validation_rule_1 = __webpack_require__(42);
+var matches_validation_rule_1 = __webpack_require__(43);
 if (!exports.ruleRegistry) {
     exports.ruleRegistry = new rule_registry_1.RuleRegistry();
     exports.ruleRegistry.registerRule(new date_validation_rule_1.DateValidationRule());
@@ -11635,7 +11722,7 @@ if (!exports.ruleRegistry) {
 
 
 /***/ }),
-/* 27 */
+/* 28 */
 /***/ (function(module, exports, __webpack_require__) {
 
 "use strict";
@@ -11664,7 +11751,7 @@ exports.RuleRegistry = RuleRegistry;
 
 
 /***/ }),
-/* 28 */
+/* 29 */
 /***/ (function(module, exports, __webpack_require__) {
 
 "use strict";
@@ -11698,7 +11785,7 @@ exports.DateValidationRule = DateValidationRule;
 
 
 /***/ }),
-/* 29 */
+/* 30 */
 /***/ (function(module, exports, __webpack_require__) {
 
 "use strict";
@@ -11732,7 +11819,7 @@ exports.DecimalValidationRule = DecimalValidationRule;
 
 
 /***/ }),
-/* 30 */
+/* 31 */
 /***/ (function(module, exports, __webpack_require__) {
 
 "use strict";
@@ -11766,7 +11853,7 @@ exports.EmailValidationRule = EmailValidationRule;
 
 
 /***/ }),
-/* 31 */
+/* 32 */
 /***/ (function(module, exports, __webpack_require__) {
 
 "use strict";
@@ -11812,7 +11899,7 @@ exports.EqualValidationRule = EqualValidationRule;
 
 
 /***/ }),
-/* 32 */
+/* 33 */
 /***/ (function(module, exports, __webpack_require__) {
 
 "use strict";
@@ -11846,7 +11933,7 @@ exports.ISODateValidationRule = ISODateValidationRule;
 
 
 /***/ }),
-/* 33 */
+/* 34 */
 /***/ (function(module, exports, __webpack_require__) {
 
 "use strict";
@@ -11879,7 +11966,7 @@ exports.MaxLengthValidationRule = MaxLengthValidationRule;
 
 
 /***/ }),
-/* 34 */
+/* 35 */
 /***/ (function(module, exports, __webpack_require__) {
 
 "use strict";
@@ -11912,7 +11999,7 @@ exports.MaxValueValidationRule = MaxValueValidationRule;
 
 
 /***/ }),
-/* 35 */
+/* 36 */
 /***/ (function(module, exports, __webpack_require__) {
 
 "use strict";
@@ -11945,7 +12032,7 @@ exports.MinLengthValidationRule = MinLengthValidationRule;
 
 
 /***/ }),
-/* 36 */
+/* 37 */
 /***/ (function(module, exports, __webpack_require__) {
 
 "use strict";
@@ -11978,7 +12065,7 @@ exports.MinValueValidationRule = MinValueValidationRule;
 
 
 /***/ }),
-/* 37 */
+/* 38 */
 /***/ (function(module, exports, __webpack_require__) {
 
 "use strict";
@@ -12024,7 +12111,7 @@ exports.NotEqualValidationRule = NotEqualValidationRule;
 
 
 /***/ }),
-/* 38 */
+/* 39 */
 /***/ (function(module, exports, __webpack_require__) {
 
 "use strict";
@@ -12058,7 +12145,7 @@ exports.NumberValidationRule = NumberValidationRule;
 
 
 /***/ }),
-/* 39 */
+/* 40 */
 /***/ (function(module, exports, __webpack_require__) {
 
 "use strict";
@@ -12090,7 +12177,7 @@ exports.RegexValidationRule = RegexValidationRule;
 
 
 /***/ }),
-/* 40 */
+/* 41 */
 /***/ (function(module, exports, __webpack_require__) {
 
 "use strict";
@@ -12135,7 +12222,7 @@ exports.RequiredValidationRule = RequiredValidationRule;
 
 
 /***/ }),
-/* 41 */
+/* 42 */
 /***/ (function(module, exports, __webpack_require__) {
 
 "use strict";
@@ -12169,7 +12256,7 @@ exports.StepValidationRule = StepValidationRule;
 
 
 /***/ }),
-/* 42 */
+/* 43 */
 /***/ (function(module, exports, __webpack_require__) {
 
 "use strict";
@@ -12215,17 +12302,17 @@ exports.MatchesValidationRule = MatchesValidationRule;
 
 
 /***/ }),
-/* 43 */
+/* 44 */
 /***/ (function(module, exports, __webpack_require__) {
 
 "use strict";
 
 Object.defineProperty(exports, "__esModule", { value: true });
-var ruleset_1 = __webpack_require__(44);
-var rule_link_1 = __webpack_require__(45);
-var for_each_rule_1 = __webpack_require__(46);
+var ruleset_1 = __webpack_require__(45);
+var rule_link_1 = __webpack_require__(46);
+var for_each_rule_1 = __webpack_require__(47);
 var type_helper_1 = __webpack_require__(1);
-var dynamic_composite_validation_rule_1 = __webpack_require__(47);
+var dynamic_composite_validation_rule_1 = __webpack_require__(48);
 var RulesetBuilder = (function () {
     function RulesetBuilder(ruleRegistry) {
         var _this = this;
@@ -12323,7 +12410,7 @@ exports.RulesetBuilder = RulesetBuilder;
 
 
 /***/ }),
-/* 44 */
+/* 45 */
 /***/ (function(module, exports, __webpack_require__) {
 
 "use strict";
@@ -12360,7 +12447,7 @@ exports.Ruleset = Ruleset;
 
 
 /***/ }),
-/* 45 */
+/* 46 */
 /***/ (function(module, exports, __webpack_require__) {
 
 "use strict";
@@ -12378,7 +12465,7 @@ exports.RuleLink = RuleLink;
 
 
 /***/ }),
-/* 46 */
+/* 47 */
 /***/ (function(module, exports, __webpack_require__) {
 
 "use strict";
@@ -12395,7 +12482,7 @@ exports.ForEachRule = ForEachRule;
 
 
 /***/ }),
-/* 47 */
+/* 48 */
 /***/ (function(module, exports, __webpack_require__) {
 
 "use strict";
@@ -12418,28 +12505,6 @@ var DynamicCompositeValidationRule = (function () {
     return DynamicCompositeValidationRule;
 }());
 exports.DynamicCompositeValidationRule = DynamicCompositeValidationRule;
-
-
-/***/ }),
-/* 48 */
-/***/ (function(module, exports, __webpack_require__) {
-
-"use strict";
-
-function __export(m) {
-    for (var p in m) if (!exports.hasOwnProperty(p)) exports[p] = m[p];
-}
-Object.defineProperty(exports, "__esModule", { value: true });
-__export(__webpack_require__(61));
-__export(__webpack_require__(9));
-__export(__webpack_require__(62));
-__export(__webpack_require__(52));
-__export(__webpack_require__(49));
-__export(__webpack_require__(51));
-__export(__webpack_require__(50));
-__export(__webpack_require__(63));
-__export(__webpack_require__(53));
-__export(__webpack_require__(64));
 
 
 /***/ }),
@@ -12470,7 +12535,7 @@ exports.ViewStrategyRegistry = ViewStrategyRegistry;
 "use strict";
 
 Object.defineProperty(exports, "__esModule", { value: true });
-var class_helper_1 = __webpack_require__(9);
+var class_helper_1 = __webpack_require__(10);
 var inline_handler_1 = __webpack_require__(51);
 var InlineStrategy = (function () {
     function InlineStrategy(inlineHandler) {
@@ -12577,7 +12642,7 @@ exports.JsLiteralHelper = JsLiteralHelper;
 "use strict";
 
 Object.defineProperty(exports, "__esModule", { value: true });
-var class_helper_1 = __webpack_require__(9);
+var class_helper_1 = __webpack_require__(10);
 var SummaryHandler = (function () {
     function SummaryHandler() {
         var _this = this;
@@ -12634,32 +12699,62 @@ Object.defineProperty(__webpack_exports__, "__esModule", { value: true });
 
 
 
+// Add our plugin
 __WEBPACK_IMPORTED_MODULE_0_vue_dist_vue___default.a.use(__WEBPACK_IMPORTED_MODULE_1__dist_commonjs_plugin___default.a);
 
+// Setup basic data placeholders that hook into the validation groups
+let appData = {
+    basicState: true,
+    complexState: true,
+    validationSummaryGroups: null
+};
+
+// Explicitly check to see if the component is valid
+let validateBasicComponent = function() { 
+    let context = this;
+    let basicValidationGroup = context.$refs.basic.validationGroup;
+
+    // We ask the validation group if its valid, which returns a promise
+    basicValidationGroup
+        .validate()
+        .then((isValid) => {
+            context.basicState = isValid
+        });
+};
+
+// Explicitly check to see if the component is valid
+let validateComplexComponent = function() {
+    let context = this;
+    let complexValidationGroup = context.$refs.complex.validationGroup;
+    
+    // We ask the validation group if its valid, which returns a promise
+    complexValidationGroup
+        .validate()
+        .then((isValid) => {
+            context.complexState = isValid
+        });
+};
+
+// Grab the validation groups from the components for use in 
+// validation summary, this wont be available at page load
+// but we use v-if in the view to delay this
+let onMounted = function() {
+    console.log("MOUNTED");
+    this.validationSummaryGroups = [];
+    this.validationSummaryGroups.push(this.$refs.basic.validationGroup);
+    this.validationSummaryGroups.push(this.$refs.complex.validationGroup);
+    console.log(this);
+}
+
+// Start the app
 let app = new __WEBPACK_IMPORTED_MODULE_0_vue_dist_vue___default.a({
     el: "#app",
-    data: {
-        basicState: true,
-        complexState: true
-    },
+    data: appData,
     methods: {
-        validateBasic: function() { 
-            let context = this;
-            context.$refs.basic.validationGroup
-                .validate()
-                .then(function(isValid){
-                    context.basicState = isValid
-                });
-        },
-        validateComplex: function() {
-            let context = this;
-            context.$refs.complex.validationGroup
-                .validate()
-                .then(function(isValid){
-                    context.complexState = isValid
-                });
-        }
-    }
+        validateBasic: validateBasicComponent,
+        validateComplex: validateComplexComponent
+    },
+    mounted: onMounted
 });
 
 /***/ }),
@@ -12696,11 +12791,11 @@ module.exports = g;
 "use strict";
 
 Object.defineProperty(exports, "__esModule", { value: true });
-var field_error_processor_1 = __webpack_require__(11);
+var field_error_processor_1 = __webpack_require__(12);
 var rule_resolver_1 = __webpack_require__(2);
-var validation_group_builder_1 = __webpack_require__(13);
-var rule_registry_setup_1 = __webpack_require__(26);
-var ruleset_builder_1 = __webpack_require__(43);
+var validation_group_builder_1 = __webpack_require__(14);
+var rule_registry_setup_1 = __webpack_require__(27);
+var ruleset_builder_1 = __webpack_require__(44);
 var fieldErrorProcessor = new field_error_processor_1.FieldErrorProcessor(rule_registry_setup_1.ruleRegistry);
 var ruleResolver = new rule_resolver_1.RuleResolver();
 function createRuleset(withRuleVerification) {
@@ -12827,7 +12922,7 @@ exports.PropertyResolver = PropertyResolver;
 /* 58 */
 /***/ (function(module, exports, __webpack_require__) {
 
-var event_listener_1 = __webpack_require__(18);
+var event_listener_1 = __webpack_require__(19);
 var EventHandler = (function () {
     function EventHandler(sender) {
         var _this = this;
@@ -13059,7 +13154,7 @@ __WEBPACK_IMPORTED_MODULE_0_vue_dist_vue___default.a.component('basic', {
 /* 66 */
 /***/ (function(module, exports) {
 
-module.exports = "<section>\r\n    <div>\r\n        <label>Name</label>\r\n        <input v-model=\"name\" v-show-error validate-property=\"name\" placeholder=\"Name\" />\r\n    </div>\r\n</section>"
+module.exports = "<section>\r\n    <div>\r\n        <label>Name</label>\r\n        <input type=\"text\" class=\"u-full-width\" id=\"basic-name\" v-model=\"name\" v-show-error validate-property=\"name\" placeholder=\"Name\" />\r\n    </div>    \r\n</section>"
 
 /***/ }),
 /* 67 */
@@ -13083,7 +13178,9 @@ module.exports = "<section>\r\n    <div>\r\n        <label>Name</label>\r\n     
 __WEBPACK_IMPORTED_MODULE_0_vue_dist_vue___default.a.component('complex', {
     ruleset: Object(__WEBPACK_IMPORTED_MODULE_3__user_data_ruleset__["a" /* generateRuleset */])(),
     data: () => new __WEBPACK_IMPORTED_MODULE_1__user_data_model__["a" /* UserData */]("Bob", 20, [ 
-        new __WEBPACK_IMPORTED_MODULE_2__hobby_model__["a" /* Hobby */]("reading"), new __WEBPACK_IMPORTED_MODULE_2__hobby_model__["a" /* Hobby */]("skateboarding") 
+        new __WEBPACK_IMPORTED_MODULE_2__hobby_model__["a" /* Hobby */]("reading"), 
+        new __WEBPACK_IMPORTED_MODULE_2__hobby_model__["a" /* Hobby */]("skateboarding"), 
+        new __WEBPACK_IMPORTED_MODULE_2__hobby_model__["a" /* Hobby */]("swimming")
     ]),
     template: __WEBPACK_IMPORTED_MODULE_4__complex_html___default.a
 });
@@ -13149,7 +13246,7 @@ function generateRuleset()
 /* 71 */
 /***/ (function(module, exports) {
 
-module.exports = "<section>\r\n    <div>\r\n        <label>Name</label>\r\n        <input v-model=\"name\" placeholder=\"Name\" v-show-error validate-property=\"name\" />\r\n    </div>\r\n    <div>\r\n        <label>Age</label>\r\n        <input v-model=\"age\" placeholder=\"Age\" v-show-error validate-property=\"age\" />\r\n    </div>\r\n    <div v-for=\"(hobby, index) in hobbies\">\r\n        <div>\r\n            <label>Hobby</label>\r\n            <input v-model=\"hobby.name\" placeholder=\"Hobby\" v-show-error v-bind:validate-property=\"'hobbies[' + index + '].name'\" />\r\n        </div>\r\n    </div>\r\n</section>"
+module.exports = "<section class=\"row\">\r\n    <div class=\"six columns\">\r\n        <label>Name</label>\r\n        <input type=\"text\" class=\"u-full-width\" v-model=\"name\" placeholder=\"Name\" v-show-error validate-property=\"name\" />\r\n    </div>\r\n    <div class=\"six columns\">\r\n        <label>Age</label>\r\n        <input type=\"text\" class=\"u-full-width\" v-model=\"age\" placeholder=\"Age\" v-show-error validate-property=\"age\" />\r\n    </div>\r\n    <div>\r\n        <label>Hobbies</label>\r\n        <div v-for=\"(hobby, index) in hobbies\">\r\n            <input type=\"text\" class=\"u-full-width\" v-model=\"hobby.name\" placeholder=\"Hobby\" v-show-error v-bind:validate-property=\"'hobbies[' + index + '].name'\" />\r\n        </div>\r\n    </div>\r\n</section>"
 
 /***/ })
 /******/ ]);

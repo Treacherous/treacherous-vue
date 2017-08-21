@@ -8,7 +8,9 @@ import template from "./complex.html";
 Vue.component('complex', {
     ruleset: generateRuleset(),
     data: () => new UserData("Bob", 20, [ 
-        new Hobby("reading"), new Hobby("skateboarding") 
+        new Hobby("reading"), 
+        new Hobby("skateboarding"), 
+        new Hobby("swimming")
     ]),
     template: template
 });

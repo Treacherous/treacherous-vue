@@ -1,16 +1,16 @@
-<section>
-    <div>
+<section class="row">
+    <div class="six columns">
         <label>Name</label>
-        <input v-model="name" placeholder="Name" v-show-error validate-property="name" />
+        <input type="text" class="u-full-width" v-model="name" placeholder="Name" v-show-error validate-property="name" />
+    </div>
+    <div class="six columns">
+        <label>Age</label>
+        <input type="text" class="u-full-width" v-model="age" placeholder="Age" v-show-error validate-property="age" />
     </div>
     <div>
-        <label>Age</label>
-        <input v-model="age" placeholder="Age" v-show-error validate-property="age" />
-    </div>
-    <div v-for="(hobby, index) in hobbies">
-        <div>
-            <label>Hobby</label>
-            <input v-model="hobby.name" placeholder="Hobby" v-show-error v-bind:validate-property="'hobbies[' + index + '].name'" />
+        <label>Hobbies</label>
+        <div v-for="(hobby, index) in hobbies">
+            <input type="text" class="u-full-width" v-model="hobby.name" placeholder="Hobby" v-show-error v-bind:validate-property="'hobbies[' + index + '].name'" />
         </div>
     </div>
 </section>
