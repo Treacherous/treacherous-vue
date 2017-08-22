@@ -1,4 +1,4 @@
-import Vue  from "vue/dist/vue";
+import Vue  from "vue/dist/vue"; // For template compiler
 import TreacherousVue from "../dist/commonjs/plugin"
 
 import "./components/basic/basic.component";
@@ -44,11 +44,9 @@ let validateComplexComponent = function() {
 // validation summary, this wont be available at page load
 // but we use v-if in the view to delay this
 let onMounted = function() {
-    console.log("MOUNTED");
     this.validationSummaryGroups = [];
     this.validationSummaryGroups.push(this.$refs.basic.validationGroup);
     this.validationSummaryGroups.push(this.$refs.complex.validationGroup);
-    console.log(this);
 }
 
 // Start the app

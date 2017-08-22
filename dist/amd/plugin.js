@@ -1,9 +1,6 @@
-define(["require", "exports", "treacherous", "treacherous-view", "treacherous", "treacherous-view", "treacherous-view"], function (require, exports, treacherous_1, treacherous_view_1, treacherous_2, treacherous_view_2, treacherous_view_3) {
+define(["require", "exports", "treacherous", "treacherous-view", "treacherous-view", "treacherous-view", "treacherous"], function (require, exports, treacherous_1, treacherous_view_1, treacherous_view_2, treacherous_view_3, treacherous_2) {
     "use strict";
     Object.defineProperty(exports, "__esModule", { value: true });
-    exports.createRuleset = treacherous_2.createRuleset;
-    exports.ruleRegistry = treacherous_2.ruleRegistry;
-    exports.viewStrategyRegistry = treacherous_view_3.viewStrategyRegistry;
     var ValidationSubKey = "validation-subscriptions";
     var SummarySubKey = "summary-subscriptions";
     var mixins = {
@@ -145,6 +142,9 @@ define(["require", "exports", "treacherous", "treacherous-view", "treacherous", 
         Vue.directive('show-error', showErrorDirective);
         Vue.directive('validation-summary', summaryDirective);
     };
+    exports.viewStrategyRegistry = treacherous_view_3.viewStrategyRegistry;
+    exports.createRuleset = treacherous_2.createRuleset;
+    exports.ruleRegistry = treacherous_2.ruleRegistry;
     exports.default = {
         install: install
     };

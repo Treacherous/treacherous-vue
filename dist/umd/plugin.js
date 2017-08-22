@@ -4,19 +4,14 @@
         if (v !== undefined) module.exports = v;
     }
     else if (typeof define === "function" && define.amd) {
-        define(["require", "exports", "treacherous", "treacherous-view", "treacherous", "treacherous-view", "treacherous-view"], factory);
+        define(["require", "exports", "treacherous", "treacherous-view", "treacherous-view", "treacherous-view", "treacherous"], factory);
     }
 })(function (require, exports) {
     "use strict";
     Object.defineProperty(exports, "__esModule", { value: true });
     var treacherous_1 = require("treacherous");
     var treacherous_view_1 = require("treacherous-view");
-    var treacherous_2 = require("treacherous");
-    exports.createRuleset = treacherous_2.createRuleset;
-    exports.ruleRegistry = treacherous_2.ruleRegistry;
     var treacherous_view_2 = require("treacherous-view");
-    var treacherous_view_3 = require("treacherous-view");
-    exports.viewStrategyRegistry = treacherous_view_3.viewStrategyRegistry;
     var ValidationSubKey = "validation-subscriptions";
     var SummarySubKey = "summary-subscriptions";
     var mixins = {
@@ -158,6 +153,11 @@
         Vue.directive('show-error', showErrorDirective);
         Vue.directive('validation-summary', summaryDirective);
     };
+    var treacherous_view_3 = require("treacherous-view");
+    exports.viewStrategyRegistry = treacherous_view_3.viewStrategyRegistry;
+    var treacherous_2 = require("treacherous");
+    exports.createRuleset = treacherous_2.createRuleset;
+    exports.ruleRegistry = treacherous_2.ruleRegistry;
     exports.default = {
         install: install
     };

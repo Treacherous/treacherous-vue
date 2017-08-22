@@ -10488,12 +10488,7 @@ return Vue$3;
 Object.defineProperty(exports, "__esModule", { value: true });
 var treacherous_1 = __webpack_require__(11);
 var treacherous_view_1 = __webpack_require__(9);
-var treacherous_2 = __webpack_require__(11);
-exports.createRuleset = treacherous_2.createRuleset;
-exports.ruleRegistry = treacherous_2.ruleRegistry;
 var treacherous_view_2 = __webpack_require__(9);
-var treacherous_view_3 = __webpack_require__(9);
-exports.viewStrategyRegistry = treacherous_view_3.viewStrategyRegistry;
 var ValidationSubKey = "validation-subscriptions";
 var SummarySubKey = "summary-subscriptions";
 var mixins = {
@@ -10635,6 +10630,11 @@ var install = function (Vue, options) {
     Vue.directive('show-error', showErrorDirective);
     Vue.directive('validation-summary', summaryDirective);
 };
+var treacherous_view_3 = __webpack_require__(9);
+exports.viewStrategyRegistry = treacherous_view_3.viewStrategyRegistry;
+var treacherous_2 = __webpack_require__(11);
+exports.createRuleset = treacherous_2.createRuleset;
+exports.ruleRegistry = treacherous_2.ruleRegistry;
 exports.default = {
     install: install
 };
@@ -12695,7 +12695,7 @@ Object.defineProperty(__webpack_exports__, "__esModule", { value: true });
 /* harmony import */ var __WEBPACK_IMPORTED_MODULE_1__dist_commonjs_plugin___default = __webpack_require__.n(__WEBPACK_IMPORTED_MODULE_1__dist_commonjs_plugin__);
 /* harmony import */ var __WEBPACK_IMPORTED_MODULE_2__components_basic_basic_component__ = __webpack_require__(65);
 /* harmony import */ var __WEBPACK_IMPORTED_MODULE_3__components_complex_complex_component__ = __webpack_require__(67);
-
+ // For template compiler
 
 
 
@@ -12741,11 +12741,9 @@ let validateComplexComponent = function() {
 // validation summary, this wont be available at page load
 // but we use v-if in the view to delay this
 let onMounted = function() {
-    console.log("MOUNTED");
     this.validationSummaryGroups = [];
     this.validationSummaryGroups.push(this.$refs.basic.validationGroup);
     this.validationSummaryGroups.push(this.$refs.complex.validationGroup);
-    console.log(this);
 }
 
 // Start the app
