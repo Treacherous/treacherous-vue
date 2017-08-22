@@ -22,4 +22,4 @@ input.valid, button.valid {
     background-color: rgba(0, 255, 0, 0.1);
 }
 
-.validation-error-container { color: red; }
+.validation-error-container, .summary-error { color: red; }

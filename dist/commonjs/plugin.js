@@ -86,10 +86,11 @@ var showErrorDirective = {
 var summaryDirective = {
     bind: function (element, binding, vnode) {
         var context = vnode.context;
+        if (!context._validationMetadata) {
+            context._validationMetadata = {};
+            context._validationMetadata[SummarySubKey] = [];
+        }
         var metadata = context._validationMetadata;
-        console.log("CONTEXT IN SUMMARY");
-        console.log(context);
-        console.log(metadata);
         var validationGroups = null;
         if (binding.value != null) {
             validationGroups = binding.value;
@@ -118,7 +119,7 @@ var summaryDirective = {
         var viewSummary = new treacherous_view_2.ViewSummary();
         viewSummary.setupContainer(element);
         var handleStateChange = function (eventArgs) {
-            var displayName = validationGroups.getPropertyDisplayName(eventArgs.property);
+            var displayName = getDisplayName(eventArgs.property);
             if (eventArgs.isValid) {
                 viewSummary.propertyBecomeValid(element, displayName);
             }
@@ -129,17 +130,18 @@ var summaryDirective = {
         if (isArray) {
             validationGroups.forEach(function (validationGroup) {
                 var sub = validationGroup.propertyStateChangedEvent.subscribe(handleStateChange);
-                context[SummarySubKey].push(sub);
+                metadata[SummarySubKey].push(sub);
             });
         }
         else {
             var sub = validationGroups.propertyStateChangedEvent.subscribe(handleStateChange);
-            context[SummarySubKey].push(sub);
+            metadata[SummarySubKey].push(sub);
         }
     },
     unbind: function (element, binding, vnode) {
         var context = vnode.context;
-        context[SummarySubKey].foreach(function (x) { return x(); });
+        var metadata = context._validationMetadata;
+        metadata[SummarySubKey].foreach(function (x) { return x(); });
     }
 };
 var install = function (Vue, options) {

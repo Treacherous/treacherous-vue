@@ -96,10 +96,14 @@ const showErrorDirective = {
 const summaryDirective = {
     bind: function (element: HTMLElement, binding: any, vnode: any) {
         let context = vnode.context;
+
+        if(!context._validationMetadata)
+        { 
+            context._validationMetadata = {};
+            context._validationMetadata[SummarySubKey] = []; 
+        }
+
         let metadata = context._validationMetadata;
-        console.log("CONTEXT IN SUMMARY");
-        console.log(context);
-        console.log(metadata);
         let validationGroups: any = null;
 
         if(binding.value != null)
@@ -130,7 +134,7 @@ const summaryDirective = {
         viewSummary.setupContainer(element);
         
         var handleStateChange = (eventArgs: PropertyStateChangedEvent) => {
-            var displayName = validationGroups.getPropertyDisplayName(eventArgs.property);
+            var displayName = getDisplayName(eventArgs.property);
             if(eventArgs.isValid)
             { viewSummary.propertyBecomeValid(element, displayName); }
             else
@@ -141,18 +145,19 @@ const summaryDirective = {
         {
             validationGroups.forEach((validationGroup: IReactiveValidationGroup) => {
                 let sub = validationGroup.propertyStateChangedEvent.subscribe(handleStateChange);
-                context[SummarySubKey].push(sub);
+                metadata[SummarySubKey].push(sub);
             });
         }
         else
         {
             let sub = validationGroups.propertyStateChangedEvent.subscribe(handleStateChange);
-            context[SummarySubKey].push(sub);
+            metadata[SummarySubKey].push(sub);
         }        
     },
     unbind: function (element: HTMLElement, binding: any, vnode: any) {
         let context = vnode.context;
-        context[SummarySubKey].foreach((x: Function) => x());
+        let metadata = context._validationMetadata;
+        metadata[SummarySubKey].foreach((x: Function) => x());
     }
 }
 

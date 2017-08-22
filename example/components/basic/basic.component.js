@@ -5,14 +5,14 @@ import template from "./basic.html";
 
 function generateRuleset() {
     return createRuleset()
-        .forProperty("name")
+        .forProperty("username")
             .addRule("required")
-            .addRule("minLength", 2)
+            .addRule("minLength", 2)            
         .build()
 }
 
 Vue.component('basic', {
     ruleset: generateRuleset(),
-    data: () => { return { name: "Bob" } },
+    data: () => { return { username: "joe.bloggs" } },
     template: template
 });

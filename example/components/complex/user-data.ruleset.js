@@ -3,7 +3,7 @@ import {createRuleset} from "../../../dist/commonjs/plugin";
 export function generateRuleset()
 {
     var hobbyRuleset = createRuleset()
-        .forProperty("name")
+        .forProperty("hobbyName")
             .addRule("required")
             .addRule("minLength", 2)
             .addRule("maxLength", 20)

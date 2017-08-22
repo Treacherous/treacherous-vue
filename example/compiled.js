@@ -10572,10 +10572,11 @@ var showErrorDirective = {
 var summaryDirective = {
     bind: function (element, binding, vnode) {
         var context = vnode.context;
+        if (!context._validationMetadata) {
+            context._validationMetadata = {};
+            context._validationMetadata[SummarySubKey] = [];
+        }
         var metadata = context._validationMetadata;
-        console.log("CONTEXT IN SUMMARY");
-        console.log(context);
-        console.log(metadata);
         var validationGroups = null;
         if (binding.value != null) {
             validationGroups = binding.value;
@@ -10604,7 +10605,7 @@ var summaryDirective = {
         var viewSummary = new treacherous_view_2.ViewSummary();
         viewSummary.setupContainer(element);
         var handleStateChange = function (eventArgs) {
-            var displayName = validationGroups.getPropertyDisplayName(eventArgs.property);
+            var displayName = getDisplayName(eventArgs.property);
             if (eventArgs.isValid) {
                 viewSummary.propertyBecomeValid(element, displayName);
             }
@@ -10615,17 +10616,18 @@ var summaryDirective = {
         if (isArray) {
             validationGroups.forEach(function (validationGroup) {
                 var sub = validationGroup.propertyStateChangedEvent.subscribe(handleStateChange);
-                context[SummarySubKey].push(sub);
+                metadata[SummarySubKey].push(sub);
             });
         }
         else {
             var sub = validationGroups.propertyStateChangedEvent.subscribe(handleStateChange);
-            context[SummarySubKey].push(sub);
+            metadata[SummarySubKey].push(sub);
         }
     },
     unbind: function (element, binding, vnode) {
         var context = vnode.context;
-        context[SummarySubKey].foreach(function (x) { return x(); });
+        var metadata = context._validationMetadata;
+        metadata[SummarySubKey].foreach(function (x) { return x(); });
     }
 };
 var install = function (Vue, options) {
@@ -13138,15 +13140,15 @@ exports.ViewSummary = ViewSummary;
 
 function generateRuleset() {
     return Object(__WEBPACK_IMPORTED_MODULE_1__dist_commonjs_plugin__["createRuleset"])()
-        .forProperty("name")
+        .forProperty("username")
             .addRule("required")
-            .addRule("minLength", 2)
+            .addRule("minLength", 2)            
         .build()
 }
 
 __WEBPACK_IMPORTED_MODULE_0_vue_dist_vue___default.a.component('basic', {
     ruleset: generateRuleset(),
-    data: () => { return { name: "Bob" } },
+    data: () => { return { username: "joe.bloggs" } },
     template: __WEBPACK_IMPORTED_MODULE_2__basic_html___default.a
 });
 
@@ -13154,7 +13156,7 @@ __WEBPACK_IMPORTED_MODULE_0_vue_dist_vue___default.a.component('basic', {
 /* 66 */
 /***/ (function(module, exports) {
 
-module.exports = "<section>\r\n    <div>\r\n        <label>Name</label>\r\n        <input type=\"text\" class=\"u-full-width\" id=\"basic-name\" v-model=\"name\" v-show-error validate-property=\"name\" placeholder=\"Name\" />\r\n    </div>    \r\n</section>"
+module.exports = "<section>\r\n    <div>\r\n        <label>Username</label>\r\n        <input type=\"text\" class=\"u-full-width\" id=\"username\" v-model=\"username\" v-show-error validate-property=\"username\" placeholder=\"Username\" />\r\n    </div>\r\n</section>"
 
 /***/ }),
 /* 67 */
@@ -13206,7 +13208,7 @@ function UserData(name, age, hobbies)
 /* harmony export (immutable) */ __webpack_exports__["a"] = Hobby;
 function Hobby(name)
 {
-    this.name = name;
+    this.hobbyName = name;
 }
 
 /***/ }),
@@ -13222,7 +13224,7 @@ function Hobby(name)
 function generateRuleset()
 {
     var hobbyRuleset = Object(__WEBPACK_IMPORTED_MODULE_0__dist_commonjs_plugin__["createRuleset"])()
-        .forProperty("name")
+        .forProperty("hobbyName")
             .addRule("required")
             .addRule("minLength", 2)
             .addRule("maxLength", 20)
@@ -13246,7 +13248,7 @@ function generateRuleset()
 /* 71 */
 /***/ (function(module, exports) {
 
-module.exports = "<section class=\"row\">\r\n    <div class=\"six columns\">\r\n        <label>Name</label>\r\n        <input type=\"text\" class=\"u-full-width\" v-model=\"name\" placeholder=\"Name\" v-show-error validate-property=\"name\" />\r\n    </div>\r\n    <div class=\"six columns\">\r\n        <label>Age</label>\r\n        <input type=\"text\" class=\"u-full-width\" v-model=\"age\" placeholder=\"Age\" v-show-error validate-property=\"age\" />\r\n    </div>\r\n    <div>\r\n        <label>Hobbies</label>\r\n        <div v-for=\"(hobby, index) in hobbies\">\r\n            <input type=\"text\" class=\"u-full-width\" v-model=\"hobby.name\" placeholder=\"Hobby\" v-show-error v-bind:validate-property=\"'hobbies[' + index + '].name'\" />\r\n        </div>\r\n    </div>\r\n</section>"
+module.exports = "<section class=\"row\">\r\n    <div class=\"six columns\">\r\n        <label>Name</label>\r\n        <input type=\"text\" class=\"u-full-width\" v-model=\"name\" placeholder=\"Name\" v-show-error validate-property=\"name\" />\r\n    </div>\r\n    <div class=\"six columns\">\r\n        <label>Age</label>\r\n        <input type=\"text\" class=\"u-full-width\" v-model=\"age\" placeholder=\"Age\" v-show-error validate-property=\"age\" />\r\n    </div>\r\n    <div>\r\n        <label>Hobbies</label>\r\n        <div v-for=\"(hobby, index) in hobbies\">\r\n            <input type=\"text\" class=\"u-full-width\" v-model=\"hobby.hobbyName\" placeholder=\"Hobby\" v-show-error v-bind:validate-property=\"'hobbies[' + index + '].hobbyName'\" />\r\n        </div>\r\n    </div>\r\n</section>"
 
 /***/ })
 /******/ ]);

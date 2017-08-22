@@ -1,4 +1,4 @@
 export function Hobby(name)
 {
-    this.name = name;
+    this.hobbyName = name;
 }

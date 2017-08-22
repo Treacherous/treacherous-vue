@@ -10,7 +10,7 @@
     <div>
         <label>Hobbies</label>
         <div v-for="(hobby, index) in hobbies">
-            <input type="text" class="u-full-width" v-model="hobby.name" placeholder="Hobby" v-show-error v-bind:validate-property="'hobbies[' + index + '].name'" />
+            <input type="text" class="u-full-width" v-model="hobby.hobbyName" placeholder="Hobby" v-show-error v-bind:validate-property="'hobbies[' + index + '].hobbyName'" />
         </div>
     </div>
 </section>
