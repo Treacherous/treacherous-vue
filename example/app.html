@@ -26,6 +26,12 @@
                     This shows how to use complex models which may have nested properties or arrays,
                     there is also a button to manually trigger progmatic validation.
                 </p>
+                <p>
+                    One other interesting thing in this example is that the <strong>age</strong>
+                    is configured to use a custom view strategy, so that will handle the validation
+                    differently to the other fields in this example, and all it takes is a single 
+                    attribute to swap strategy (and a custom strategy registered, seen in <strong>app.js</strong>)
+                </p>
                 <complex id="complex-form" ref="complex"></complex>
                 <button id="complex-submit" v-bind:class="{ valid: complexState, invalid: !complexState }" @click="validateComplex">Progmatically Validate - {{complexState ? 'Is' : 'Isnt'}} Valid</button>
             </fieldset>
