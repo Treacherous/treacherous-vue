@@ -1,11 +1,17 @@
-import Vue  from "vue/dist/vue"; // For template compiler
-import TreacherousVue from "../dist/commonjs/plugin"
+import Vue  from "vue/dist/vue";
 
+// This is all you need to do to add the plugin
+import TreacherousVue from "../dist/commonjs/plugin"
+Vue.use(TreacherousVue);
+
+// Add custom strategy for complex example
+import {viewStrategyRegistry} from "../dist/commonjs/plugin"
+import {TooltipStrategy} from "./custom-view/tooltip-strategy"
+viewStrategyRegistry.registerStrategy(new TooltipStrategy());
+
+// Add our components for examples
 import "./components/basic/basic.component";
 import "./components/complex/complex.component";
-
-// Add our plugin
-Vue.use(TreacherousVue);
 
 // Setup basic data placeholders that hook into the validation groups
 let appData = {

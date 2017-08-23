@@ -1,0 +1,71 @@
+/* Example inline/default validation styles */
+input.invalid, button.invalid { 
+    border-color: #FF0000; 
+    background-color: rgba(255, 0, 0, 0.1);
+}
+
+input.valid, button.valid { 
+    border-color: #00FF00; 
+    background-color: rgba(0, 255, 0, 0.1);
+}
+
+.validation-error-container, .summary-error 
+{ 
+    color: red; 
+    text-transform: capitalize;
+}
+
+
+/* Custom tooltip strat styles */
+/* Add this attribute to the element that needs a tooltip */
+[data-tooltip] {
+    position: relative;
+    z-index: 2;
+    cursor: pointer;
+  }
+   
+  /* Position tooltip above the element */
+  [data-tooltip]:before {
+    position: absolute;
+    bottom: -25px;
+    left: 50%;
+    margin-bottom: 5px;
+    margin-left: -80px;
+    padding: 7px;
+    width: 160px;
+    -webkit-border-radius: 3px;
+    -moz-border-radius: 3px;
+    border-radius: 3px;
+    background-color: #000;
+    background-color: hsla(0, 0%, 20%, 0.9);
+    color: #fff;
+    content: attr(data-tooltip);
+    text-align: center;
+    font-size: 14px;
+    line-height: 1.2;
+  }
+  
+  /* Triangle hack to make tooltip look like a speech bubble */
+  [data-tooltip]:after {
+    position: absolute;
+    bottom: 10px;
+    left: 50%;
+    margin-left: -5px;
+    width: 0;
+    border-bottom: 5px solid #000;
+    border-bottom: 5px solid hsla(0, 0%, 20%, 0.9);
+    border-right: 5px solid transparent;
+    border-left: 5px solid transparent;
+    content: " ";
+    font-size: 0;
+    line-height: 0;
+  }
+  
+  /* Show tooltip content on hover */
+  [data-tooltip]:before,
+  [data-tooltip]:after {
+    visibility: visible;
+    -ms-filter: "progid:DXImageTransform.Microsoft.Alpha(Opacity=100)";
+    filter: progid: DXImageTransform.Microsoft.Alpha(Opacity=100);
+    opacity: 1;
+  }

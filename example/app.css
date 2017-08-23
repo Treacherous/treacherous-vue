@@ -10,20 +10,3 @@ fieldset {
     border-bottom: 3px solid rgba(0,0,0,0.2);
     border-radius: 0.25em;
 }
-
-/* Example Validation Styles */
-input.invalid, button.invalid { 
-    border-color: #FF0000; 
-    background-color: rgba(255, 0, 0, 0.1);
-}
-
-input.valid, button.valid { 
-    border-color: #00FF00; 
-    background-color: rgba(0, 255, 0, 0.1);
-}
-
-.validation-error-container, .summary-error 
-{ 
-    color: red; 
-    text-transform: capitalize;
-}

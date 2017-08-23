@@ -1,4 +1,4 @@
-define(["require", "exports", "treacherous", "treacherous-view", "treacherous-view", "treacherous-view", "treacherous"], function (require, exports, treacherous_1, treacherous_view_1, treacherous_view_2, treacherous_view_3, treacherous_2) {
+define(["require", "exports", "treacherous", "treacherous-view", "treacherous-view", "treacherous"], function (require, exports, treacherous_1, treacherous_view_1, treacherous_view_2, treacherous_2) {
     "use strict";
     Object.defineProperty(exports, "__esModule", { value: true });
     var ValidationSubKey = "validation-subscriptions";
@@ -37,13 +37,13 @@ define(["require", "exports", "treacherous", "treacherous-view", "treacherous-vi
             if (!propertyRoute) {
                 return;
             }
-            var strategyName = treacherous_view_1.ElementHelper.getStrategyFrom(element);
+            var strategyName = treacherous_view_1.ElementHelper.getViewStrategyFrom(element);
             var viewStrategy = treacherous_view_1.viewStrategyRegistry.getStrategyNamed(strategyName || "inline");
             if (!viewStrategy) {
                 return;
             }
             var validationState = treacherous_view_1.ValidationState.unknown;
-            var viewOptions = treacherous_view_1.ElementHelper.getOptionsFrom(element) || {};
+            var viewOptions = treacherous_view_1.ElementHelper.getViewOptionsFrom(element) || {};
             var handlePossibleError = function (error) {
                 if (!error) {
                     viewStrategy.propertyBecomeValid(element, propertyRoute, validationState, viewOptions);
@@ -108,16 +108,20 @@ define(["require", "exports", "treacherous", "treacherous-view", "treacherous-vi
                 });
                 return finalName;
             };
-            var viewOptions = treacherous_view_1.ElementHelper.getOptionsFrom(element) || {};
-            var viewSummary = new treacherous_view_2.ViewSummary();
-            viewSummary.setupContainer(element);
+            var strategyName = treacherous_view_1.ElementHelper.getSummaryStrategyFrom(element);
+            var summaryStrategy = treacherous_view_1.viewSummaryRegistry.getSummaryNamed(strategyName || "default");
+            if (!summaryStrategy) {
+                return;
+            }
+            var viewOptions = treacherous_view_1.ElementHelper.getSummaryOptionsFrom(element) || {};
+            summaryStrategy.setupContainer(element, viewOptions);
             var handleStateChange = function (eventArgs) {
                 var displayName = getDisplayName(eventArgs.property);
                 if (eventArgs.isValid) {
-                    viewSummary.propertyBecomeValid(element, displayName);
+                    summaryStrategy.propertyBecomeValid(element, displayName, viewOptions);
                 }
                 else {
-                    viewSummary.propertyBecomeInvalid(element, eventArgs.error, displayName);
+                    summaryStrategy.propertyBecomeInvalid(element, eventArgs.error, displayName, viewOptions);
                 }
             };
             if (isArray) {
@@ -142,7 +146,7 @@ define(["require", "exports", "treacherous", "treacherous-view", "treacherous-vi
         Vue.directive('show-error', showErrorDirective);
         Vue.directive('validation-summary', summaryDirective);
     };
-    exports.viewStrategyRegistry = treacherous_view_3.viewStrategyRegistry;
+    exports.viewStrategyRegistry = treacherous_view_2.viewStrategyRegistry;
     exports.createRuleset = treacherous_2.createRuleset;
     exports.ruleRegistry = treacherous_2.ruleRegistry;
     exports.default = {

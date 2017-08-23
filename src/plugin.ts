@@ -1,6 +1,5 @@
 import {Ruleset, createGroup, IValidationGroup, IReactiveValidationGroup, PropertyStateChangedEvent} from "treacherous";
-import {viewStrategyRegistry, ElementHelper, ValidationState} from "treacherous-view";
-import {ViewSummary} from "treacherous-view";
+import {viewStrategyRegistry, viewSummaryRegistry, ElementHelper, ValidationState} from "treacherous-view";
 
 import {Vue as VueDescriptor} from "vue/types/vue";
 declare module "vue/types/options" {
@@ -49,12 +48,12 @@ const showErrorDirective = {
         let propertyRoute = ElementHelper.getPropertyRouteFrom(element);
         if(!propertyRoute) { return; }
 
-        let strategyName = ElementHelper.getStrategyFrom(element);
+        let strategyName = ElementHelper.getViewStrategyFrom(element);
         let viewStrategy = viewStrategyRegistry.getStrategyNamed(strategyName || "inline");
         if(!viewStrategy) { return; }
 
         let validationState = ValidationState.unknown;
-        let viewOptions = ElementHelper.getOptionsFrom(element) || {};
+        let viewOptions = ElementHelper.getViewOptionsFrom(element) || {};
 
         let handlePossibleError = (error: any) => {
             if(!error)
@@ -127,16 +126,19 @@ const summaryDirective = {
             return finalName;
         };
 
-        let viewOptions = ElementHelper.getOptionsFrom(element) || {};
-        let viewSummary = new ViewSummary();
-        viewSummary.setupContainer(element);
+        let strategyName = ElementHelper.getSummaryStrategyFrom(element);
+        let summaryStrategy = viewSummaryRegistry.getSummaryNamed(strategyName || "default");
+        if(!summaryStrategy) { return; }
+
+        let viewOptions = ElementHelper.getSummaryOptionsFrom(element) || {};
+        summaryStrategy.setupContainer(element, viewOptions);
         
         var handleStateChange = (eventArgs: PropertyStateChangedEvent) => {
             var displayName = getDisplayName(eventArgs.property);
             if(eventArgs.isValid)
-            { viewSummary.propertyBecomeValid(element, displayName); }
+            { summaryStrategy.propertyBecomeValid(element, displayName, viewOptions); }
             else
-            { viewSummary.propertyBecomeInvalid(element, eventArgs.error, displayName); }
+            { summaryStrategy.propertyBecomeInvalid(element, eventArgs.error, displayName, viewOptions); }
         };
 
         if(isArray)

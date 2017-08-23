@@ -1,7 +1,7 @@
 System.register(["treacherous", "treacherous-view"], function (exports_1, context_1) {
     "use strict";
     var __moduleName = context_1 && context_1.id;
-    var treacherous_1, treacherous_view_1, treacherous_view_2, ValidationSubKey, SummarySubKey, mixins, showErrorDirective, summaryDirective, install;
+    var treacherous_1, treacherous_view_1, ValidationSubKey, SummarySubKey, mixins, showErrorDirective, summaryDirective, install;
     return {
         setters: [
             function (treacherous_1_1) {
@@ -13,7 +13,6 @@ System.register(["treacherous", "treacherous-view"], function (exports_1, contex
             },
             function (treacherous_view_1_1) {
                 treacherous_view_1 = treacherous_view_1_1;
-                treacherous_view_2 = treacherous_view_1_1;
                 exports_1({
                     "viewStrategyRegistry": treacherous_view_1_1["viewStrategyRegistry"]
                 });
@@ -56,13 +55,13 @@ System.register(["treacherous", "treacherous-view"], function (exports_1, contex
                     if (!propertyRoute) {
                         return;
                     }
-                    var strategyName = treacherous_view_1.ElementHelper.getStrategyFrom(element);
+                    var strategyName = treacherous_view_1.ElementHelper.getViewStrategyFrom(element);
                     var viewStrategy = treacherous_view_1.viewStrategyRegistry.getStrategyNamed(strategyName || "inline");
                     if (!viewStrategy) {
                         return;
                     }
                     var validationState = treacherous_view_1.ValidationState.unknown;
-                    var viewOptions = treacherous_view_1.ElementHelper.getOptionsFrom(element) || {};
+                    var viewOptions = treacherous_view_1.ElementHelper.getViewOptionsFrom(element) || {};
                     var handlePossibleError = function (error) {
                         if (!error) {
                             viewStrategy.propertyBecomeValid(element, propertyRoute, validationState, viewOptions);
@@ -127,16 +126,20 @@ System.register(["treacherous", "treacherous-view"], function (exports_1, contex
                         });
                         return finalName;
                     };
-                    var viewOptions = treacherous_view_1.ElementHelper.getOptionsFrom(element) || {};
-                    var viewSummary = new treacherous_view_2.ViewSummary();
-                    viewSummary.setupContainer(element);
+                    var strategyName = treacherous_view_1.ElementHelper.getSummaryStrategyFrom(element);
+                    var summaryStrategy = treacherous_view_1.viewSummaryRegistry.getSummaryNamed(strategyName || "default");
+                    if (!summaryStrategy) {
+                        return;
+                    }
+                    var viewOptions = treacherous_view_1.ElementHelper.getSummaryOptionsFrom(element) || {};
+                    summaryStrategy.setupContainer(element, viewOptions);
                     var handleStateChange = function (eventArgs) {
                         var displayName = getDisplayName(eventArgs.property);
                         if (eventArgs.isValid) {
-                            viewSummary.propertyBecomeValid(element, displayName);
+                            summaryStrategy.propertyBecomeValid(element, displayName, viewOptions);
                         }
                         else {
-                            viewSummary.propertyBecomeInvalid(element, eventArgs.error, displayName);
+                            summaryStrategy.propertyBecomeInvalid(element, eventArgs.error, displayName, viewOptions);
                         }
                     };
                     if (isArray) {

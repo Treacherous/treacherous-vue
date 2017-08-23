@@ -2,7 +2,6 @@
 Object.defineProperty(exports, "__esModule", { value: true });
 var treacherous_1 = require("treacherous");
 var treacherous_view_1 = require("treacherous-view");
-var treacherous_view_2 = require("treacherous-view");
 var ValidationSubKey = "validation-subscriptions";
 var SummarySubKey = "summary-subscriptions";
 var mixins = {
@@ -39,13 +38,13 @@ var showErrorDirective = {
         if (!propertyRoute) {
             return;
         }
-        var strategyName = treacherous_view_1.ElementHelper.getStrategyFrom(element);
+        var strategyName = treacherous_view_1.ElementHelper.getViewStrategyFrom(element);
         var viewStrategy = treacherous_view_1.viewStrategyRegistry.getStrategyNamed(strategyName || "inline");
         if (!viewStrategy) {
             return;
         }
         var validationState = treacherous_view_1.ValidationState.unknown;
-        var viewOptions = treacherous_view_1.ElementHelper.getOptionsFrom(element) || {};
+        var viewOptions = treacherous_view_1.ElementHelper.getViewOptionsFrom(element) || {};
         var handlePossibleError = function (error) {
             if (!error) {
                 viewStrategy.propertyBecomeValid(element, propertyRoute, validationState, viewOptions);
@@ -110,16 +109,20 @@ var summaryDirective = {
             });
             return finalName;
         };
-        var viewOptions = treacherous_view_1.ElementHelper.getOptionsFrom(element) || {};
-        var viewSummary = new treacherous_view_2.ViewSummary();
-        viewSummary.setupContainer(element);
+        var strategyName = treacherous_view_1.ElementHelper.getSummaryStrategyFrom(element);
+        var summaryStrategy = treacherous_view_1.viewSummaryRegistry.getSummaryNamed(strategyName || "default");
+        if (!summaryStrategy) {
+            return;
+        }
+        var viewOptions = treacherous_view_1.ElementHelper.getSummaryOptionsFrom(element) || {};
+        summaryStrategy.setupContainer(element, viewOptions);
         var handleStateChange = function (eventArgs) {
             var displayName = getDisplayName(eventArgs.property);
             if (eventArgs.isValid) {
-                viewSummary.propertyBecomeValid(element, displayName);
+                summaryStrategy.propertyBecomeValid(element, displayName, viewOptions);
             }
             else {
-                viewSummary.propertyBecomeInvalid(element, eventArgs.error, displayName);
+                summaryStrategy.propertyBecomeInvalid(element, eventArgs.error, displayName, viewOptions);
             }
         };
         if (isArray) {
@@ -144,8 +147,8 @@ var install = function (Vue, options) {
     Vue.directive('show-error', showErrorDirective);
     Vue.directive('validation-summary', summaryDirective);
 };
-var treacherous_view_3 = require("treacherous-view");
-exports.viewStrategyRegistry = treacherous_view_3.viewStrategyRegistry;
+var treacherous_view_2 = require("treacherous-view");
+exports.viewStrategyRegistry = treacherous_view_2.viewStrategyRegistry;
 var treacherous_2 = require("treacherous");
 exports.createRuleset = treacherous_2.createRuleset;
 exports.ruleRegistry = treacherous_2.ruleRegistry;
