@@ -1,24 +1,13 @@
 import {createRuleset} from "../../../dist/commonjs/plugin";
+import {hobbyRuleset} from "./hobby.ruleset";
 
-export function generateRuleset()
-{
-    var hobbyRuleset = createRuleset()
-        .forProperty("hobbyName")
-            .addRule("required")
-            .addRule("minLength", 2)
-            .addRule("maxLength", 20)
-        .build();
-
-    var modelRuleset = createRuleset()
-        .forProperty("name")
-            .addRule("required")
-            .addRule("minLength", 2)
-        .forProperty("age")
-            .addRule("required")
-            .addRule("number")
-        .forProperty("hobbies")
-            .addRulesetForEach(hobbyRuleset)
-        .build();
-
-    return modelRuleset;
-}
+export var userDataRuleset = createRuleset()
+    .forProperty("name")
+        .addRule("required")
+        .addRule("minLength", 2)
+    .forProperty("age")
+        .addRule("required")
+        .addRule("number")
+    .forProperty("hobbies")
+        .addRulesetForEach(hobbyRuleset)
+    .build();

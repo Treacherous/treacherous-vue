@@ -1,12 +1,13 @@
 {
   "name": "treacherous-vue",
-  "version": "0.0.0",
+  "version": "0.1.0",
   "description": "A vue plugin to use the treacherous validation system",
   "author": "LP",
   "license": "MIT",
   "main": "dist/commonjs/plugin.js",
+  "types": "dist/definitions/plugin.d.ts",
   "dependencies": {
-    "vue": "latest",
+    "vue": "^2.4.2",
     "treacherous": "^0.16.1",
     "treacherous-view": "^0.4.0"
   },

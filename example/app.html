@@ -41,7 +41,7 @@
                 <p>In some cases you will have multiple components on the page which have their own validation concerns, but want to display all the validation errors as a singular summary to the user.</p>
                 <p>Because the validation groups come from refs, they are not available initially available until the parent has been mounted. This is why we have the <code>v-if</code> here to stop the 
                     directive running until the validation groups have been setup.</p>
-                <div id="complex-state-summary" v-if="validationSummaryGroups != null" v-validation-summary="validationSummaryGroups"></div>
+                <div id="validation-summary" v-if="validationSummaryGroups != null" v-validation-summary="validationSummaryGroups"></div>
             </fieldset>
         </div>
 

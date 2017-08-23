@@ -1,6 +1,13 @@
 # Treacherous-Vue
 
-So this is the Vue bridge for Treacherous, which is slightly different in usage than the knockout and aurelia ones as it follows existing paradigms by vues existing validation systems.
+So this is the Vue bridge for [Treacherous](https://github.com/grofit/treacherous), which is slightly different in usage than the knockout and aurelia ones as it follows existing paradigms by vues existing validation systems.
+
+**VIEW THE EXAMPLE/DEMO [HERE](https://rawgit.com/grofit/treacherous-vue/master/example/app.html)**
+
+It is worth reading over the Treacherous libraries if you want to do more than basic validation scenarios, they can be found:
+
+- [Treacherous](https://github.com/grofit/treacherous)
+- [Trecherous View](https://github.com/grofit/treacherous-view)
 
 ## Usage
 
@@ -13,18 +20,18 @@ npm install treacherous-vue
 
 Then register the plugin with vue:
 
-```
-import {TreacherousPlugin} from "treacherous-vue";
+```javascript
 import Vue from "vue";
+import TreacherousPlugin from "treacherous-vue";
 
-Vue.use(new TreacherousPlugin());
+Vue.use(TreacherousPlugin);
 ```
 
 Once you have done this you can optionally include validation rulesets on your components and use the directives to control how the view reacts.
 
 ### Simple Use Case
 
-```
+```javascript
 import {createRuleset} from "treacherous-vue";
 
 function generateRuleset()
@@ -44,8 +51,12 @@ Vue.component('my-component', {
 });
 ```
 
-So as seen above you can optionally provide for any component a `ruleset` property, which if used will pick up what rules you want to apply to the data aspect.
+So as seen above you can optionally provide for any component a `ruleset` property, which if used will pick up what rules you want to apply to the `data` contained within the component.
 
-To then show errors in the view you would need to use the `v-show-errors` directive, which doesn't take any arguments.
+## Docs
 
-As part of the overall treacherous eco system all frameworks use a general html attribute called `validate-property` which defines what property you want to validate.
+There are docs on each subject within the docs folder, its worth reading them and viewing the example to see how to use the framework and how to make use of treacherous features.
+
+**VIEW THE DOCS [HERE](https://github.com/grofit/treacherous-vue/tree/master/docs)**
+
+**VIEW THE EXAMPLE/DEMO [HERE](https://rawgit.com/grofit/treacherous-vue/master/example/app.html)**

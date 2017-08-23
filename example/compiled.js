@@ -13248,7 +13248,7 @@ module.exports = "<section>\r\n    <div>\r\n        <label>Username</label>\r\n 
 /* harmony import */ var __WEBPACK_IMPORTED_MODULE_1__user_data_model__ = __webpack_require__(70);
 /* harmony import */ var __WEBPACK_IMPORTED_MODULE_2__hobby_model__ = __webpack_require__(71);
 /* harmony import */ var __WEBPACK_IMPORTED_MODULE_3__user_data_ruleset__ = __webpack_require__(72);
-/* harmony import */ var __WEBPACK_IMPORTED_MODULE_4__complex_html__ = __webpack_require__(73);
+/* harmony import */ var __WEBPACK_IMPORTED_MODULE_4__complex_html__ = __webpack_require__(74);
 /* harmony import */ var __WEBPACK_IMPORTED_MODULE_4__complex_html___default = __webpack_require__.n(__WEBPACK_IMPORTED_MODULE_4__complex_html__);
 
 
@@ -13258,7 +13258,7 @@ module.exports = "<section>\r\n    <div>\r\n        <label>Username</label>\r\n 
 
 
 __WEBPACK_IMPORTED_MODULE_0_vue_dist_vue___default.a.component('complex', {
-    ruleset: Object(__WEBPACK_IMPORTED_MODULE_3__user_data_ruleset__["a" /* generateRuleset */])(),
+    ruleset: __WEBPACK_IMPORTED_MODULE_3__user_data_ruleset__["a" /* userDataRuleset */],
     data: () => new __WEBPACK_IMPORTED_MODULE_1__user_data_model__["a" /* UserData */]("Bob", 20, [ 
         new __WEBPACK_IMPORTED_MODULE_2__hobby_model__["a" /* Hobby */]("reading"), 
         new __WEBPACK_IMPORTED_MODULE_2__hobby_model__["a" /* Hobby */]("skateboarding"), 
@@ -13296,36 +13296,43 @@ function Hobby(name)
 /***/ (function(module, __webpack_exports__, __webpack_require__) {
 
 "use strict";
-/* harmony export (immutable) */ __webpack_exports__["a"] = generateRuleset;
+/* harmony export (binding) */ __webpack_require__.d(__webpack_exports__, "a", function() { return userDataRuleset; });
+/* harmony import */ var __WEBPACK_IMPORTED_MODULE_0__dist_commonjs_plugin__ = __webpack_require__(2);
+/* harmony import */ var __WEBPACK_IMPORTED_MODULE_0__dist_commonjs_plugin___default = __webpack_require__.n(__WEBPACK_IMPORTED_MODULE_0__dist_commonjs_plugin__);
+/* harmony import */ var __WEBPACK_IMPORTED_MODULE_1__hobby_ruleset__ = __webpack_require__(73);
+
+
+
+var userDataRuleset = Object(__WEBPACK_IMPORTED_MODULE_0__dist_commonjs_plugin__["createRuleset"])()
+    .forProperty("name")
+        .addRule("required")
+        .addRule("minLength", 2)
+    .forProperty("age")
+        .addRule("required")
+        .addRule("number")
+    .forProperty("hobbies")
+        .addRulesetForEach(__WEBPACK_IMPORTED_MODULE_1__hobby_ruleset__["a" /* hobbyRuleset */])
+    .build();
+
+/***/ }),
+/* 73 */
+/***/ (function(module, __webpack_exports__, __webpack_require__) {
+
+"use strict";
+/* harmony export (binding) */ __webpack_require__.d(__webpack_exports__, "a", function() { return hobbyRuleset; });
 /* harmony import */ var __WEBPACK_IMPORTED_MODULE_0__dist_commonjs_plugin__ = __webpack_require__(2);
 /* harmony import */ var __WEBPACK_IMPORTED_MODULE_0__dist_commonjs_plugin___default = __webpack_require__.n(__WEBPACK_IMPORTED_MODULE_0__dist_commonjs_plugin__);
 
 
-function generateRuleset()
-{
-    var hobbyRuleset = Object(__WEBPACK_IMPORTED_MODULE_0__dist_commonjs_plugin__["createRuleset"])()
-        .forProperty("hobbyName")
-            .addRule("required")
-            .addRule("minLength", 2)
-            .addRule("maxLength", 20)
-        .build();
-
-    var modelRuleset = Object(__WEBPACK_IMPORTED_MODULE_0__dist_commonjs_plugin__["createRuleset"])()
-        .forProperty("name")
-            .addRule("required")
-            .addRule("minLength", 2)
-        .forProperty("age")
-            .addRule("required")
-            .addRule("number")
-        .forProperty("hobbies")
-            .addRulesetForEach(hobbyRuleset)
-        .build();
-
-    return modelRuleset;
-}
+var hobbyRuleset = Object(__WEBPACK_IMPORTED_MODULE_0__dist_commonjs_plugin__["createRuleset"])()
+    .forProperty("hobbyName")
+        .addRule("required")
+        .addRule("minLength", 2)
+        .addRule("maxLength", 20)
+    .build();
 
 /***/ }),
-/* 73 */
+/* 74 */
 /***/ (function(module, exports) {
 
 module.exports = "<section class=\"row\">\r\n    <div class=\"six columns\">\r\n        <label>Name</label>\r\n        <input type=\"text\" class=\"u-full-width\" v-model=\"name\" placeholder=\"Name\" v-show-error validate-property=\"name\" />\r\n    </div>\r\n    <div class=\"six columns\">\r\n        <label>Age</label>\r\n        <input type=\"text\" class=\"u-full-width\" v-model=\"age\" placeholder=\"Age\" v-show-error validate-property=\"age\" view-strategy=\"tooltip\" />\r\n    </div>\r\n    <div>\r\n        <label>Hobbies</label>\r\n        <div v-for=\"(hobby, index) in hobbies\">\r\n            <input type=\"text\" class=\"u-full-width\" v-model=\"hobby.hobbyName\" placeholder=\"Hobby\" v-show-error v-bind:validate-property=\"'hobbies[' + index + '].hobbyName'\" />\r\n        </div>\r\n    </div>\r\n</section>"
