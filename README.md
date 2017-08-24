@@ -62,3 +62,9 @@ There are docs on each subject within the docs folder, its worth reading them an
 **VIEW THE DOCS [HERE](https://github.com/grofit/treacherous-vue/tree/master/docs)**
 
 **VIEW THE EXAMPLE/DEMO [HERE](https://rawgit.com/grofit/treacherous-vue/master/example/app.html)**
+
+## Credits
+
+"Mountains" Icon courtesy of [The Noun Project](https://thenounproject.com/), by Aleksandr Vector, under [CC 3.0](http://creativecommons.org/licenses/by/3.0/us/)
+
+"Vue" Icon courtesy of [vue.js](https://vuejs.org/) project
