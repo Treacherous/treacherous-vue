@@ -1,6 +1,8 @@
 # Treacherous-Vue
 
-So this is the Vue bridge for [Treacherous](https://github.com/grofit/treacherous), which is slightly different in usage than the knockout and aurelia ones as it follows existing paradigms by vues existing validation systems.
+<img src="https://user-images.githubusercontent.com/927201/29661471-03b5ee16-88bc-11e7-880d-d8c027b264c8.png"/> <img src="https://user-images.githubusercontent.com/927201/29662139-22a5f710-88be-11e7-996c-181d00a38802.png"/> 
+
+This is the Vue wrapper for [Treacherous](https://github.com/grofit/treacherous), which is slightly different in usage than the knockout and aurelia ones as it follows existing paradigms set by vues existing validation libraries.
 
 **VIEW THE EXAMPLE/DEMO [HERE](https://rawgit.com/grofit/treacherous-vue/master/example/app.html)**
 
