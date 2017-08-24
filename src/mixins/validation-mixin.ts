@@ -25,5 +25,8 @@ export const validationMixin = {
 
         let context = this;
         (<IReactiveValidationGroup>context.validationGroup).release();
+        
+        delete context.validationGroup;
+        delete context._validationMetadata;
     }
 };
