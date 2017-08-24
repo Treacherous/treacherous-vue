@@ -1,4 +1,4 @@
-import {createRuleset} from "../../../dist/commonjs/plugin";
+import {createRuleset} from "../../../dist/commonjs/index";
 
 export var hobbyRuleset = createRuleset()
     .forProperty("hobbyName")

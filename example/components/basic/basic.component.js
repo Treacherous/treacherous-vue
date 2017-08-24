@@ -1,6 +1,6 @@
 import Vue  from "vue/dist/vue";
 
-import {createRuleset} from "../../../dist/commonjs/plugin";
+import {createRuleset} from "../../../dist/commonjs/index";
 import template from "./basic.html";
 
 function generateRuleset() {

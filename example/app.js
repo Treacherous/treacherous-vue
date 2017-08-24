@@ -1,11 +1,11 @@
 import Vue  from "vue/dist/vue";
 
 // This is all you need to do to add the plugin
-import TreacherousVue from "../dist/commonjs/plugin"
+import TreacherousVue from "../dist/commonjs/index"
 Vue.use(TreacherousVue);
 
 // Add custom strategy for complex example
-import {viewStrategyRegistry} from "../dist/commonjs/plugin"
+import {viewStrategyRegistry} from "../dist/commonjs/index"
 import {TooltipStrategy} from "./custom-view/tooltip-strategy"
 viewStrategyRegistry.registerStrategy(new TooltipStrategy());
 

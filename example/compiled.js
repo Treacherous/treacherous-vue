@@ -60,7 +60,7 @@
 /******/ 	__webpack_require__.p = "";
 /******/
 /******/ 	// Load entry module and return exports
-/******/ 	return __webpack_require__(__webpack_require__.s = 56);
+/******/ 	return __webpack_require__(__webpack_require__.s = 58);
 /******/ })
 /************************************************************************/
 /******/ ([
@@ -281,158 +281,19 @@ exports.TypeHelper = TypeHelper;
 "use strict";
 
 Object.defineProperty(exports, "__esModule", { value: true });
-var treacherous_1 = __webpack_require__(11);
-var treacherous_view_1 = __webpack_require__(9);
-var ValidationSubKey = "validation-subscriptions";
-var SummarySubKey = "summary-subscriptions";
-var mixins = {
-    created: function () {
-        if (!this.$options.ruleset) {
-            return;
-        }
-        var context = this;
-        var ruleset = context.$options.ruleset;
-        var validationGroup = treacherous_1.createGroup().asReactiveGroup().build(context, ruleset);
-        context.validationGroup = validationGroup;
-        var metadata = {};
-        context._validationMetadata = metadata;
-        metadata[ValidationSubKey] = {};
-        metadata[SummarySubKey] = [];
-    },
-    beforeDestroy: function () {
-        if (!this.$options.ruleset) {
-            return;
-        }
-        var context = this;
-        context.validationGroup.release();
-    }
-};
-var showErrorDirective = {
-    bind: function (element, binding, vnode) {
-        var context = vnode.context;
-        var validationGroup = context.validationGroup;
-        if (!validationGroup) {
-            return;
-        }
-        var metadata = context._validationMetadata;
-        var propertyRoute = treacherous_view_1.ElementHelper.getPropertyRouteFrom(element);
-        if (!propertyRoute) {
-            return;
-        }
-        var strategyName = treacherous_view_1.ElementHelper.getViewStrategyFrom(element);
-        var viewStrategy = treacherous_view_1.viewStrategyRegistry.getStrategyNamed(strategyName || "inline");
-        if (!viewStrategy) {
-            return;
-        }
-        var validationState = treacherous_view_1.ValidationState.unknown;
-        var viewOptions = treacherous_view_1.ElementHelper.getViewOptionsFrom(element) || {};
-        var handlePossibleError = function (error) {
-            if (!error) {
-                viewStrategy.propertyBecomeValid(element, propertyRoute, validationState, viewOptions);
-                validationState = treacherous_view_1.ValidationState.valid;
-            }
-            else {
-                viewStrategy.propertyBecomeInvalid(element, error, propertyRoute, validationState, viewOptions);
-                validationState = treacherous_view_1.ValidationState.invalid;
-            }
-        };
-        var handlePropertyStateChange = function (args) {
-            handlePossibleError(args.error);
-        };
-        var propertyPredicate = function (args) {
-            return args.property == propertyRoute;
-        };
-        var sub = validationGroup.propertyStateChangedEvent.subscribe(handlePropertyStateChange, propertyPredicate);
-        metadata[ValidationSubKey][propertyRoute] = sub;
-    },
-    unbind: function (element, binding, vnode) {
-        var context = vnode.context;
-        var propertyRoute = treacherous_view_1.ElementHelper.getPropertyRouteFrom(element);
-        if (!propertyRoute) {
-            return;
-        }
-        var metadata = context._validationMetadata;
-        var outstandingSub = metadata[ValidationSubKey][propertyRoute];
-        if (outstandingSub) {
-            outstandingSub();
-        }
-    }
-};
-var summaryDirective = {
-    bind: function (element, binding, vnode) {
-        var context = vnode.context;
-        if (!context._validationMetadata) {
-            context._validationMetadata = {};
-            context._validationMetadata[SummarySubKey] = [];
-        }
-        var metadata = context._validationMetadata;
-        var validationGroups = null;
-        if (binding.value != null) {
-            validationGroups = binding.value;
-        }
-        else {
-            validationGroups = context.validationGroup;
-        }
-        if (!validationGroups) {
-            return;
-        }
-        var isArray = Array.isArray(validationGroups);
-        var getDisplayName = function (propertyRoute) {
-            if (!isArray) {
-                return validationGroups.getPropertyDisplayName(propertyRoute);
-            }
-            var finalName = propertyRoute;
-            validationGroups.forEach(function (validationGroup) {
-                var returnedName = validationGroup.getPropertyDisplayName(propertyRoute);
-                if (returnedName != propertyRoute) {
-                    finalName = returnedName;
-                }
-            });
-            return finalName;
-        };
-        var strategyName = treacherous_view_1.ElementHelper.getSummaryStrategyFrom(element);
-        var summaryStrategy = treacherous_view_1.viewSummaryRegistry.getSummaryNamed(strategyName || "default");
-        if (!summaryStrategy) {
-            return;
-        }
-        var viewOptions = treacherous_view_1.ElementHelper.getSummaryOptionsFrom(element) || {};
-        summaryStrategy.setupContainer(element, viewOptions);
-        var handleStateChange = function (eventArgs) {
-            var displayName = getDisplayName(eventArgs.property);
-            if (eventArgs.isValid) {
-                summaryStrategy.propertyBecomeValid(element, displayName, viewOptions);
-            }
-            else {
-                summaryStrategy.propertyBecomeInvalid(element, eventArgs.error, displayName, viewOptions);
-            }
-        };
-        if (isArray) {
-            validationGroups.forEach(function (validationGroup) {
-                var sub = validationGroup.propertyStateChangedEvent.subscribe(handleStateChange);
-                metadata[SummarySubKey].push(sub);
-            });
-        }
-        else {
-            var sub = validationGroups.propertyStateChangedEvent.subscribe(handleStateChange);
-            metadata[SummarySubKey].push(sub);
-        }
-    },
-    unbind: function (element, binding, vnode) {
-        var context = vnode.context;
-        var metadata = context._validationMetadata;
-        metadata[SummarySubKey].foreach(function (x) { return x(); });
-    }
-};
+var show_error_1 = __webpack_require__(11);
+var validation_summary_1 = __webpack_require__(19);
+var validation_mixin_1 = __webpack_require__(63);
 var install = function (Vue, options) {
-    Vue.mixin(mixins);
-    Vue.directive('show-error', showErrorDirective);
-    Vue.directive('validation-summary', summaryDirective);
+    Vue.mixin(validation_mixin_1.validationMixin);
+    Vue.directive('show-error', show_error_1.showErrorDirective);
+    Vue.directive('validation-summary', validation_summary_1.summaryDirective);
 };
-var treacherous_view_2 = __webpack_require__(9);
-exports.viewStrategyRegistry = treacherous_view_2.viewStrategyRegistry;
-var treacherous_2 = __webpack_require__(11);
-exports.createRuleset = treacherous_2.createRuleset;
-exports.ruleRegistry = treacherous_2.ruleRegistry;
+var treacherous_view_1 = __webpack_require__(3);
+exports.viewStrategyRegistry = treacherous_view_1.viewStrategyRegistry;
+var treacherous_1 = __webpack_require__(20);
+exports.createRuleset = treacherous_1.createRuleset;
+exports.ruleRegistry = treacherous_1.ruleRegistry;
 exports.default = {
     install: install
 };
@@ -444,8 +305,31 @@ exports.default = {
 
 "use strict";
 
+function __export(m) {
+    for (var p in m) if (!exports.hasOwnProperty(p)) exports[p] = m[p];
+}
 Object.defineProperty(exports, "__esModule", { value: true });
-var property_resolver_1 = __webpack_require__(6);
+__export(__webpack_require__(60));
+__export(__webpack_require__(7));
+__export(__webpack_require__(61));
+__export(__webpack_require__(18));
+__export(__webpack_require__(62));
+__export(__webpack_require__(12));
+__export(__webpack_require__(15));
+__export(__webpack_require__(16));
+__export(__webpack_require__(17));
+__export(__webpack_require__(14));
+__export(__webpack_require__(13));
+
+
+/***/ }),
+/* 4 */
+/***/ (function(module, exports, __webpack_require__) {
+
+"use strict";
+
+Object.defineProperty(exports, "__esModule", { value: true });
+var property_resolver_1 = __webpack_require__(8);
 var RuleResolver = (function () {
     function RuleResolver(propertyResolver) {
         if (propertyResolver === void 0) { propertyResolver = new property_resolver_1.PropertyResolver(); }
@@ -537,7 +421,7 @@ exports.RuleResolver = RuleResolver;
 
 
 /***/ }),
-/* 4 */
+/* 5 */
 /***/ (function(module, exports, __webpack_require__) {
 
 "use strict";
@@ -559,7 +443,7 @@ exports.ComparerHelper = ComparerHelper;
 
 
 /***/ }),
-/* 5 */
+/* 6 */
 /***/ (function(module, exports, __webpack_require__) {
 
 /* WEBPACK VAR INJECTION */(function(global) {/*!
@@ -10641,15 +10525,7 @@ return Vue$3;
 
 })));
 
-/* WEBPACK VAR INJECTION */}.call(exports, __webpack_require__(57)))
-
-/***/ }),
-/* 6 */
-/***/ (function(module, exports, __webpack_require__) {
-
-var property_resolver_1 = __webpack_require__(59);
-exports.PropertyResolver = property_resolver_1.PropertyResolver;
-
+/* WEBPACK VAR INJECTION */}.call(exports, __webpack_require__(59)))
 
 /***/ }),
 /* 7 */
@@ -10658,13 +10534,59 @@ exports.PropertyResolver = property_resolver_1.PropertyResolver;
 "use strict";
 
 Object.defineProperty(exports, "__esModule", { value: true });
+var ClassHelper = (function () {
+    function ClassHelper() {
+    }
+    ClassHelper.hasClass = function (element, className) {
+        if (element.classList) {
+            return element.classList.contains(className);
+        }
+        return !!element.className.match(new RegExp("(\\s|^)" + className + "(\\s|$)"));
+    };
+    ClassHelper.addClass = function (element, className) {
+        if (element.classList) {
+            element.classList.add(className);
+        }
+        else if (!ClassHelper.hasClass(element, className)) {
+            element.errorClassName += " " + className;
+        }
+    };
+    ClassHelper.removeClass = function (element, className) {
+        if (element.classList) {
+            element.classList.remove(className);
+        }
+        else if (ClassHelper.hasClass(element, className)) {
+            var reg = new RegExp("(\\s|^)" + className + "(\\s|$)");
+            element.errorClassName = element.className.replace(reg, ' ');
+        }
+    };
+    return ClassHelper;
+}());
+exports.ClassHelper = ClassHelper;
+
+
+/***/ }),
+/* 8 */
+/***/ (function(module, exports, __webpack_require__) {
+
+var property_resolver_1 = __webpack_require__(65);
+exports.PropertyResolver = property_resolver_1.PropertyResolver;
+
+
+/***/ }),
+/* 9 */
+/***/ (function(module, exports, __webpack_require__) {
+
+"use strict";
+
+Object.defineProperty(exports, "__esModule", { value: true });
 var tslib_1 = __webpack_require__(0);
-var rule_resolver_1 = __webpack_require__(3);
+var rule_resolver_1 = __webpack_require__(4);
 var type_helper_1 = __webpack_require__(1);
-var promise_counter_1 = __webpack_require__(15);
-var property_state_changed_event_1 = __webpack_require__(16);
-var model_state_changed_event_1 = __webpack_require__(17);
-var event_js_1 = __webpack_require__(18);
+var promise_counter_1 = __webpack_require__(24);
+var property_state_changed_event_1 = __webpack_require__(25);
+var model_state_changed_event_1 = __webpack_require__(26);
+var event_js_1 = __webpack_require__(27);
 // TODO: This class could be simplified
 var ValidationGroup = (function () {
     function ValidationGroup(fieldErrorProcessor, ruleResolver, modelResolverFactory, model, ruleset) {
@@ -10924,14 +10846,14 @@ exports.ValidationGroup = ValidationGroup;
 
 
 /***/ }),
-/* 8 */
+/* 10 */
 /***/ (function(module, exports, __webpack_require__) {
 
 "use strict";
 
 Object.defineProperty(exports, "__esModule", { value: true });
-var model_resolver_1 = __webpack_require__(26);
-var property_resolver_1 = __webpack_require__(6);
+var model_resolver_1 = __webpack_require__(35);
+var property_resolver_1 = __webpack_require__(8);
 var ModelResolverFactory = (function () {
     function ModelResolverFactory(propertyResolver) {
         if (propertyResolver === void 0) { propertyResolver = new property_resolver_1.PropertyResolver(); }
@@ -10947,117 +10869,65 @@ exports.ModelResolverFactory = ModelResolverFactory;
 
 
 /***/ }),
-/* 9 */
-/***/ (function(module, exports, __webpack_require__) {
-
-"use strict";
-
-function __export(m) {
-    for (var p in m) if (!exports.hasOwnProperty(p)) exports[p] = m[p];
-}
-Object.defineProperty(exports, "__esModule", { value: true });
-__export(__webpack_require__(63));
-__export(__webpack_require__(10));
-__export(__webpack_require__(64));
-__export(__webpack_require__(55));
-__export(__webpack_require__(65));
-__export(__webpack_require__(49));
-__export(__webpack_require__(52));
-__export(__webpack_require__(53));
-__export(__webpack_require__(54));
-__export(__webpack_require__(51));
-__export(__webpack_require__(50));
-
-
-/***/ }),
-/* 10 */
-/***/ (function(module, exports, __webpack_require__) {
-
-"use strict";
-
-Object.defineProperty(exports, "__esModule", { value: true });
-var ClassHelper = (function () {
-    function ClassHelper() {
-    }
-    ClassHelper.hasClass = function (element, className) {
-        if (element.classList) {
-            return element.classList.contains(className);
-        }
-        return !!element.className.match(new RegExp("(\\s|^)" + className + "(\\s|$)"));
-    };
-    ClassHelper.addClass = function (element, className) {
-        if (element.classList) {
-            element.classList.add(className);
-        }
-        else if (!ClassHelper.hasClass(element, className)) {
-            element.errorClassName += " " + className;
-        }
-    };
-    ClassHelper.removeClass = function (element, className) {
-        if (element.classList) {
-            element.classList.remove(className);
-        }
-        else if (ClassHelper.hasClass(element, className)) {
-            var reg = new RegExp("(\\s|^)" + className + "(\\s|$)");
-            element.errorClassName = element.className.replace(reg, ' ');
-        }
-    };
-    return ClassHelper;
-}());
-exports.ClassHelper = ClassHelper;
-
-
-/***/ }),
 /* 11 */
 /***/ (function(module, exports, __webpack_require__) {
 
 "use strict";
 
 Object.defineProperty(exports, "__esModule", { value: true });
-var tslib_1 = __webpack_require__(0);
-tslib_1.__exportStar(__webpack_require__(58), exports);
-tslib_1.__exportStar(__webpack_require__(27), exports);
-tslib_1.__exportStar(__webpack_require__(20), exports);
-tslib_1.__exportStar(__webpack_require__(44), exports);
-tslib_1.__exportStar(__webpack_require__(14), exports);
-tslib_1.__exportStar(__webpack_require__(8), exports);
-tslib_1.__exportStar(__webpack_require__(22), exports);
-tslib_1.__exportStar(__webpack_require__(17), exports);
-tslib_1.__exportStar(__webpack_require__(25), exports);
-tslib_1.__exportStar(__webpack_require__(16), exports);
-tslib_1.__exportStar(__webpack_require__(4), exports);
-tslib_1.__exportStar(__webpack_require__(1), exports);
-tslib_1.__exportStar(__webpack_require__(12), exports);
-tslib_1.__exportStar(__webpack_require__(13), exports);
-tslib_1.__exportStar(__webpack_require__(61), exports);
-tslib_1.__exportStar(__webpack_require__(26), exports);
-tslib_1.__exportStar(__webpack_require__(15), exports);
-tslib_1.__exportStar(__webpack_require__(47), exports);
-tslib_1.__exportStar(__webpack_require__(46), exports);
-tslib_1.__exportStar(__webpack_require__(3), exports);
-tslib_1.__exportStar(__webpack_require__(45), exports);
-tslib_1.__exportStar(__webpack_require__(62), exports);
-tslib_1.__exportStar(__webpack_require__(29), exports);
-tslib_1.__exportStar(__webpack_require__(30), exports);
-tslib_1.__exportStar(__webpack_require__(31), exports);
-tslib_1.__exportStar(__webpack_require__(32), exports);
-tslib_1.__exportStar(__webpack_require__(33), exports);
-tslib_1.__exportStar(__webpack_require__(43), exports);
-tslib_1.__exportStar(__webpack_require__(34), exports);
-tslib_1.__exportStar(__webpack_require__(35), exports);
-tslib_1.__exportStar(__webpack_require__(36), exports);
-tslib_1.__exportStar(__webpack_require__(37), exports);
-tslib_1.__exportStar(__webpack_require__(38), exports);
-tslib_1.__exportStar(__webpack_require__(39), exports);
-tslib_1.__exportStar(__webpack_require__(40), exports);
-tslib_1.__exportStar(__webpack_require__(41), exports);
-tslib_1.__exportStar(__webpack_require__(28), exports);
-tslib_1.__exportStar(__webpack_require__(42), exports);
-tslib_1.__exportStar(__webpack_require__(23), exports);
-tslib_1.__exportStar(__webpack_require__(24), exports);
-tslib_1.__exportStar(__webpack_require__(21), exports);
-tslib_1.__exportStar(__webpack_require__(7), exports);
-tslib_1.__exportStar(__webpack_require__(48), exports);
+var treacherous_view_1 = __webpack_require__(3);
+exports.ValidationSubKey = "validation-subscriptions";
+exports.showErrorDirective = {
+    bind: function (element, binding, vnode) {
+        var context = vnode.context;
+        var validationGroup = context.validationGroup;
+        if (!validationGroup) {
+            return;
+        }
+        var metadata = context._validationMetadata;
+        var propertyRoute = treacherous_view_1.ElementHelper.getPropertyRouteFrom(element);
+        if (!propertyRoute) {
+            return;
+        }
+        var strategyName = treacherous_view_1.ElementHelper.getViewStrategyFrom(element);
+        var viewStrategy = treacherous_view_1.viewStrategyRegistry.getStrategyNamed(strategyName || "inline");
+        if (!viewStrategy) {
+            return;
+        }
+        var validationState = treacherous_view_1.ValidationState.unknown;
+        var viewOptions = treacherous_view_1.ElementHelper.getViewOptionsFrom(element) || {};
+        var handlePossibleError = function (error) {
+            if (!error) {
+                viewStrategy.propertyBecomeValid(element, propertyRoute, validationState, viewOptions);
+                validationState = treacherous_view_1.ValidationState.valid;
+            }
+            else {
+                viewStrategy.propertyBecomeInvalid(element, error, propertyRoute, validationState, viewOptions);
+                validationState = treacherous_view_1.ValidationState.invalid;
+            }
+        };
+        var handlePropertyStateChange = function (args) {
+            handlePossibleError(args.error);
+        };
+        var propertyPredicate = function (args) {
+            return args.property == propertyRoute;
+        };
+        var sub = validationGroup.propertyStateChangedEvent.subscribe(handlePropertyStateChange, propertyPredicate);
+        metadata[exports.ValidationSubKey][propertyRoute] = sub;
+    },
+    unbind: function (element, binding, vnode) {
+        var context = vnode.context;
+        var propertyRoute = treacherous_view_1.ElementHelper.getPropertyRouteFrom(element);
+        if (!propertyRoute) {
+            return;
+        }
+        var metadata = context._validationMetadata;
+        var outstandingSub = metadata[exports.ValidationSubKey][propertyRoute];
+        if (outstandingSub) {
+            outstandingSub();
+        }
+    }
+};
 
 
 /***/ }),
@@ -11067,8 +10937,364 @@ tslib_1.__exportStar(__webpack_require__(48), exports);
 "use strict";
 
 Object.defineProperty(exports, "__esModule", { value: true });
+var ViewStrategyRegistry = (function () {
+    function ViewStrategyRegistry() {
+        var _this = this;
+        this.strategies = {};
+        this.registerStrategy = function (viewStrategy) { _this.strategies[viewStrategy.strategyName] = viewStrategy; };
+        this.unregisterStrategy = function (viewStrategy) { delete _this.strategies[viewStrategy.strategyName]; };
+        this.getStrategyNamed = function (strategyName) { return _this.strategies[strategyName] || null; };
+        this.hasStrategyNamed = function (strategyName) { return _this.getStrategyNamed(strategyName) != null; };
+    }
+    return ViewStrategyRegistry;
+}());
+exports.ViewStrategyRegistry = ViewStrategyRegistry;
+
+
+/***/ }),
+/* 13 */
+/***/ (function(module, exports, __webpack_require__) {
+
+"use strict";
+
+Object.defineProperty(exports, "__esModule", { value: true });
+var class_helper_1 = __webpack_require__(7);
+var inline_handler_1 = __webpack_require__(14);
+var InlineStrategy = (function () {
+    function InlineStrategy(inlineHandler) {
+        if (inlineHandler === void 0) { inlineHandler = new inline_handler_1.InlineHandler(); }
+        this.inlineHandler = inlineHandler;
+        this.strategyName = "inline";
+    }
+    InlineStrategy.prototype.propertyBecomeValid = function (element) {
+        class_helper_1.ClassHelper.removeClass(element, "invalid");
+        class_helper_1.ClassHelper.addClass(element, "valid");
+        this.inlineHandler.removeErrorElement(element);
+    };
+    InlineStrategy.prototype.propertyBecomeInvalid = function (element, error) {
+        class_helper_1.ClassHelper.removeClass(element, "valid");
+        class_helper_1.ClassHelper.addClass(element, "invalid");
+        this.inlineHandler.addElementError(error, element);
+    };
+    return InlineStrategy;
+}());
+exports.InlineStrategy = InlineStrategy;
+
+
+/***/ }),
+/* 14 */
+/***/ (function(module, exports, __webpack_require__) {
+
+"use strict";
+
+Object.defineProperty(exports, "__esModule", { value: true });
+var InlineHandler = (function () {
+    function InlineHandler() {
+        var _this = this;
+        this.getElementValidatorId = function (element) {
+            if (!element.getAttribute("id")) {
+                element.setAttribute("id", "unique-" + InlineHandler.currentCount++);
+            }
+            return element.getAttribute('id') + "-error-container";
+        };
+        this.createErrorElement = function (message, element) {
+            var errorContainerName = _this.getElementValidatorId(element);
+            var errorContainer = document.createElement("div");
+            errorContainer.id = errorContainerName;
+            errorContainer.className = "validation-error-container";
+            errorContainer.textContent = message;
+            element.parentElement.appendChild(errorContainer);
+            return errorContainer;
+        };
+        this.removeErrorElement = function (element) {
+            var errorContainerName = this.getElementValidatorId(element);
+            var errorElement = document.getElementById(errorContainerName);
+            if (errorElement) {
+                errorElement.parentElement.removeChild(errorElement);
+            }
+        };
+        this.addElementError = function (message, element) {
+            var errorContainerName = this.getElementValidatorId(element);
+            var errorContainer = document.getElementById(errorContainerName);
+            if (!errorContainer) {
+                return this.createErrorElement(message, element);
+            }
+            else {
+                this.removeErrorElement(element);
+                return this.createErrorElement(message, element);
+            }
+        };
+    }
+    InlineHandler.currentCount = 1;
+    return InlineHandler;
+}());
+exports.InlineHandler = InlineHandler;
+
+
+/***/ }),
+/* 15 */
+/***/ (function(module, exports, __webpack_require__) {
+
+"use strict";
+
+Object.defineProperty(exports, "__esModule", { value: true });
+var ViewSummaryRegistry = (function () {
+    function ViewSummaryRegistry() {
+        var _this = this;
+        this.summaries = {};
+        this.registerSummary = function (viewSummaryStrategy) { _this.summaries[viewSummaryStrategy.summaryName] = viewSummaryStrategy; };
+        this.unregisterSummary = function (viewSummaryStrategy) { delete _this.summaries[viewSummaryStrategy.summaryName]; };
+        this.getSummaryNamed = function (summaryStrategyName) { return _this.summaries[summaryStrategyName] || null; };
+        this.hasSummaryNamed = function (summaryStrategyName) { return _this.getSummaryNamed(summaryStrategyName) != null; };
+    }
+    return ViewSummaryRegistry;
+}());
+exports.ViewSummaryRegistry = ViewSummaryRegistry;
+
+
+/***/ }),
+/* 16 */
+/***/ (function(module, exports, __webpack_require__) {
+
+"use strict";
+
+Object.defineProperty(exports, "__esModule", { value: true });
+var summary_handler_1 = __webpack_require__(17);
+var DefaultViewSummary = (function () {
+    function DefaultViewSummary(summaryHandler) {
+        if (summaryHandler === void 0) { summaryHandler = new summary_handler_1.SummaryHandler(); }
+        this.summaryHandler = summaryHandler;
+        this.summaryName = "default";
+    }
+    DefaultViewSummary.prototype.setupContainer = function (summaryContainerElement) {
+        this.summaryHandler.applyContainerClass(summaryContainerElement);
+    };
+    DefaultViewSummary.prototype.propertyBecomeValid = function (summaryContainerElement, propertyRoute) {
+        this.summaryHandler.removePropertyErrorElement(summaryContainerElement, propertyRoute);
+    };
+    DefaultViewSummary.prototype.propertyBecomeInvalid = function (summaryContainerElement, error, propertyRoute) {
+        var message = propertyRoute + " - " + error;
+        this.summaryHandler.removePropertyErrorElement(summaryContainerElement, propertyRoute);
+        this.summaryHandler.createPropertyErrorElement(message, summaryContainerElement, propertyRoute);
+    };
+    return DefaultViewSummary;
+}());
+exports.DefaultViewSummary = DefaultViewSummary;
+
+
+/***/ }),
+/* 17 */
+/***/ (function(module, exports, __webpack_require__) {
+
+"use strict";
+
+Object.defineProperty(exports, "__esModule", { value: true });
+var class_helper_1 = __webpack_require__(7);
+var SummaryHandler = (function () {
+    function SummaryHandler() {
+        var _this = this;
+        this.applyContainerClass = function (summaryContainerElement) {
+            class_helper_1.ClassHelper.addClass(summaryContainerElement, SummaryHandler.containerClassName);
+        };
+        this.getPropertyElementName = function (propertyRoute) {
+            var sanitisedPropertyRoute = propertyRoute.replace(/[\[\].]/g, "-");
+            return "" + SummaryHandler.elementIdFormat + sanitisedPropertyRoute;
+        };
+        this.getPropertyErrorElement = function (summaryContainerElement, propertyRoute) {
+            var elementName = _this.getPropertyElementName(propertyRoute);
+            return summaryContainerElement.querySelector("#" + elementName);
+        };
+        this.createPropertyErrorElement = function (message, summaryContainerElement, propertyRoute) {
+            var elementName = _this.getPropertyElementName(propertyRoute);
+            var errorContainer = document.createElement("div");
+            errorContainer.id = elementName;
+            errorContainer.className = SummaryHandler.errorClassName;
+            errorContainer.textContent = message;
+            errorContainer.setAttribute("property-route", propertyRoute);
+            summaryContainerElement.appendChild(errorContainer);
+            return errorContainer;
+        };
+        this.removePropertyErrorElement = function (summaryContainerElement, propertyRoute) {
+            var errorElement = _this.getPropertyErrorElement(summaryContainerElement, propertyRoute);
+            if (errorElement) {
+                summaryContainerElement.removeChild(errorElement);
+            }
+        };
+    }
+    SummaryHandler.elementIdFormat = "summary-error-for-";
+    SummaryHandler.errorClassName = "summary-error";
+    SummaryHandler.containerClassName = "validation-summary-container";
+    return SummaryHandler;
+}());
+exports.SummaryHandler = SummaryHandler;
+
+
+/***/ }),
+/* 18 */
+/***/ (function(module, exports, __webpack_require__) {
+
+"use strict";
+
+Object.defineProperty(exports, "__esModule", { value: true });
+var JsLiteralHelper = (function () {
+    function JsLiteralHelper() {
+    }
+    JsLiteralHelper.literalToJson = function (literal) {
+        var jsLiteralString = "{ " + literal + " }";
+        var jsonString = jsLiteralString.replace(JsLiteralHelper.jsLiteralRegex, "$1\"$2\":");
+        var jsonObject;
+        try {
+            jsonObject = JSON.parse(jsonString);
+        }
+        catch (error) {
+            console.warn("unable to process literal: " + literal, error);
+        }
+        return jsonObject || {};
+    };
+    JsLiteralHelper.jsLiteralRegex = /({|,)(?:\s*)(?:')?([A-Za-z_$\.][A-Za-z0-9_ \-\.$]*)(?:')?(?:\s*):/g;
+    return JsLiteralHelper;
+}());
+exports.JsLiteralHelper = JsLiteralHelper;
+
+
+/***/ }),
+/* 19 */
+/***/ (function(module, exports, __webpack_require__) {
+
+"use strict";
+
+Object.defineProperty(exports, "__esModule", { value: true });
+var treacherous_view_1 = __webpack_require__(3);
+exports.SummarySubKey = "summary-subscriptions";
+exports.summaryDirective = {
+    bind: function (element, binding, vnode) {
+        var context = vnode.context;
+        if (!context._validationMetadata) {
+            context._validationMetadata = {};
+            context._validationMetadata[exports.SummarySubKey] = [];
+        }
+        var metadata = context._validationMetadata;
+        var validationGroups = null;
+        if (binding.value != null) {
+            validationGroups = binding.value;
+        }
+        else {
+            validationGroups = context.validationGroup;
+        }
+        if (!validationGroups) {
+            return;
+        }
+        var isArray = Array.isArray(validationGroups);
+        var getDisplayName = function (propertyRoute) {
+            if (!isArray) {
+                return validationGroups.getPropertyDisplayName(propertyRoute);
+            }
+            var finalName = propertyRoute;
+            validationGroups.forEach(function (validationGroup) {
+                var returnedName = validationGroup.getPropertyDisplayName(propertyRoute);
+                if (returnedName != propertyRoute) {
+                    finalName = returnedName;
+                }
+            });
+            return finalName;
+        };
+        var strategyName = treacherous_view_1.ElementHelper.getSummaryStrategyFrom(element);
+        var summaryStrategy = treacherous_view_1.viewSummaryRegistry.getSummaryNamed(strategyName || "default");
+        if (!summaryStrategy) {
+            return;
+        }
+        var viewOptions = treacherous_view_1.ElementHelper.getSummaryOptionsFrom(element) || {};
+        summaryStrategy.setupContainer(element, viewOptions);
+        var handleStateChange = function (eventArgs) {
+            var displayName = getDisplayName(eventArgs.property);
+            if (eventArgs.isValid) {
+                summaryStrategy.propertyBecomeValid(element, displayName, viewOptions);
+            }
+            else {
+                summaryStrategy.propertyBecomeInvalid(element, eventArgs.error, displayName, viewOptions);
+            }
+        };
+        if (isArray) {
+            validationGroups.forEach(function (validationGroup) {
+                var sub = validationGroup.propertyStateChangedEvent.subscribe(handleStateChange);
+                metadata[exports.SummarySubKey].push(sub);
+            });
+        }
+        else {
+            var sub = validationGroups.propertyStateChangedEvent.subscribe(handleStateChange);
+            metadata[exports.SummarySubKey].push(sub);
+        }
+    },
+    unbind: function (element, binding, vnode) {
+        var context = vnode.context;
+        var metadata = context._validationMetadata;
+        metadata[exports.SummarySubKey].foreach(function (x) { return x(); });
+    }
+};
+
+
+/***/ }),
+/* 20 */
+/***/ (function(module, exports, __webpack_require__) {
+
+"use strict";
+
+Object.defineProperty(exports, "__esModule", { value: true });
 var tslib_1 = __webpack_require__(0);
-var field_has_error_1 = __webpack_require__(13);
+tslib_1.__exportStar(__webpack_require__(64), exports);
+tslib_1.__exportStar(__webpack_require__(36), exports);
+tslib_1.__exportStar(__webpack_require__(29), exports);
+tslib_1.__exportStar(__webpack_require__(53), exports);
+tslib_1.__exportStar(__webpack_require__(23), exports);
+tslib_1.__exportStar(__webpack_require__(10), exports);
+tslib_1.__exportStar(__webpack_require__(31), exports);
+tslib_1.__exportStar(__webpack_require__(26), exports);
+tslib_1.__exportStar(__webpack_require__(34), exports);
+tslib_1.__exportStar(__webpack_require__(25), exports);
+tslib_1.__exportStar(__webpack_require__(5), exports);
+tslib_1.__exportStar(__webpack_require__(1), exports);
+tslib_1.__exportStar(__webpack_require__(21), exports);
+tslib_1.__exportStar(__webpack_require__(22), exports);
+tslib_1.__exportStar(__webpack_require__(67), exports);
+tslib_1.__exportStar(__webpack_require__(35), exports);
+tslib_1.__exportStar(__webpack_require__(24), exports);
+tslib_1.__exportStar(__webpack_require__(56), exports);
+tslib_1.__exportStar(__webpack_require__(55), exports);
+tslib_1.__exportStar(__webpack_require__(4), exports);
+tslib_1.__exportStar(__webpack_require__(54), exports);
+tslib_1.__exportStar(__webpack_require__(68), exports);
+tslib_1.__exportStar(__webpack_require__(38), exports);
+tslib_1.__exportStar(__webpack_require__(39), exports);
+tslib_1.__exportStar(__webpack_require__(40), exports);
+tslib_1.__exportStar(__webpack_require__(41), exports);
+tslib_1.__exportStar(__webpack_require__(42), exports);
+tslib_1.__exportStar(__webpack_require__(52), exports);
+tslib_1.__exportStar(__webpack_require__(43), exports);
+tslib_1.__exportStar(__webpack_require__(44), exports);
+tslib_1.__exportStar(__webpack_require__(45), exports);
+tslib_1.__exportStar(__webpack_require__(46), exports);
+tslib_1.__exportStar(__webpack_require__(47), exports);
+tslib_1.__exportStar(__webpack_require__(48), exports);
+tslib_1.__exportStar(__webpack_require__(49), exports);
+tslib_1.__exportStar(__webpack_require__(50), exports);
+tslib_1.__exportStar(__webpack_require__(37), exports);
+tslib_1.__exportStar(__webpack_require__(51), exports);
+tslib_1.__exportStar(__webpack_require__(32), exports);
+tslib_1.__exportStar(__webpack_require__(33), exports);
+tslib_1.__exportStar(__webpack_require__(30), exports);
+tslib_1.__exportStar(__webpack_require__(9), exports);
+tslib_1.__exportStar(__webpack_require__(57), exports);
+
+
+/***/ }),
+/* 21 */
+/***/ (function(module, exports, __webpack_require__) {
+
+"use strict";
+
+Object.defineProperty(exports, "__esModule", { value: true });
+var tslib_1 = __webpack_require__(0);
+var field_has_error_1 = __webpack_require__(22);
 var FieldErrorProcessor = (function () {
     function FieldErrorProcessor(ruleRegistry) {
         this.ruleRegistry = ruleRegistry;
@@ -11143,7 +11369,7 @@ exports.FieldErrorProcessor = FieldErrorProcessor;
 
 
 /***/ }),
-/* 13 */
+/* 22 */
 /***/ (function(module, exports, __webpack_require__) {
 
 "use strict";
@@ -11163,15 +11389,15 @@ exports.FieldHasError = FieldHasError;
 
 
 /***/ }),
-/* 14 */
+/* 23 */
 /***/ (function(module, exports, __webpack_require__) {
 
 "use strict";
 
 Object.defineProperty(exports, "__esModule", { value: true });
-var validation_group_1 = __webpack_require__(7);
-var reactive_validation_group_builder_1 = __webpack_require__(20);
-var model_resolver_factory_1 = __webpack_require__(8);
+var validation_group_1 = __webpack_require__(9);
+var reactive_validation_group_builder_1 = __webpack_require__(29);
+var model_resolver_factory_1 = __webpack_require__(10);
 var ValidationGroupBuilder = (function () {
     function ValidationGroupBuilder(fieldErrorProcessor, ruleResolver) {
         var _this = this;
@@ -11210,7 +11436,7 @@ exports.ValidationGroupBuilder = ValidationGroupBuilder;
 
 
 /***/ }),
-/* 15 */
+/* 24 */
 /***/ (function(module, exports, __webpack_require__) {
 
 "use strict";
@@ -11272,7 +11498,7 @@ exports.PromiseCounter = PromiseCounter;
 
 
 /***/ }),
-/* 16 */
+/* 25 */
 /***/ (function(module, exports, __webpack_require__) {
 
 "use strict";
@@ -11290,7 +11516,7 @@ exports.PropertyStateChangedEvent = PropertyStateChangedEvent;
 
 
 /***/ }),
-/* 17 */
+/* 26 */
 /***/ (function(module, exports, __webpack_require__) {
 
 "use strict";
@@ -11306,19 +11532,19 @@ exports.ModelStateChangedEvent = ModelStateChangedEvent;
 
 
 /***/ }),
-/* 18 */
+/* 27 */
 /***/ (function(module, exports, __webpack_require__) {
 
 /* This is an auto-generated file by gulp-es6-exporter */
 function __export(m) {
     for (var p in m) if (!exports.hasOwnProperty(p)) exports[p] = m[p];
 }
-__export(__webpack_require__(60));
-__export(__webpack_require__(19));
+__export(__webpack_require__(66));
+__export(__webpack_require__(28));
 
 
 /***/ }),
-/* 19 */
+/* 28 */
 /***/ (function(module, exports) {
 
 var EventListener = (function () {
@@ -11332,15 +11558,15 @@ exports.EventListener = EventListener;
 
 
 /***/ }),
-/* 20 */
+/* 29 */
 /***/ (function(module, exports, __webpack_require__) {
 
 "use strict";
 
 Object.defineProperty(exports, "__esModule", { value: true });
-var reactive_validation_group_1 = __webpack_require__(21);
-var model_watcher_factory_1 = __webpack_require__(22);
-var model_resolver_factory_1 = __webpack_require__(8);
+var reactive_validation_group_1 = __webpack_require__(30);
+var model_watcher_factory_1 = __webpack_require__(31);
+var model_resolver_factory_1 = __webpack_require__(10);
 var ReactiveValidationGroupBuilder = (function () {
     function ReactiveValidationGroupBuilder(fieldErrorProcessor, ruleResolver) {
         var _this = this;
@@ -11383,15 +11609,15 @@ exports.ReactiveValidationGroupBuilder = ReactiveValidationGroupBuilder;
 
 
 /***/ }),
-/* 21 */
+/* 30 */
 /***/ (function(module, exports, __webpack_require__) {
 
 "use strict";
 
 Object.defineProperty(exports, "__esModule", { value: true });
 var tslib_1 = __webpack_require__(0);
-var rule_resolver_1 = __webpack_require__(3);
-var validation_group_1 = __webpack_require__(7);
+var rule_resolver_1 = __webpack_require__(4);
+var validation_group_1 = __webpack_require__(9);
 var ReactiveValidationGroup = (function (_super) {
     tslib_1.__extends(ReactiveValidationGroup, _super);
     function ReactiveValidationGroup(fieldErrorProcessor, ruleResolver, modelResolverFactory, modelWatcherFactory, model, ruleset, refreshRate) {
@@ -11418,13 +11644,13 @@ exports.ReactiveValidationGroup = ReactiveValidationGroup;
 
 
 /***/ }),
-/* 22 */
+/* 31 */
 /***/ (function(module, exports, __webpack_require__) {
 
 "use strict";
 
 Object.defineProperty(exports, "__esModule", { value: true });
-var model_watcher_1 = __webpack_require__(23);
+var model_watcher_1 = __webpack_require__(32);
 var ModelWatcherFactory = (function () {
     function ModelWatcherFactory() {
         this.createModelWatcher = function () {
@@ -11437,17 +11663,17 @@ exports.ModelWatcherFactory = ModelWatcherFactory;
 
 
 /***/ }),
-/* 23 */
+/* 32 */
 /***/ (function(module, exports, __webpack_require__) {
 
 "use strict";
 
 Object.defineProperty(exports, "__esModule", { value: true });
-var property_resolver_1 = __webpack_require__(6);
-var event_js_1 = __webpack_require__(18);
+var property_resolver_1 = __webpack_require__(8);
+var event_js_1 = __webpack_require__(27);
 var type_helper_1 = __webpack_require__(1);
-var property_watcher_1 = __webpack_require__(24);
-var property_changed_event_1 = __webpack_require__(25);
+var property_watcher_1 = __webpack_require__(33);
+var property_changed_event_1 = __webpack_require__(34);
 var ModelWatcher = (function () {
     function ModelWatcher(propertyResolver) {
         if (propertyResolver === void 0) { propertyResolver = new property_resolver_1.PropertyResolver(); }
@@ -11629,7 +11855,7 @@ exports.ModelWatcher = ModelWatcher;
 
 
 /***/ }),
-/* 24 */
+/* 33 */
 /***/ (function(module, exports, __webpack_require__) {
 
 "use strict";
@@ -11646,7 +11872,7 @@ exports.PropertyWatcher = PropertyWatcher;
 
 
 /***/ }),
-/* 25 */
+/* 34 */
 /***/ (function(module, exports, __webpack_require__) {
 
 "use strict";
@@ -11664,7 +11890,7 @@ exports.PropertyChangedEvent = PropertyChangedEvent;
 
 
 /***/ }),
-/* 26 */
+/* 35 */
 /***/ (function(module, exports, __webpack_require__) {
 
 "use strict";
@@ -11685,28 +11911,28 @@ exports.ModelResolver = ModelResolver;
 
 
 /***/ }),
-/* 27 */
+/* 36 */
 /***/ (function(module, exports, __webpack_require__) {
 
 "use strict";
 
 Object.defineProperty(exports, "__esModule", { value: true });
-var rule_registry_1 = __webpack_require__(28);
-var date_validation_rule_1 = __webpack_require__(29);
-var decimal_validation_rule_1 = __webpack_require__(30);
-var email_validation_rule_1 = __webpack_require__(31);
-var equal_validation_rule_1 = __webpack_require__(32);
-var iso_date_validation_rule_1 = __webpack_require__(33);
-var max_length_validation_rule_1 = __webpack_require__(34);
-var max_value_validation_rule_1 = __webpack_require__(35);
-var min_length_validation_rule_1 = __webpack_require__(36);
-var min_value_validation_rule_1 = __webpack_require__(37);
-var not_equal_validation_rule_1 = __webpack_require__(38);
-var number_validation_rule_1 = __webpack_require__(39);
-var regex_validation_rule_1 = __webpack_require__(40);
-var required_validation_rule_1 = __webpack_require__(41);
-var step_validation_rule_1 = __webpack_require__(42);
-var matches_validation_rule_1 = __webpack_require__(43);
+var rule_registry_1 = __webpack_require__(37);
+var date_validation_rule_1 = __webpack_require__(38);
+var decimal_validation_rule_1 = __webpack_require__(39);
+var email_validation_rule_1 = __webpack_require__(40);
+var equal_validation_rule_1 = __webpack_require__(41);
+var iso_date_validation_rule_1 = __webpack_require__(42);
+var max_length_validation_rule_1 = __webpack_require__(43);
+var max_value_validation_rule_1 = __webpack_require__(44);
+var min_length_validation_rule_1 = __webpack_require__(45);
+var min_value_validation_rule_1 = __webpack_require__(46);
+var not_equal_validation_rule_1 = __webpack_require__(47);
+var number_validation_rule_1 = __webpack_require__(48);
+var regex_validation_rule_1 = __webpack_require__(49);
+var required_validation_rule_1 = __webpack_require__(50);
+var step_validation_rule_1 = __webpack_require__(51);
+var matches_validation_rule_1 = __webpack_require__(52);
 if (!exports.ruleRegistry) {
     exports.ruleRegistry = new rule_registry_1.RuleRegistry();
     exports.ruleRegistry.registerRule(new date_validation_rule_1.DateValidationRule());
@@ -11728,7 +11954,7 @@ if (!exports.ruleRegistry) {
 
 
 /***/ }),
-/* 28 */
+/* 37 */
 /***/ (function(module, exports, __webpack_require__) {
 
 "use strict";
@@ -11757,7 +11983,7 @@ exports.RuleRegistry = RuleRegistry;
 
 
 /***/ }),
-/* 29 */
+/* 38 */
 /***/ (function(module, exports, __webpack_require__) {
 
 "use strict";
@@ -11791,7 +12017,7 @@ exports.DateValidationRule = DateValidationRule;
 
 
 /***/ }),
-/* 30 */
+/* 39 */
 /***/ (function(module, exports, __webpack_require__) {
 
 "use strict";
@@ -11825,7 +12051,7 @@ exports.DecimalValidationRule = DecimalValidationRule;
 
 
 /***/ }),
-/* 31 */
+/* 40 */
 /***/ (function(module, exports, __webpack_require__) {
 
 "use strict";
@@ -11859,7 +12085,7 @@ exports.EmailValidationRule = EmailValidationRule;
 
 
 /***/ }),
-/* 32 */
+/* 41 */
 /***/ (function(module, exports, __webpack_require__) {
 
 "use strict";
@@ -11867,7 +12093,7 @@ exports.EmailValidationRule = EmailValidationRule;
 Object.defineProperty(exports, "__esModule", { value: true });
 var tslib_1 = __webpack_require__(0);
 var type_helper_1 = __webpack_require__(1);
-var comparer_helper_1 = __webpack_require__(4);
+var comparer_helper_1 = __webpack_require__(5);
 var EqualValidationRule = (function () {
     function EqualValidationRule() {
         this.ruleName = "equal";
@@ -11905,7 +12131,7 @@ exports.EqualValidationRule = EqualValidationRule;
 
 
 /***/ }),
-/* 33 */
+/* 42 */
 /***/ (function(module, exports, __webpack_require__) {
 
 "use strict";
@@ -11939,7 +12165,7 @@ exports.ISODateValidationRule = ISODateValidationRule;
 
 
 /***/ }),
-/* 34 */
+/* 43 */
 /***/ (function(module, exports, __webpack_require__) {
 
 "use strict";
@@ -11972,7 +12198,7 @@ exports.MaxLengthValidationRule = MaxLengthValidationRule;
 
 
 /***/ }),
-/* 35 */
+/* 44 */
 /***/ (function(module, exports, __webpack_require__) {
 
 "use strict";
@@ -12005,7 +12231,7 @@ exports.MaxValueValidationRule = MaxValueValidationRule;
 
 
 /***/ }),
-/* 36 */
+/* 45 */
 /***/ (function(module, exports, __webpack_require__) {
 
 "use strict";
@@ -12038,7 +12264,7 @@ exports.MinLengthValidationRule = MinLengthValidationRule;
 
 
 /***/ }),
-/* 37 */
+/* 46 */
 /***/ (function(module, exports, __webpack_require__) {
 
 "use strict";
@@ -12071,7 +12297,7 @@ exports.MinValueValidationRule = MinValueValidationRule;
 
 
 /***/ }),
-/* 38 */
+/* 47 */
 /***/ (function(module, exports, __webpack_require__) {
 
 "use strict";
@@ -12079,7 +12305,7 @@ exports.MinValueValidationRule = MinValueValidationRule;
 Object.defineProperty(exports, "__esModule", { value: true });
 var tslib_1 = __webpack_require__(0);
 var type_helper_1 = __webpack_require__(1);
-var comparer_helper_1 = __webpack_require__(4);
+var comparer_helper_1 = __webpack_require__(5);
 var NotEqualValidationRule = (function () {
     function NotEqualValidationRule() {
         this.ruleName = "notEqual";
@@ -12117,7 +12343,7 @@ exports.NotEqualValidationRule = NotEqualValidationRule;
 
 
 /***/ }),
-/* 39 */
+/* 48 */
 /***/ (function(module, exports, __webpack_require__) {
 
 "use strict";
@@ -12151,7 +12377,7 @@ exports.NumberValidationRule = NumberValidationRule;
 
 
 /***/ }),
-/* 40 */
+/* 49 */
 /***/ (function(module, exports, __webpack_require__) {
 
 "use strict";
@@ -12183,7 +12409,7 @@ exports.RegexValidationRule = RegexValidationRule;
 
 
 /***/ }),
-/* 41 */
+/* 50 */
 /***/ (function(module, exports, __webpack_require__) {
 
 "use strict";
@@ -12228,7 +12454,7 @@ exports.RequiredValidationRule = RequiredValidationRule;
 
 
 /***/ }),
-/* 42 */
+/* 51 */
 /***/ (function(module, exports, __webpack_require__) {
 
 "use strict";
@@ -12262,7 +12488,7 @@ exports.StepValidationRule = StepValidationRule;
 
 
 /***/ }),
-/* 43 */
+/* 52 */
 /***/ (function(module, exports, __webpack_require__) {
 
 "use strict";
@@ -12270,7 +12496,7 @@ exports.StepValidationRule = StepValidationRule;
 Object.defineProperty(exports, "__esModule", { value: true });
 var tslib_1 = __webpack_require__(0);
 var type_helper_1 = __webpack_require__(1);
-var comparer_helper_1 = __webpack_require__(4);
+var comparer_helper_1 = __webpack_require__(5);
 var MatchesValidationRule = (function () {
     function MatchesValidationRule() {
         this.ruleName = "matches";
@@ -12308,17 +12534,17 @@ exports.MatchesValidationRule = MatchesValidationRule;
 
 
 /***/ }),
-/* 44 */
+/* 53 */
 /***/ (function(module, exports, __webpack_require__) {
 
 "use strict";
 
 Object.defineProperty(exports, "__esModule", { value: true });
-var ruleset_1 = __webpack_require__(45);
-var rule_link_1 = __webpack_require__(46);
-var for_each_rule_1 = __webpack_require__(47);
+var ruleset_1 = __webpack_require__(54);
+var rule_link_1 = __webpack_require__(55);
+var for_each_rule_1 = __webpack_require__(56);
 var type_helper_1 = __webpack_require__(1);
-var dynamic_composite_validation_rule_1 = __webpack_require__(48);
+var dynamic_composite_validation_rule_1 = __webpack_require__(57);
 var RulesetBuilder = (function () {
     function RulesetBuilder(ruleRegistry) {
         var _this = this;
@@ -12416,7 +12642,7 @@ exports.RulesetBuilder = RulesetBuilder;
 
 
 /***/ }),
-/* 45 */
+/* 54 */
 /***/ (function(module, exports, __webpack_require__) {
 
 "use strict";
@@ -12453,7 +12679,7 @@ exports.Ruleset = Ruleset;
 
 
 /***/ }),
-/* 46 */
+/* 55 */
 /***/ (function(module, exports, __webpack_require__) {
 
 "use strict";
@@ -12471,7 +12697,7 @@ exports.RuleLink = RuleLink;
 
 
 /***/ }),
-/* 47 */
+/* 56 */
 /***/ (function(module, exports, __webpack_require__) {
 
 "use strict";
@@ -12488,7 +12714,7 @@ exports.ForEachRule = ForEachRule;
 
 
 /***/ }),
-/* 48 */
+/* 57 */
 /***/ (function(module, exports, __webpack_require__) {
 
 "use strict";
@@ -12514,255 +12740,28 @@ exports.DynamicCompositeValidationRule = DynamicCompositeValidationRule;
 
 
 /***/ }),
-/* 49 */
-/***/ (function(module, exports, __webpack_require__) {
-
-"use strict";
-
-Object.defineProperty(exports, "__esModule", { value: true });
-var ViewStrategyRegistry = (function () {
-    function ViewStrategyRegistry() {
-        var _this = this;
-        this.strategies = {};
-        this.registerStrategy = function (viewStrategy) { _this.strategies[viewStrategy.strategyName] = viewStrategy; };
-        this.unregisterStrategy = function (viewStrategy) { delete _this.strategies[viewStrategy.strategyName]; };
-        this.getStrategyNamed = function (strategyName) { return _this.strategies[strategyName] || null; };
-        this.hasStrategyNamed = function (strategyName) { return _this.getStrategyNamed(strategyName) != null; };
-    }
-    return ViewStrategyRegistry;
-}());
-exports.ViewStrategyRegistry = ViewStrategyRegistry;
-
-
-/***/ }),
-/* 50 */
-/***/ (function(module, exports, __webpack_require__) {
-
-"use strict";
-
-Object.defineProperty(exports, "__esModule", { value: true });
-var class_helper_1 = __webpack_require__(10);
-var inline_handler_1 = __webpack_require__(51);
-var InlineStrategy = (function () {
-    function InlineStrategy(inlineHandler) {
-        if (inlineHandler === void 0) { inlineHandler = new inline_handler_1.InlineHandler(); }
-        this.inlineHandler = inlineHandler;
-        this.strategyName = "inline";
-    }
-    InlineStrategy.prototype.propertyBecomeValid = function (element) {
-        class_helper_1.ClassHelper.removeClass(element, "invalid");
-        class_helper_1.ClassHelper.addClass(element, "valid");
-        this.inlineHandler.removeErrorElement(element);
-    };
-    InlineStrategy.prototype.propertyBecomeInvalid = function (element, error) {
-        class_helper_1.ClassHelper.removeClass(element, "valid");
-        class_helper_1.ClassHelper.addClass(element, "invalid");
-        this.inlineHandler.addElementError(error, element);
-    };
-    return InlineStrategy;
-}());
-exports.InlineStrategy = InlineStrategy;
-
-
-/***/ }),
-/* 51 */
-/***/ (function(module, exports, __webpack_require__) {
-
-"use strict";
-
-Object.defineProperty(exports, "__esModule", { value: true });
-var InlineHandler = (function () {
-    function InlineHandler() {
-        var _this = this;
-        this.getElementValidatorId = function (element) {
-            if (!element.getAttribute("id")) {
-                element.setAttribute("id", "unique-" + InlineHandler.currentCount++);
-            }
-            return element.getAttribute('id') + "-error-container";
-        };
-        this.createErrorElement = function (message, element) {
-            var errorContainerName = _this.getElementValidatorId(element);
-            var errorContainer = document.createElement("div");
-            errorContainer.id = errorContainerName;
-            errorContainer.className = "validation-error-container";
-            errorContainer.textContent = message;
-            element.parentElement.appendChild(errorContainer);
-            return errorContainer;
-        };
-        this.removeErrorElement = function (element) {
-            var errorContainerName = this.getElementValidatorId(element);
-            var errorElement = document.getElementById(errorContainerName);
-            if (errorElement) {
-                errorElement.parentElement.removeChild(errorElement);
-            }
-        };
-        this.addElementError = function (message, element) {
-            var errorContainerName = this.getElementValidatorId(element);
-            var errorContainer = document.getElementById(errorContainerName);
-            if (!errorContainer) {
-                return this.createErrorElement(message, element);
-            }
-            else {
-                this.removeErrorElement(element);
-                return this.createErrorElement(message, element);
-            }
-        };
-    }
-    InlineHandler.currentCount = 1;
-    return InlineHandler;
-}());
-exports.InlineHandler = InlineHandler;
-
-
-/***/ }),
-/* 52 */
-/***/ (function(module, exports, __webpack_require__) {
-
-"use strict";
-
-Object.defineProperty(exports, "__esModule", { value: true });
-var ViewSummaryRegistry = (function () {
-    function ViewSummaryRegistry() {
-        var _this = this;
-        this.summaries = {};
-        this.registerSummary = function (viewSummaryStrategy) { _this.summaries[viewSummaryStrategy.summaryName] = viewSummaryStrategy; };
-        this.unregisterSummary = function (viewSummaryStrategy) { delete _this.summaries[viewSummaryStrategy.summaryName]; };
-        this.getSummaryNamed = function (summaryStrategyName) { return _this.summaries[summaryStrategyName] || null; };
-        this.hasSummaryNamed = function (summaryStrategyName) { return _this.getSummaryNamed(summaryStrategyName) != null; };
-    }
-    return ViewSummaryRegistry;
-}());
-exports.ViewSummaryRegistry = ViewSummaryRegistry;
-
-
-/***/ }),
-/* 53 */
-/***/ (function(module, exports, __webpack_require__) {
-
-"use strict";
-
-Object.defineProperty(exports, "__esModule", { value: true });
-var summary_handler_1 = __webpack_require__(54);
-var DefaultViewSummary = (function () {
-    function DefaultViewSummary(summaryHandler) {
-        if (summaryHandler === void 0) { summaryHandler = new summary_handler_1.SummaryHandler(); }
-        this.summaryHandler = summaryHandler;
-        this.summaryName = "default";
-    }
-    DefaultViewSummary.prototype.setupContainer = function (summaryContainerElement) {
-        this.summaryHandler.applyContainerClass(summaryContainerElement);
-    };
-    DefaultViewSummary.prototype.propertyBecomeValid = function (summaryContainerElement, propertyRoute) {
-        this.summaryHandler.removePropertyErrorElement(summaryContainerElement, propertyRoute);
-    };
-    DefaultViewSummary.prototype.propertyBecomeInvalid = function (summaryContainerElement, error, propertyRoute) {
-        var message = propertyRoute + " - " + error;
-        this.summaryHandler.removePropertyErrorElement(summaryContainerElement, propertyRoute);
-        this.summaryHandler.createPropertyErrorElement(message, summaryContainerElement, propertyRoute);
-    };
-    return DefaultViewSummary;
-}());
-exports.DefaultViewSummary = DefaultViewSummary;
-
-
-/***/ }),
-/* 54 */
-/***/ (function(module, exports, __webpack_require__) {
-
-"use strict";
-
-Object.defineProperty(exports, "__esModule", { value: true });
-var class_helper_1 = __webpack_require__(10);
-var SummaryHandler = (function () {
-    function SummaryHandler() {
-        var _this = this;
-        this.applyContainerClass = function (summaryContainerElement) {
-            class_helper_1.ClassHelper.addClass(summaryContainerElement, SummaryHandler.containerClassName);
-        };
-        this.getPropertyElementName = function (propertyRoute) {
-            var sanitisedPropertyRoute = propertyRoute.replace(/[\[\].]/g, "-");
-            return "" + SummaryHandler.elementIdFormat + sanitisedPropertyRoute;
-        };
-        this.getPropertyErrorElement = function (summaryContainerElement, propertyRoute) {
-            var elementName = _this.getPropertyElementName(propertyRoute);
-            return summaryContainerElement.querySelector("#" + elementName);
-        };
-        this.createPropertyErrorElement = function (message, summaryContainerElement, propertyRoute) {
-            var elementName = _this.getPropertyElementName(propertyRoute);
-            var errorContainer = document.createElement("div");
-            errorContainer.id = elementName;
-            errorContainer.className = SummaryHandler.errorClassName;
-            errorContainer.textContent = message;
-            errorContainer.setAttribute("property-route", propertyRoute);
-            summaryContainerElement.appendChild(errorContainer);
-            return errorContainer;
-        };
-        this.removePropertyErrorElement = function (summaryContainerElement, propertyRoute) {
-            var errorElement = _this.getPropertyErrorElement(summaryContainerElement, propertyRoute);
-            if (errorElement) {
-                summaryContainerElement.removeChild(errorElement);
-            }
-        };
-    }
-    SummaryHandler.elementIdFormat = "summary-error-for-";
-    SummaryHandler.errorClassName = "summary-error";
-    SummaryHandler.containerClassName = "validation-summary-container";
-    return SummaryHandler;
-}());
-exports.SummaryHandler = SummaryHandler;
-
-
-/***/ }),
-/* 55 */
-/***/ (function(module, exports, __webpack_require__) {
-
-"use strict";
-
-Object.defineProperty(exports, "__esModule", { value: true });
-var JsLiteralHelper = (function () {
-    function JsLiteralHelper() {
-    }
-    JsLiteralHelper.literalToJson = function (literal) {
-        var jsLiteralString = "{ " + literal + " }";
-        var jsonString = jsLiteralString.replace(JsLiteralHelper.jsLiteralRegex, "$1\"$2\":");
-        var jsonObject;
-        try {
-            jsonObject = JSON.parse(jsonString);
-        }
-        catch (error) {
-            console.warn("unable to process literal: " + literal, error);
-        }
-        return jsonObject || {};
-    };
-    JsLiteralHelper.jsLiteralRegex = /({|,)(?:\s*)(?:')?([A-Za-z_$\.][A-Za-z0-9_ \-\.$]*)(?:')?(?:\s*):/g;
-    return JsLiteralHelper;
-}());
-exports.JsLiteralHelper = JsLiteralHelper;
-
-
-/***/ }),
-/* 56 */
+/* 58 */
 /***/ (function(module, __webpack_exports__, __webpack_require__) {
 
 "use strict";
 Object.defineProperty(__webpack_exports__, "__esModule", { value: true });
-/* harmony import */ var __WEBPACK_IMPORTED_MODULE_0_vue_dist_vue__ = __webpack_require__(5);
+/* harmony import */ var __WEBPACK_IMPORTED_MODULE_0_vue_dist_vue__ = __webpack_require__(6);
 /* harmony import */ var __WEBPACK_IMPORTED_MODULE_0_vue_dist_vue___default = __webpack_require__.n(__WEBPACK_IMPORTED_MODULE_0_vue_dist_vue__);
-/* harmony import */ var __WEBPACK_IMPORTED_MODULE_1__dist_commonjs_plugin__ = __webpack_require__(2);
-/* harmony import */ var __WEBPACK_IMPORTED_MODULE_1__dist_commonjs_plugin___default = __webpack_require__.n(__WEBPACK_IMPORTED_MODULE_1__dist_commonjs_plugin__);
-/* harmony import */ var __WEBPACK_IMPORTED_MODULE_2__custom_view_tooltip_strategy__ = __webpack_require__(66);
-/* harmony import */ var __WEBPACK_IMPORTED_MODULE_3__components_basic_basic_component__ = __webpack_require__(67);
-/* harmony import */ var __WEBPACK_IMPORTED_MODULE_4__components_complex_complex_component__ = __webpack_require__(69);
+/* harmony import */ var __WEBPACK_IMPORTED_MODULE_1__dist_commonjs_index__ = __webpack_require__(2);
+/* harmony import */ var __WEBPACK_IMPORTED_MODULE_1__dist_commonjs_index___default = __webpack_require__.n(__WEBPACK_IMPORTED_MODULE_1__dist_commonjs_index__);
+/* harmony import */ var __WEBPACK_IMPORTED_MODULE_2__custom_view_tooltip_strategy__ = __webpack_require__(69);
+/* harmony import */ var __WEBPACK_IMPORTED_MODULE_3__components_basic_basic_component__ = __webpack_require__(70);
+/* harmony import */ var __WEBPACK_IMPORTED_MODULE_4__components_complex_complex_component__ = __webpack_require__(72);
 
 
 // This is all you need to do to add the plugin
 
-__WEBPACK_IMPORTED_MODULE_0_vue_dist_vue___default.a.use(__WEBPACK_IMPORTED_MODULE_1__dist_commonjs_plugin___default.a);
+__WEBPACK_IMPORTED_MODULE_0_vue_dist_vue___default.a.use(__WEBPACK_IMPORTED_MODULE_1__dist_commonjs_index___default.a);
 
 // Add custom strategy for complex example
 
 
-__WEBPACK_IMPORTED_MODULE_1__dist_commonjs_plugin__["viewStrategyRegistry"].registerStrategy(new __WEBPACK_IMPORTED_MODULE_2__custom_view_tooltip_strategy__["a" /* TooltipStrategy */]());
+__WEBPACK_IMPORTED_MODULE_1__dist_commonjs_index__["viewStrategyRegistry"].registerStrategy(new __WEBPACK_IMPORTED_MODULE_2__custom_view_tooltip_strategy__["a" /* TooltipStrategy */]());
 
 // Add our components for examples
 
@@ -12822,7 +12821,7 @@ let app = new __WEBPACK_IMPORTED_MODULE_0_vue_dist_vue___default.a({
 });
 
 /***/ }),
-/* 57 */
+/* 59 */
 /***/ (function(module, exports) {
 
 var g;
@@ -12849,17 +12848,127 @@ module.exports = g;
 
 
 /***/ }),
-/* 58 */
+/* 60 */
 /***/ (function(module, exports, __webpack_require__) {
 
 "use strict";
 
 Object.defineProperty(exports, "__esModule", { value: true });
-var field_error_processor_1 = __webpack_require__(12);
-var rule_resolver_1 = __webpack_require__(3);
-var validation_group_builder_1 = __webpack_require__(14);
-var rule_registry_setup_1 = __webpack_require__(27);
-var ruleset_builder_1 = __webpack_require__(44);
+var view_strategy_registry_1 = __webpack_require__(12);
+var inline_strategy_1 = __webpack_require__(13);
+var view_summary_registry_1 = __webpack_require__(15);
+var default_summary_strategy_1 = __webpack_require__(16);
+exports.viewStrategyRegistry = new view_strategy_registry_1.ViewStrategyRegistry();
+exports.viewStrategyRegistry.registerStrategy(new inline_strategy_1.InlineStrategy());
+exports.viewSummaryRegistry = new view_summary_registry_1.ViewSummaryRegistry();
+exports.viewSummaryRegistry.registerSummary(new default_summary_strategy_1.DefaultViewSummary());
+
+
+/***/ }),
+/* 61 */
+/***/ (function(module, exports, __webpack_require__) {
+
+"use strict";
+
+Object.defineProperty(exports, "__esModule", { value: true });
+var js_literal_helper_1 = __webpack_require__(18);
+var ElementHelper = (function () {
+    function ElementHelper() {
+    }
+    ElementHelper.getPropertyRouteFrom = function (element) {
+        return element.getAttribute(ElementHelper.ValidatePropertyAttributeName);
+    };
+    ElementHelper.getViewStrategyFrom = function (element) {
+        return element.getAttribute(ElementHelper.ViewStrategyAttributeName);
+    };
+    ElementHelper.getViewOptionsFrom = function (element) {
+        var optionsLiteral = element.getAttribute(ElementHelper.ViewOptionsAttributeName);
+        if (!optionsLiteral) {
+            return;
+        }
+        return js_literal_helper_1.JsLiteralHelper.literalToJson(optionsLiteral);
+    };
+    ElementHelper.getSummaryStrategyFrom = function (element) {
+        return element.getAttribute(ElementHelper.ViewSummaryStrategyAttributeName);
+    };
+    ElementHelper.getSummaryOptionsFrom = function (element) {
+        var optionsLiteral = element.getAttribute(ElementHelper.SummaryOptionsAttributeName);
+        if (!optionsLiteral) {
+            return;
+        }
+        return js_literal_helper_1.JsLiteralHelper.literalToJson(optionsLiteral);
+    };
+    ElementHelper.ValidatePropertyAttributeName = "validate-property";
+    ElementHelper.ViewStrategyAttributeName = "view-strategy";
+    ElementHelper.ViewOptionsAttributeName = "view-options";
+    ElementHelper.ViewSummaryStrategyAttributeName = "view-summary-strategy";
+    ElementHelper.SummaryOptionsAttributeName = "summary-options";
+    return ElementHelper;
+}());
+exports.ElementHelper = ElementHelper;
+
+
+/***/ }),
+/* 62 */
+/***/ (function(module, exports, __webpack_require__) {
+
+"use strict";
+
+Object.defineProperty(exports, "__esModule", { value: true });
+var ValidationState;
+(function (ValidationState) {
+    ValidationState[ValidationState["unknown"] = 0] = "unknown";
+    ValidationState[ValidationState["valid"] = 1] = "valid";
+    ValidationState[ValidationState["invalid"] = 2] = "invalid";
+})(ValidationState = exports.ValidationState || (exports.ValidationState = {}));
+
+
+/***/ }),
+/* 63 */
+/***/ (function(module, exports, __webpack_require__) {
+
+"use strict";
+
+Object.defineProperty(exports, "__esModule", { value: true });
+var treacherous_1 = __webpack_require__(20);
+var show_error_1 = __webpack_require__(11);
+var validation_summary_1 = __webpack_require__(19);
+exports.validationMixin = {
+    created: function () {
+        if (!this.$options.ruleset) {
+            return;
+        }
+        var context = this;
+        var ruleset = context.$options.ruleset;
+        var validationGroup = treacherous_1.createGroup().asReactiveGroup().build(context, ruleset);
+        context.validationGroup = validationGroup;
+        var metadata = {};
+        context._validationMetadata = metadata;
+        metadata[show_error_1.ValidationSubKey] = {};
+        metadata[validation_summary_1.SummarySubKey] = [];
+    },
+    beforeDestroy: function () {
+        if (!this.$options.ruleset) {
+            return;
+        }
+        var context = this;
+        context.validationGroup.release();
+    }
+};
+
+
+/***/ }),
+/* 64 */
+/***/ (function(module, exports, __webpack_require__) {
+
+"use strict";
+
+Object.defineProperty(exports, "__esModule", { value: true });
+var field_error_processor_1 = __webpack_require__(21);
+var rule_resolver_1 = __webpack_require__(4);
+var validation_group_builder_1 = __webpack_require__(23);
+var rule_registry_setup_1 = __webpack_require__(36);
+var ruleset_builder_1 = __webpack_require__(53);
 var fieldErrorProcessor = new field_error_processor_1.FieldErrorProcessor(rule_registry_setup_1.ruleRegistry);
 var ruleResolver = new rule_resolver_1.RuleResolver();
 function createRuleset(withRuleVerification) {
@@ -12875,7 +12984,7 @@ exports.createGroup = createGroup;
 
 
 /***/ }),
-/* 59 */
+/* 65 */
 /***/ (function(module, exports) {
 
 var PropertyResolver = (function () {
@@ -12983,10 +13092,10 @@ exports.PropertyResolver = PropertyResolver;
 
 
 /***/ }),
-/* 60 */
+/* 66 */
 /***/ (function(module, exports, __webpack_require__) {
 
-var event_listener_1 = __webpack_require__(19);
+var event_listener_1 = __webpack_require__(28);
 var EventHandler = (function () {
     function EventHandler(sender) {
         var _this = this;
@@ -13041,7 +13150,7 @@ exports.EventHandler = EventHandler;
 
 
 /***/ }),
-/* 61 */
+/* 67 */
 /***/ (function(module, exports, __webpack_require__) {
 
 "use strict";
@@ -13058,7 +13167,7 @@ exports.ValidationError = ValidationError;
 
 
 /***/ }),
-/* 62 */
+/* 68 */
 /***/ (function(module, exports, __webpack_require__) {
 
 "use strict";
@@ -13099,88 +13208,12 @@ exports.AdvancedRegexValidationRule = AdvancedRegexValidationRule;
 
 
 /***/ }),
-/* 63 */
-/***/ (function(module, exports, __webpack_require__) {
-
-"use strict";
-
-Object.defineProperty(exports, "__esModule", { value: true });
-var view_strategy_registry_1 = __webpack_require__(49);
-var inline_strategy_1 = __webpack_require__(50);
-var view_summary_registry_1 = __webpack_require__(52);
-var default_summary_strategy_1 = __webpack_require__(53);
-exports.viewStrategyRegistry = new view_strategy_registry_1.ViewStrategyRegistry();
-exports.viewStrategyRegistry.registerStrategy(new inline_strategy_1.InlineStrategy());
-exports.viewSummaryRegistry = new view_summary_registry_1.ViewSummaryRegistry();
-exports.viewSummaryRegistry.registerSummary(new default_summary_strategy_1.DefaultViewSummary());
-
-
-/***/ }),
-/* 64 */
-/***/ (function(module, exports, __webpack_require__) {
-
-"use strict";
-
-Object.defineProperty(exports, "__esModule", { value: true });
-var js_literal_helper_1 = __webpack_require__(55);
-var ElementHelper = (function () {
-    function ElementHelper() {
-    }
-    ElementHelper.getPropertyRouteFrom = function (element) {
-        return element.getAttribute(ElementHelper.ValidatePropertyAttributeName);
-    };
-    ElementHelper.getViewStrategyFrom = function (element) {
-        return element.getAttribute(ElementHelper.ViewStrategyAttributeName);
-    };
-    ElementHelper.getViewOptionsFrom = function (element) {
-        var optionsLiteral = element.getAttribute(ElementHelper.ViewOptionsAttributeName);
-        if (!optionsLiteral) {
-            return;
-        }
-        return js_literal_helper_1.JsLiteralHelper.literalToJson(optionsLiteral);
-    };
-    ElementHelper.getSummaryStrategyFrom = function (element) {
-        return element.getAttribute(ElementHelper.ViewSummaryStrategyAttributeName);
-    };
-    ElementHelper.getSummaryOptionsFrom = function (element) {
-        var optionsLiteral = element.getAttribute(ElementHelper.SummaryOptionsAttributeName);
-        if (!optionsLiteral) {
-            return;
-        }
-        return js_literal_helper_1.JsLiteralHelper.literalToJson(optionsLiteral);
-    };
-    ElementHelper.ValidatePropertyAttributeName = "validate-property";
-    ElementHelper.ViewStrategyAttributeName = "view-strategy";
-    ElementHelper.ViewOptionsAttributeName = "view-options";
-    ElementHelper.ViewSummaryStrategyAttributeName = "view-summary-strategy";
-    ElementHelper.SummaryOptionsAttributeName = "summary-options";
-    return ElementHelper;
-}());
-exports.ElementHelper = ElementHelper;
-
-
-/***/ }),
-/* 65 */
-/***/ (function(module, exports, __webpack_require__) {
-
-"use strict";
-
-Object.defineProperty(exports, "__esModule", { value: true });
-var ValidationState;
-(function (ValidationState) {
-    ValidationState[ValidationState["unknown"] = 0] = "unknown";
-    ValidationState[ValidationState["valid"] = 1] = "valid";
-    ValidationState[ValidationState["invalid"] = 2] = "invalid";
-})(ValidationState = exports.ValidationState || (exports.ValidationState = {}));
-
-
-/***/ }),
-/* 66 */
+/* 69 */
 /***/ (function(module, __webpack_exports__, __webpack_require__) {
 
 "use strict";
 /* harmony export (immutable) */ __webpack_exports__["a"] = TooltipStrategy;
-/* harmony import */ var __WEBPACK_IMPORTED_MODULE_0_treacherous_view__ = __webpack_require__(9);
+/* harmony import */ var __WEBPACK_IMPORTED_MODULE_0_treacherous_view__ = __webpack_require__(3);
 /* harmony import */ var __WEBPACK_IMPORTED_MODULE_0_treacherous_view___default = __webpack_require__.n(__WEBPACK_IMPORTED_MODULE_0_treacherous_view__);
 
 
@@ -13203,15 +13236,15 @@ function TooltipStrategy(inlineHandler = new __WEBPACK_IMPORTED_MODULE_0_treache
 }
 
 /***/ }),
-/* 67 */
+/* 70 */
 /***/ (function(module, __webpack_exports__, __webpack_require__) {
 
 "use strict";
-/* harmony import */ var __WEBPACK_IMPORTED_MODULE_0_vue_dist_vue__ = __webpack_require__(5);
+/* harmony import */ var __WEBPACK_IMPORTED_MODULE_0_vue_dist_vue__ = __webpack_require__(6);
 /* harmony import */ var __WEBPACK_IMPORTED_MODULE_0_vue_dist_vue___default = __webpack_require__.n(__WEBPACK_IMPORTED_MODULE_0_vue_dist_vue__);
-/* harmony import */ var __WEBPACK_IMPORTED_MODULE_1__dist_commonjs_plugin__ = __webpack_require__(2);
-/* harmony import */ var __WEBPACK_IMPORTED_MODULE_1__dist_commonjs_plugin___default = __webpack_require__.n(__WEBPACK_IMPORTED_MODULE_1__dist_commonjs_plugin__);
-/* harmony import */ var __WEBPACK_IMPORTED_MODULE_2__basic_html__ = __webpack_require__(68);
+/* harmony import */ var __WEBPACK_IMPORTED_MODULE_1__dist_commonjs_index__ = __webpack_require__(2);
+/* harmony import */ var __WEBPACK_IMPORTED_MODULE_1__dist_commonjs_index___default = __webpack_require__.n(__WEBPACK_IMPORTED_MODULE_1__dist_commonjs_index__);
+/* harmony import */ var __WEBPACK_IMPORTED_MODULE_2__basic_html__ = __webpack_require__(71);
 /* harmony import */ var __WEBPACK_IMPORTED_MODULE_2__basic_html___default = __webpack_require__.n(__WEBPACK_IMPORTED_MODULE_2__basic_html__);
 
 
@@ -13219,7 +13252,7 @@ function TooltipStrategy(inlineHandler = new __WEBPACK_IMPORTED_MODULE_0_treache
 
 
 function generateRuleset() {
-    return Object(__WEBPACK_IMPORTED_MODULE_1__dist_commonjs_plugin__["createRuleset"])()
+    return Object(__WEBPACK_IMPORTED_MODULE_1__dist_commonjs_index__["createRuleset"])()
         .forProperty("username")
             .addRule("required")
             .addRule("minLength", 2)            
@@ -13233,22 +13266,22 @@ __WEBPACK_IMPORTED_MODULE_0_vue_dist_vue___default.a.component('basic', {
 });
 
 /***/ }),
-/* 68 */
+/* 71 */
 /***/ (function(module, exports) {
 
 module.exports = "<section>\r\n    <div>\r\n        <label>Username</label>\r\n        <input type=\"text\" class=\"u-full-width\" id=\"username\" v-model=\"username\" v-show-error validate-property=\"username\" placeholder=\"Username\" />\r\n    </div>\r\n</section>"
 
 /***/ }),
-/* 69 */
+/* 72 */
 /***/ (function(module, __webpack_exports__, __webpack_require__) {
 
 "use strict";
-/* harmony import */ var __WEBPACK_IMPORTED_MODULE_0_vue_dist_vue__ = __webpack_require__(5);
+/* harmony import */ var __WEBPACK_IMPORTED_MODULE_0_vue_dist_vue__ = __webpack_require__(6);
 /* harmony import */ var __WEBPACK_IMPORTED_MODULE_0_vue_dist_vue___default = __webpack_require__.n(__WEBPACK_IMPORTED_MODULE_0_vue_dist_vue__);
-/* harmony import */ var __WEBPACK_IMPORTED_MODULE_1__user_data_model__ = __webpack_require__(70);
-/* harmony import */ var __WEBPACK_IMPORTED_MODULE_2__hobby_model__ = __webpack_require__(71);
-/* harmony import */ var __WEBPACK_IMPORTED_MODULE_3__user_data_ruleset__ = __webpack_require__(72);
-/* harmony import */ var __WEBPACK_IMPORTED_MODULE_4__complex_html__ = __webpack_require__(74);
+/* harmony import */ var __WEBPACK_IMPORTED_MODULE_1__user_data_model__ = __webpack_require__(73);
+/* harmony import */ var __WEBPACK_IMPORTED_MODULE_2__hobby_model__ = __webpack_require__(74);
+/* harmony import */ var __WEBPACK_IMPORTED_MODULE_3__user_data_ruleset__ = __webpack_require__(75);
+/* harmony import */ var __WEBPACK_IMPORTED_MODULE_4__complex_html__ = __webpack_require__(77);
 /* harmony import */ var __WEBPACK_IMPORTED_MODULE_4__complex_html___default = __webpack_require__.n(__WEBPACK_IMPORTED_MODULE_4__complex_html__);
 
 
@@ -13268,7 +13301,7 @@ __WEBPACK_IMPORTED_MODULE_0_vue_dist_vue___default.a.component('complex', {
 });
 
 /***/ }),
-/* 70 */
+/* 73 */
 /***/ (function(module, __webpack_exports__, __webpack_require__) {
 
 "use strict";
@@ -13281,7 +13314,7 @@ function UserData(name, age, hobbies)
 }
 
 /***/ }),
-/* 71 */
+/* 74 */
 /***/ (function(module, __webpack_exports__, __webpack_require__) {
 
 "use strict";
@@ -13292,18 +13325,18 @@ function Hobby(name)
 }
 
 /***/ }),
-/* 72 */
+/* 75 */
 /***/ (function(module, __webpack_exports__, __webpack_require__) {
 
 "use strict";
 /* harmony export (binding) */ __webpack_require__.d(__webpack_exports__, "a", function() { return userDataRuleset; });
-/* harmony import */ var __WEBPACK_IMPORTED_MODULE_0__dist_commonjs_plugin__ = __webpack_require__(2);
-/* harmony import */ var __WEBPACK_IMPORTED_MODULE_0__dist_commonjs_plugin___default = __webpack_require__.n(__WEBPACK_IMPORTED_MODULE_0__dist_commonjs_plugin__);
-/* harmony import */ var __WEBPACK_IMPORTED_MODULE_1__hobby_ruleset__ = __webpack_require__(73);
+/* harmony import */ var __WEBPACK_IMPORTED_MODULE_0__dist_commonjs_index__ = __webpack_require__(2);
+/* harmony import */ var __WEBPACK_IMPORTED_MODULE_0__dist_commonjs_index___default = __webpack_require__.n(__WEBPACK_IMPORTED_MODULE_0__dist_commonjs_index__);
+/* harmony import */ var __WEBPACK_IMPORTED_MODULE_1__hobby_ruleset__ = __webpack_require__(76);
 
 
 
-var userDataRuleset = Object(__WEBPACK_IMPORTED_MODULE_0__dist_commonjs_plugin__["createRuleset"])()
+var userDataRuleset = Object(__WEBPACK_IMPORTED_MODULE_0__dist_commonjs_index__["createRuleset"])()
     .forProperty("name")
         .addRule("required")
         .addRule("minLength", 2)
@@ -13315,16 +13348,16 @@ var userDataRuleset = Object(__WEBPACK_IMPORTED_MODULE_0__dist_commonjs_plugin__
     .build();
 
 /***/ }),
-/* 73 */
+/* 76 */
 /***/ (function(module, __webpack_exports__, __webpack_require__) {
 
 "use strict";
 /* harmony export (binding) */ __webpack_require__.d(__webpack_exports__, "a", function() { return hobbyRuleset; });
-/* harmony import */ var __WEBPACK_IMPORTED_MODULE_0__dist_commonjs_plugin__ = __webpack_require__(2);
-/* harmony import */ var __WEBPACK_IMPORTED_MODULE_0__dist_commonjs_plugin___default = __webpack_require__.n(__WEBPACK_IMPORTED_MODULE_0__dist_commonjs_plugin__);
+/* harmony import */ var __WEBPACK_IMPORTED_MODULE_0__dist_commonjs_index__ = __webpack_require__(2);
+/* harmony import */ var __WEBPACK_IMPORTED_MODULE_0__dist_commonjs_index___default = __webpack_require__.n(__WEBPACK_IMPORTED_MODULE_0__dist_commonjs_index__);
 
 
-var hobbyRuleset = Object(__WEBPACK_IMPORTED_MODULE_0__dist_commonjs_plugin__["createRuleset"])()
+var hobbyRuleset = Object(__WEBPACK_IMPORTED_MODULE_0__dist_commonjs_index__["createRuleset"])()
     .forProperty("hobbyName")
         .addRule("required")
         .addRule("minLength", 2)
@@ -13332,7 +13365,7 @@ var hobbyRuleset = Object(__WEBPACK_IMPORTED_MODULE_0__dist_commonjs_plugin__["c
     .build();
 
 /***/ }),
-/* 74 */
+/* 77 */
 /***/ (function(module, exports) {
 
 module.exports = "<section class=\"row\">\r\n    <div class=\"six columns\">\r\n        <label>Name</label>\r\n        <input type=\"text\" class=\"u-full-width\" v-model=\"name\" placeholder=\"Name\" v-show-error validate-property=\"name\" />\r\n    </div>\r\n    <div class=\"six columns\">\r\n        <label>Age</label>\r\n        <input type=\"text\" class=\"u-full-width\" v-model=\"age\" placeholder=\"Age\" v-show-error validate-property=\"age\" view-strategy=\"tooltip\" />\r\n    </div>\r\n    <div>\r\n        <label>Hobbies</label>\r\n        <div v-for=\"(hobby, index) in hobbies\">\r\n            <input type=\"text\" class=\"u-full-width\" v-model=\"hobby.hobbyName\" placeholder=\"Hobby\" v-show-error v-bind:validate-property=\"'hobbies[' + index + '].hobbyName'\" />\r\n        </div>\r\n    </div>\r\n</section>"

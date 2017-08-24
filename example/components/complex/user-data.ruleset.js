@@ -1,4 +1,4 @@
-import {createRuleset} from "../../../dist/commonjs/plugin";
+import {createRuleset} from "../../../dist/commonjs/index";
 import {hobbyRuleset} from "./hobby.ruleset";
 
 export var userDataRuleset = createRuleset()
