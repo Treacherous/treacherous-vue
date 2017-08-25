@@ -23,5 +23,7 @@ exports.validationMixin = {
         }
         var context = this;
         context.validationGroup.release();
+        delete context.validationGroup;
+        delete context._validationMetadata;
     }
 };

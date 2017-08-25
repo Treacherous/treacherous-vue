@@ -21,6 +21,8 @@ define(["require", "exports", "treacherous", "../directives/show-error", "../dir
             }
             var context = this;
             context.validationGroup.release();
+            delete context.validationGroup;
+            delete context._validationMetadata;
         }
     };
 });

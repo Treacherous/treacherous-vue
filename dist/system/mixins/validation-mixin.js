@@ -35,6 +35,8 @@ System.register(["treacherous", "../directives/show-error", "../directives/valid
                     }
                     var context = this;
                     context.validationGroup.release();
+                    delete context.validationGroup;
+                    delete context._validationMetadata;
                 }
             });
         }

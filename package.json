@@ -6,6 +6,9 @@
   "license": "MIT",
   "main": "dist/commonjs/index.js",
   "types": "dist/definitions/index.d.ts",
+  "scripts": {
+    "tests": "karma start --single-run --browsers PhantomJS ./karma.config.js"
+  },
   "dependencies": {
     "vue": "^2.4.2",
     "treacherous": "^0.16.1",

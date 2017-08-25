@@ -6,7 +6,7 @@ import {use, expect, spy} from "chai";
 import * as spies from "chai-spies";
 use(spies);
 
-describe("Mixin Tests", function() {
+describe("ValidationMixin Tests", function() {
     
     it("should apply validation group to component with ruleset option", function () {
 
@@ -42,4 +42,4 @@ describe("Mixin Tests", function() {
         expect(component).to.not.have.property("_validationMetadata");
     });
 
-})
+});

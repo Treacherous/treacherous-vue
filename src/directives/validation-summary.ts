@@ -1,7 +1,6 @@
 import {IReactiveValidationGroup, PropertyStateChangedEvent} from "treacherous";
 import {viewSummaryRegistry, ElementHelper} from "treacherous-view";
 
-
 export const SummarySubKey = "summary-subscriptions";
 
 export const summaryDirective = {
