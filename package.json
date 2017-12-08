@@ -1,21 +1,22 @@
 {
   "name": "treacherous-vue",
-  "version": "0.1.0",
+  "version": "0.1.1",
   "description": "A vue plugin to use the treacherous validation system",
   "author": "LP",
   "license": "MIT",
   "main": "dist/commonjs/plugin.js",
+  "module": "dist/es2015/plugin.js",
   "types": "dist/definitions/plugin.d.ts",
   "dependencies": {
-    "vue": "^2.4.2",
-    "treacherous": "^0.16.1",
+    "vue": "^2.5.9",
+    "treacherous": "^0.17.0",
     "treacherous-view": "^0.4.0"
   },
   "devDependencies": {
     "gulp": "^3.9.1",
-    "gulp-typescript": "~3.1.0",
+    "gulp-typescript": "~3.2.3",
     "merge2": "^1.1.0",
-    "typescript": "^2.4.2",
+    "typescript": "^2.6.2",
     "run-sequence": "^2.1.0",
     "require-dir": "^0.3.0",
     "del": "^3.0.0",

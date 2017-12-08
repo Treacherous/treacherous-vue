@@ -1,45 +1,32 @@
 var gulp = require('gulp');
 var ts = require('gulp-typescript');
 var merge = require('merge2');
-var paths = require('../paths');
+var paths = require("../paths");
 
-var compileFor = function(moduleType, declaration = false) {
+var compileFor = function(moduleType, withTypings = false, target = "es2015") {
+    console.log(`Compiling for ${moduleType} - targetting ${target}`);
     var tsProject = ts.createProject('tsconfig.json', {
+        declaration: withTypings || false,
         module: moduleType,
-        declaration: declaration
+        target: target
     });
 
     var tsResult = gulp.src(`${paths.src}/**/*.ts`)
         .pipe(tsProject());
 
-    if(declaration) {
+    if(withTypings) {
         return merge([
-            tsResult.dts.pipe(gulp.dest(`${paths.dist}/definitions`)),
-            tsResult.js.pipe(gulp.dest(`${paths.dist}/${moduleType}`))
+            tsResult.dts.pipe(gulp.dest(paths.dist + "/definitions")),
+            tsResult.js.pipe(gulp.dest(paths.dist + "/" + moduleType))
         ]);
     }
 
-    return tsResult.pipe(gulp.dest(`${paths.dist}/${moduleType}`));
+    return tsResult.js.pipe(gulp.dest(paths.dist + "/" +moduleType));
 }
 
-gulp.task("compile:commonjs", function() {
-    return compileFor("commonjs", true);
+gulp.task('compile', function() {
+    return merge([
+        compileFor("commonjs", true, "es5"),
+        compileFor("es2015")
+    ]);
 });
-
-gulp.task("compile:amd", function() {
-    return compileFor("amd");
-});
-
-gulp.task("compile:system", function() {
-    return compileFor("system");
-});
-
-gulp.task("compile:umd", function() {
-    return compileFor("umd");
-});
-
-gulp.task("compile", [
-    "compile:commonjs", "compile:amd", 
-    "compile:system", "compile:umd"
-]);
-
