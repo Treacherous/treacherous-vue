@@ -49,7 +49,7 @@ Vue.component('my-component', {
     data: function() {
         name: "Bob"
     },
-    template: '<input id="name" v-model="name" v-show-errors validate-property="name" />'
+    template: '<input id="name" v-model="name" v-show-error validate-property="name" />'
 });
 ```
 

@@ -1,18 +1,16 @@
 import Vue  from "vue/dist/vue";
 
-import {createRuleset} from "../../../dist/commonjs/plugin";
+import {createRuleset} from "treacherous";
 import template from "./basic.html";
 
-function generateRuleset() {
-    return createRuleset()
-        .forProperty("username")
-            .addRule("required")
-            .addRule("minLength", 2)            
-        .build()
-}
+const dataRuleset = createRuleset()
+    .forProperty("username")
+        .required()
+        .minLength(2)
+    .build();
 
 Vue.component('basic', {
-    ruleset: generateRuleset(),
+    ruleset: dataRuleset,
     data: () => { return { username: "joe.bloggs" } },
     template: template
 });

@@ -17,7 +17,7 @@
                     there is also a button to manually trigger progmatic validation, which covers most basic use cases.
                 </p>
                 <basic id="basic-form" ref="basic"></basic>
-                <button id="basic-submit" v-bind:class="{ valid: basicState, invalid: !basicState }" @click="validateBasic">Progmatically Validate - {{basicState ? 'Is' : 'Isnt'}} Valid</button>
+                <button id="basic-submit" :class="{ valid: basicState, invalid: !basicState }" @click="validateBasic">Progmatically Validate - {{basicState ? 'Is' : 'Isnt'}} Valid</button>
             </fieldset>
 
             <fieldset>
@@ -32,8 +32,8 @@
                     differently to the other fields in this example, and all it takes is a single 
                     attribute to swap strategy (and a custom strategy registered, seen in <strong>app.js</strong>)
                 </p>
-                <complex id="complex-form" ref="complex"></complex>
-                <button id="complex-submit" v-bind:class="{ valid: complexState, invalid: !complexState }" @click="validateComplex">Progmatically Validate - {{complexState ? 'Is' : 'Isnt'}} Valid</button>
+                <complex id="complex-form" ref="complex" :dummy-prop="dummyPropData"></complex>
+                <button id="complex-submit" :class="{ valid: complexState, invalid: !complexState }" @click="validateComplex">Progmatically Validate - {{complexState ? 'Is' : 'Isnt'}} Valid</button>
             </fieldset>
 
             <fieldset>
