@@ -6,7 +6,7 @@ interface RulesetOptions {
     validateComputed: boolean;
 }
 interface RulesetMixin {
-    ruleset: Ruleset;
+    use: Ruleset;
     options: RulesetOptions;
 }
 declare type RulesetType = Ruleset | RulesetMixin;

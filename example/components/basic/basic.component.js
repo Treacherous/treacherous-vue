@@ -9,13 +9,8 @@ const dataRuleset = createRuleset()
         .minLength(2)
     .build();
 
-const componentRuleset = createRuleset()
-        .forProperty("data")
-            .addRuleset(dataRuleset)
-        .build();
-
 Vue.component('basic', {
-    ruleset: componentRuleset,
+    ruleset: dataRuleset,
     data: () => { return { username: "joe.bloggs" } },
     template: template
 });

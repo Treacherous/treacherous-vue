@@ -10,7 +10,7 @@ interface RulesetOptions {
 }
 
 interface RulesetMixin {
-    ruleset: Ruleset,
+    use: Ruleset,
     options: RulesetOptions
 }
 
@@ -41,7 +41,7 @@ const mixins = {
         }
         else
         {
-            ruleset = this.$options.ruleset.ruleset;
+            ruleset = this.$options.ruleset.use;
             options = this.$options.ruleset.options;
         }
 

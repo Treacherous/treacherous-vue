@@ -17,7 +17,7 @@ const mixins = {
             options = { disableReactiveValidation: false, validateComputed: false, validateProps: false };
         }
         else {
-            ruleset = this.$options.ruleset.ruleset;
+            ruleset = this.$options.ruleset.use;
             options = this.$options.ruleset.options;
         }
         const handler = {

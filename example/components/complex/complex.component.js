@@ -6,25 +6,25 @@ import { userDataRuleset } from "./user-data.ruleset";
 import template from "./complex.html";
 import {createRuleset} from "treacherous";
 
-const dummyPropRulset = createRuleset()
-    .forProperty("blah")
-        .required()
-    .build();
-
 const propsRuleset = createRuleset()
     .forProperty("dummyProp")
-        .addRuleset(dummyPropRulset)
+        .nestWithin(x => {
+            x.forProperty("blah")
+                .withDisplayName("Property Blah")
+                .required();
+        })
     .build();
 
-const complexRuleset = createRuleset()
-    .forProperty("data")
-        .addRuleset(userDataRuleset)
+const complexRuleset = createRuleset(userDataRuleset)
     .forProperty("props")
         .addRuleset(propsRuleset)
     .build();
 
 Vue.component('complex', {
-    ruleset: complexRuleset,
+    ruleset: {
+        use: complexRuleset,
+        options: { validateProps: true }
+    },
     data: () => new UserData("Bob", 20, [ 
         new Hobby("reading"), 
         new Hobby("skateboarding"), 

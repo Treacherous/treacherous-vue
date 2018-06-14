@@ -1,4 +1,4 @@
-import {createRuleset} from "../../../dist/commonjs/plugin";
+import {createRuleset} from "treacherous";
 import {hobbyRuleset} from "./hobby.ruleset";
 
 export const userDataRuleset = createRuleset()

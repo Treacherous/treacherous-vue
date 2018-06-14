@@ -2,17 +2,17 @@
     <div class="row">
         <div class="six columns">
             <label>Name</label>
-            <input type="text" class="u-full-width" v-model="name" placeholder="Name" v-show-error validate-property="data.name" />
+            <input type="text" class="u-full-width" v-model="name" placeholder="Name" v-show-error validate-property="name" />
         </div>
         <div class="six columns">
             <label>Age</label>
-            <input type="text" class="u-full-width" v-model="age" placeholder="Age" v-show-error validate-property="data.age" view-strategy="tooltip" />
+            <input type="text" class="u-full-width" v-model="age" placeholder="Age" v-show-error validate-property="age" view-strategy="tooltip" />
         </div>
     </div>
     <div class="row">
         <label>Hobbies</label>
         <div v-for="(hobby, index) in hobbies">
-            <input type="text" class="u-full-width" v-model="hobby.hobbyName" placeholder="Hobby" v-show-error :validate-property="`data.hobbies[${index}].hobbyName`" />
+            <input type="text" class="u-full-width" v-model="hobby.hobbyName" placeholder="Hobby" v-show-error :validate-property="`hobbies[${index}].hobbyName`" />
         </div>
     </div>
     <div class="row">
