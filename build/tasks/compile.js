@@ -26,7 +26,7 @@ var compileFor = function(moduleType, withTypings = false, target = "es2015") {
 
 gulp.task('compile', function() {
     return merge([
-        compileFor("commonjs", true, "es5"),
+        compileFor("commonjs", true),
         compileFor("es2015")
     ]);
 });

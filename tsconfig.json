@@ -6,7 +6,7 @@
         "removeComments": true,
         "preserveConstEnums": true,
         "declaration": true,
-        "target": "es5",
+        "target": "es2015",
         "allowSyntheticDefaultImports": true
     },
     "include": [

@@ -1,4 +1,4 @@
-import { createGroup } from "treacherous";
+import { Ruleset, createGroup } from "treacherous";
 import { viewStrategyRegistry, viewSummaryRegistry, ElementHelper, ValidationState } from "treacherous-view";
 const ValidationSubKey = "validation-subscriptions";
 const SummarySubKey = "summary-subscriptions";
@@ -7,11 +7,36 @@ const mixins = {
         if (!this.$options.ruleset) {
             return;
         }
-        let context = this;
-        let ruleset = context.$options.ruleset;
-        let validationGroup = createGroup().asReactiveGroup().build(context, ruleset);
-        context.validationGroup = validationGroup;
-        let metadata = {};
+        const context = this;
+        let ruleset;
+        let options;
+        if (this.$options.ruleset instanceof Ruleset) {
+            ruleset = this.$options.ruleset;
+            options = { disableReactiveValidation: false, validateComputed: false, validateProps: false };
+        }
+        else {
+            ruleset = this.$options.ruleset.ruleset;
+            options = this.$options.ruleset.options;
+        }
+        const handler = {
+            get(obj, prop) {
+                if (options.validateProps && prop == "props") {
+                    return context._props;
+                }
+                if (options.validateComputed && prop == "computed") {
+                    return context._computed;
+                }
+                return Reflect.get(obj, prop);
+            }
+        };
+        const virtualModel = new Proxy(context._data, handler);
+        if (options.disableReactiveValidation) {
+            context.validationGroup = createGroup().build(virtualModel, ruleset);
+        }
+        else {
+            context.validationGroup = createGroup().asReactiveGroup().build(virtualModel, ruleset);
+        }
+        const metadata = {};
         context._validationMetadata = metadata;
         metadata[ValidationSubKey] = {};
         metadata[SummarySubKey] = [];
@@ -20,29 +45,29 @@ const mixins = {
         if (!this.$options.ruleset) {
             return;
         }
-        let context = this;
+        const context = this;
         context.validationGroup.release();
     }
 };
 const showErrorDirective = {
     bind: function (element, binding, vnode) {
-        let context = vnode.context;
-        let validationGroup = context.validationGroup;
+        const context = vnode.context;
+        const validationGroup = context.validationGroup;
         if (!validationGroup) {
             return;
         }
-        let metadata = context._validationMetadata;
-        let propertyRoute = ElementHelper.getPropertyRouteFrom(element);
+        const metadata = context._validationMetadata;
+        const propertyRoute = ElementHelper.getPropertyRouteFrom(element);
         if (!propertyRoute) {
             return;
         }
-        let strategyName = ElementHelper.getViewStrategyFrom(element);
-        let viewStrategy = viewStrategyRegistry.getStrategyNamed(strategyName || "inline");
+        const strategyName = ElementHelper.getViewStrategyFrom(element);
+        const viewStrategy = viewStrategyRegistry.getStrategyNamed(strategyName || "inline");
         if (!viewStrategy) {
             return;
         }
         let validationState = ValidationState.unknown;
-        let viewOptions = ElementHelper.getViewOptionsFrom(element) || {};
+        const viewOptions = ElementHelper.getViewOptionsFrom(element) || {};
         let handlePossibleError = (error) => {
             if (!error) {
                 viewStrategy.propertyBecomeValid(element, propertyRoute, validationState, viewOptions);
@@ -53,13 +78,13 @@ const showErrorDirective = {
                 validationState = ValidationState.invalid;
             }
         };
-        let handlePropertyStateChange = (args) => {
+        const handlePropertyStateChange = (args) => {
             handlePossibleError(args.error);
         };
-        let propertyPredicate = (args) => {
+        const propertyPredicate = (args) => {
             return args.property == propertyRoute;
         };
-        let sub = validationGroup.propertyStateChangedEvent.subscribe(handlePropertyStateChange, propertyPredicate);
+        const sub = validationGroup.propertyStateChangedEvent.subscribe(handlePropertyStateChange, propertyPredicate);
         metadata[ValidationSubKey][propertyRoute] = sub;
     },
     unbind: function (element, binding, vnode) {
@@ -77,12 +102,12 @@ const showErrorDirective = {
 };
 const summaryDirective = {
     bind: function (element, binding, vnode) {
-        let context = vnode.context;
+        const context = vnode.context;
         if (!context._validationMetadata) {
             context._validationMetadata = {};
             context._validationMetadata[SummarySubKey] = [];
         }
-        let metadata = context._validationMetadata;
+        const metadata = context._validationMetadata;
         let validationGroups = null;
         if (binding.value != null) {
             validationGroups = binding.value;
@@ -93,8 +118,8 @@ const summaryDirective = {
         if (!validationGroups) {
             return;
         }
-        let isArray = Array.isArray(validationGroups);
-        let getDisplayName = (propertyRoute) => {
+        const isArray = Array.isArray(validationGroups);
+        const getDisplayName = (propertyRoute) => {
             if (!isArray) {
                 return validationGroups.getPropertyDisplayName(propertyRoute);
             }
@@ -107,15 +132,15 @@ const summaryDirective = {
             });
             return finalName;
         };
-        let strategyName = ElementHelper.getSummaryStrategyFrom(element);
-        let summaryStrategy = viewSummaryRegistry.getSummaryNamed(strategyName || "default");
+        const strategyName = ElementHelper.getSummaryStrategyFrom(element);
+        const summaryStrategy = viewSummaryRegistry.getSummaryNamed(strategyName || "default");
         if (!summaryStrategy) {
             return;
         }
-        let viewOptions = ElementHelper.getSummaryOptionsFrom(element) || {};
+        const viewOptions = ElementHelper.getSummaryOptionsFrom(element) || {};
         summaryStrategy.setupContainer(element, viewOptions);
-        var handleStateChange = (eventArgs) => {
-            var displayName = getDisplayName(eventArgs.property);
+        const handleStateChange = (eventArgs) => {
+            const displayName = getDisplayName(eventArgs.property);
             if (eventArgs.isValid) {
                 summaryStrategy.propertyBecomeValid(element, displayName, viewOptions);
             }
@@ -125,18 +150,18 @@ const summaryDirective = {
         };
         if (isArray) {
             validationGroups.forEach((validationGroup) => {
-                let sub = validationGroup.propertyStateChangedEvent.subscribe(handleStateChange);
+                const sub = validationGroup.propertyStateChangedEvent.subscribe(handleStateChange);
                 metadata[SummarySubKey].push(sub);
             });
         }
         else {
-            let sub = validationGroups.propertyStateChangedEvent.subscribe(handleStateChange);
+            const sub = validationGroups.propertyStateChangedEvent.subscribe(handleStateChange);
             metadata[SummarySubKey].push(sub);
         }
     },
     unbind: function (element, binding, vnode) {
-        let context = vnode.context;
-        let metadata = context._validationMetadata;
+        const context = vnode.context;
+        const metadata = context._validationMetadata;
         metadata[SummarySubKey].foreach((x) => x());
     }
 };

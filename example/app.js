@@ -17,7 +17,8 @@ import "./components/complex/complex.component";
 let appData = {
     basicState: true,
     complexState: true,
-    validationSummaryGroups: null
+    validationSummaryGroups: null,
+    dummyPropData: { blah: "dummy value" }
 };
 
 // Explicitly check to see if the component is valid

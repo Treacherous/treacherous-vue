@@ -2,9 +2,23 @@ import {Ruleset, createGroup, IValidationGroup, IReactiveValidationGroup, Proper
 import {viewStrategyRegistry, viewSummaryRegistry, ElementHelper, ValidationState} from "treacherous-view";
 
 import {Vue as VueDescriptor} from "vue/types/vue";
+
+interface RulesetOptions {
+    disableReactiveValidation: boolean;
+    validateProps: boolean;
+    validateComputed: boolean;
+}
+
+interface RulesetMixin {
+    ruleset: Ruleset,
+    options: RulesetOptions
+}
+
+type RulesetType = Ruleset |  RulesetMixin;
+
 declare module "vue/types/options" {
     interface ComponentOptions<V extends VueDescriptor> {
-        ruleset?: Ruleset;
+        ruleset?: RulesetType;
     }
 }
 
@@ -16,13 +30,43 @@ const mixins = {
         if(!this.$options.ruleset)
         { return; }
 
-        let context = this;
-        let ruleset = context.$options.ruleset;
-        let validationGroup = createGroup().asReactiveGroup().build(context, ruleset);
-        
-        context.validationGroup = validationGroup;
+        const context = this;
+        let ruleset: Ruleset;
+        let options:  RulesetOptions;
 
-        let metadata: any = {};
+        if(this.$options.ruleset instanceof Ruleset)
+        {
+            ruleset = this.$options.ruleset;
+            options = { disableReactiveValidation: false, validateComputed: false, validateProps: false };
+        }
+        else
+        {
+            ruleset = this.$options.ruleset.ruleset;
+            options = this.$options.ruleset.options;
+        }
+
+        const handler = {
+            get (obj: object, prop: PropertyKey) {
+
+                if(options.validateProps && prop == "props")
+                { return context._props; }
+
+                if(options.validateComputed && prop == "computed")
+                { return context._computed}
+
+                return Reflect.get(obj, prop);
+            }
+        };
+
+        const virtualModel = new Proxy(context._data, handler);
+
+        if(options.disableReactiveValidation)
+        { context.validationGroup = createGroup().build(virtualModel, ruleset); }
+        else
+        { context.validationGroup = createGroup().asReactiveGroup().build(virtualModel, ruleset); }
+
+
+        const metadata: any = {};
         context._validationMetadata = metadata;
 
         metadata[ValidationSubKey] = {};        
@@ -32,28 +76,28 @@ const mixins = {
         if(!this.$options.ruleset)
         { return; }
 
-        let context = this;
+        const context = this;
         (<IValidationGroup>context.validationGroup).release();
     }
 };
 
 const showErrorDirective = {
     bind: function (element: HTMLElement, binding: any, vnode: any) {
-        let context = vnode.context;
-        let validationGroup = <IReactiveValidationGroup>context.validationGroup;
+        const context = vnode.context;
+        const validationGroup = <IReactiveValidationGroup>context.validationGroup;
         if(!validationGroup) { return; }
 
-        let metadata = context._validationMetadata;
+        const metadata = context._validationMetadata;
 
-        let propertyRoute = ElementHelper.getPropertyRouteFrom(element);
+        const propertyRoute = ElementHelper.getPropertyRouteFrom(element);
         if(!propertyRoute) { return; }
 
-        let strategyName = ElementHelper.getViewStrategyFrom(element);
-        let viewStrategy = viewStrategyRegistry.getStrategyNamed(strategyName || "inline");
+        const strategyName = ElementHelper.getViewStrategyFrom(element);
+        const viewStrategy = viewStrategyRegistry.getStrategyNamed(strategyName || "inline");
         if(!viewStrategy) { return; }
 
         let validationState = ValidationState.unknown;
-        let viewOptions = ElementHelper.getViewOptionsFrom(element) || {};
+        const viewOptions = ElementHelper.getViewOptionsFrom(element) || {};
 
         let handlePossibleError = (error: any) => {
             if(!error)
@@ -68,15 +112,15 @@ const showErrorDirective = {
             }
         };
 
-        let handlePropertyStateChange = (args: PropertyStateChangedEvent) => {
+        const handlePropertyStateChange = (args: PropertyStateChangedEvent) => {
             handlePossibleError(args.error);
         };
 
-        let propertyPredicate = (args: PropertyStateChangedEvent) => {
+        const propertyPredicate = (args: PropertyStateChangedEvent) => {
             return args.property == propertyRoute
         };
 
-        let sub = validationGroup.propertyStateChangedEvent.subscribe(handlePropertyStateChange, propertyPredicate);
+        const sub = validationGroup.propertyStateChangedEvent.subscribe(handlePropertyStateChange, propertyPredicate);
         metadata[ValidationSubKey][propertyRoute] = sub;
     },
     unbind: function (element: HTMLElement, binding: any, vnode: any) {
@@ -92,7 +136,7 @@ const showErrorDirective = {
 
 const summaryDirective = {
     bind: function (element: HTMLElement, binding: any, vnode: any) {
-        let context = vnode.context;
+        const context = vnode.context;
 
         if(!context._validationMetadata)
         { 
@@ -100,7 +144,7 @@ const summaryDirective = {
             context._validationMetadata[SummarySubKey] = []; 
         }
 
-        let metadata = context._validationMetadata;
+        const metadata = context._validationMetadata;
         let validationGroups: any = null;
 
         if(binding.value != null)
@@ -109,10 +153,10 @@ const summaryDirective = {
         { validationGroups = context.validationGroup; }
             
         if(!validationGroups) { return; }
-        
-        let isArray = Array.isArray(validationGroups);
 
-        let getDisplayName = (propertyRoute: string) => {
+        const isArray = Array.isArray(validationGroups);
+
+        const getDisplayName = (propertyRoute: string) => {
             if(!isArray)
             { return (<IValidationGroup>validationGroups).getPropertyDisplayName(propertyRoute); }
 
@@ -126,15 +170,15 @@ const summaryDirective = {
             return finalName;
         };
 
-        let strategyName = ElementHelper.getSummaryStrategyFrom(element);
-        let summaryStrategy = viewSummaryRegistry.getSummaryNamed(strategyName || "default");
+        const strategyName = ElementHelper.getSummaryStrategyFrom(element);
+        const summaryStrategy = viewSummaryRegistry.getSummaryNamed(strategyName || "default");
         if(!summaryStrategy) { return; }
 
-        let viewOptions = ElementHelper.getSummaryOptionsFrom(element) || {};
+        const viewOptions = ElementHelper.getSummaryOptionsFrom(element) || {};
         summaryStrategy.setupContainer(element, viewOptions);
-        
-        var handleStateChange = (eventArgs: PropertyStateChangedEvent) => {
-            var displayName = getDisplayName(eventArgs.property);
+
+        const handleStateChange = (eventArgs: PropertyStateChangedEvent) => {
+            const displayName = getDisplayName(eventArgs.property);
             if(eventArgs.isValid)
             { summaryStrategy.propertyBecomeValid(element, displayName, viewOptions); }
             else
@@ -144,19 +188,19 @@ const summaryDirective = {
         if(isArray)
         {
             validationGroups.forEach((validationGroup: IReactiveValidationGroup) => {
-                let sub = validationGroup.propertyStateChangedEvent.subscribe(handleStateChange);
+                const sub = validationGroup.propertyStateChangedEvent.subscribe(handleStateChange);
                 metadata[SummarySubKey].push(sub);
             });
         }
         else
         {
-            let sub = validationGroups.propertyStateChangedEvent.subscribe(handleStateChange);
+            const sub = validationGroups.propertyStateChangedEvent.subscribe(handleStateChange);
             metadata[SummarySubKey].push(sub);
         }        
     },
     unbind: function (element: HTMLElement, binding: any, vnode: any) {
-        let context = vnode.context;
-        let metadata = context._validationMetadata;
+        const context = vnode.context;
+        const metadata = context._validationMetadata;
         metadata[SummarySubKey].foreach((x: Function) => x());
     }
 }
