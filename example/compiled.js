@@ -11549,6 +11549,23 @@ const treacherous_view_1 = __webpack_require__(12);
 const ValidationSubKey = "validation-subscriptions";
 const SummarySubKey = "summary-subscriptions";
 const mixins = {
+    data: function () {
+        if (!this.$options.ruleset) {
+            return {};
+        }
+        return {
+            validationGroup: null,
+            modelErrors: {}
+        };
+    },
+    computed: {
+        isValid: function () {
+            if (!this.$options.ruleset) {
+                return true;
+            }
+            return Object.keys(this.modelErrors).length == 0;
+        }
+    },
     created: function () {
         if (!this.$options.ruleset) {
             return;
@@ -11621,10 +11638,12 @@ const showErrorDirective = {
             if (!error) {
                 viewStrategy.propertyBecomeValid(element, propertyRoute, validationState, viewOptions);
                 validationState = treacherous_view_1.ValidationState.valid;
+                delete context.modelErrors[propertyRoute];
             }
             else {
                 viewStrategy.propertyBecomeInvalid(element, error, propertyRoute, validationState, viewOptions);
                 validationState = treacherous_view_1.ValidationState.invalid;
+                context.modelErrors[propertyRoute] = error;
             }
         };
         const handlePropertyStateChange = (args) => {
