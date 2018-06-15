@@ -4,7 +4,7 @@ import { UserData } from "./user-data.model";
 import { Hobby } from "./hobby.model";
 import { userDataRuleset } from "./user-data.ruleset";
 import template from "./complex.html";
-import {createRuleset} from "treacherous";
+import {createRuleset, mergeRulesets} from "treacherous";
 
 const propsRuleset = createRuleset()
     .forProperty("dummyProp")
@@ -15,10 +15,7 @@ const propsRuleset = createRuleset()
         })
     .build();
 
-const complexRuleset = createRuleset(userDataRuleset)
-    .forProperty("props")
-        .addRuleset(propsRuleset)
-    .build();
+const complexRuleset = mergeRulesets(userDataRuleset, propsRuleset);
 
 Vue.component('complex', {
     ruleset: {

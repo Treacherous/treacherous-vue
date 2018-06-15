@@ -11566,13 +11566,16 @@ const mixins = {
         }
         const handler = {
             get(obj, prop) {
-                if (options.validateProps && prop == "props") {
-                    return context._props;
+                const hasProperty = Reflect.has(obj, prop);
+                if (hasProperty) {
+                    return Reflect.get(obj, prop);
                 }
-                if (options.validateComputed && prop == "computed") {
-                    return context._computed;
+                if (options.validateProps && Reflect.has(context._props, prop)) {
+                    return Reflect.get(context._props, prop);
                 }
-                return Reflect.get(obj, prop);
+                if (options.validateComputed && Reflect.has(context._computed, prop)) {
+                    return Reflect.get(context._computed, prop);
+                }
             }
         };
         const virtualModel = new Proxy(context._data, handler);
@@ -14651,10 +14654,7 @@ const propsRuleset = Object(__WEBPACK_IMPORTED_MODULE_5_treacherous__["createRul
         })
     .build();
 
-const complexRuleset = Object(__WEBPACK_IMPORTED_MODULE_5_treacherous__["createRuleset"])(__WEBPACK_IMPORTED_MODULE_3__user_data_ruleset__["a" /* userDataRuleset */])
-    .forProperty("props")
-        .addRuleset(propsRuleset)
-    .build();
+const complexRuleset = Object(__WEBPACK_IMPORTED_MODULE_5_treacherous__["mergeRulesets"])(__WEBPACK_IMPORTED_MODULE_3__user_data_ruleset__["a" /* userDataRuleset */], propsRuleset);
 
 __WEBPACK_IMPORTED_MODULE_0_vue_dist_vue___default.a.component('complex', {
     ruleset: {
@@ -14738,7 +14738,7 @@ var hobbyRuleset = Object(__WEBPACK_IMPORTED_MODULE_0__dist_commonjs_plugin__["c
 /* 80 */
 /***/ (function(module, exports) {
 
-module.exports = "<section>\r\n    <div class=\"row\">\r\n        <div class=\"six columns\">\r\n            <label>Name</label>\r\n            <input type=\"text\" class=\"u-full-width\" v-model=\"name\" placeholder=\"Name\" v-show-error validate-property=\"name\" />\r\n        </div>\r\n        <div class=\"six columns\">\r\n            <label>Age</label>\r\n            <input type=\"text\" class=\"u-full-width\" v-model=\"age\" placeholder=\"Age\" v-show-error validate-property=\"age\" view-strategy=\"tooltip\" />\r\n        </div>\r\n    </div>\r\n    <div class=\"row\">\r\n        <label>Hobbies</label>\r\n        <div v-for=\"(hobby, index) in hobbies\">\r\n            <input type=\"text\" class=\"u-full-width\" v-model=\"hobby.hobbyName\" placeholder=\"Hobby\" v-show-error :validate-property=\"`hobbies[${index}].hobbyName`\" />\r\n        </div>\r\n    </div>\r\n    <div class=\"row\">\r\n        <div>\r\n            <label>Dummy Prop</label>\r\n            <input type=\"text\" class=\"u-full-width\" v-model=\"dummyProp.blah\" placeholder=\"Dummy Prop\" v-show-error validate-property=\"props.dummyProp.blah\" />\r\n        </div>\r\n    </div>\r\n</section>\r\n"
+module.exports = "<section>\r\n    <div class=\"row\">\r\n        <div class=\"six columns\">\r\n            <label>Name</label>\r\n            <input type=\"text\" class=\"u-full-width\" v-model=\"name\" placeholder=\"Name\" v-show-error validate-property=\"name\" />\r\n        </div>\r\n        <div class=\"six columns\">\r\n            <label>Age</label>\r\n            <input type=\"text\" class=\"u-full-width\" v-model=\"age\" placeholder=\"Age\" v-show-error validate-property=\"age\" view-strategy=\"tooltip\" />\r\n        </div>\r\n    </div>\r\n    <div class=\"row\">\r\n        <label>Hobbies</label>\r\n        <div v-for=\"(hobby, index) in hobbies\">\r\n            <input type=\"text\" class=\"u-full-width\" v-model=\"hobby.hobbyName\" placeholder=\"Hobby\" v-show-error :validate-property=\"`hobbies[${index}].hobbyName`\" />\r\n        </div>\r\n    </div>\r\n    <div class=\"row\">\r\n        <div>\r\n            <label>Dummy Prop</label>\r\n            <input type=\"text\" class=\"u-full-width\" v-model=\"dummyProp.blah\" placeholder=\"Dummy Prop\" v-show-error validate-property=\"dummyProp.blah\" />\r\n        </div>\r\n    </div>\r\n</section>\r\n"
 
 /***/ })
 /******/ ]);

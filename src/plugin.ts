@@ -48,13 +48,16 @@ const mixins = {
         const handler = {
             get (obj: object, prop: PropertyKey) {
 
-                if(options.validateProps && prop == "props")
-                { return context._props; }
+                const hasProperty = Reflect.has(obj, prop);
 
-                if(options.validateComputed && prop == "computed")
-                { return context._computed}
+                if(hasProperty)
+                { return Reflect.get(obj, prop); }
 
-                return Reflect.get(obj, prop);
+                if(options.validateProps && Reflect.has(context._props, prop))
+                { return Reflect.get(context._props, prop); }
+
+                if(options.validateComputed && Reflect.has(context._computed, prop))
+                { return Reflect.get(context._computed, prop); }
             }
         };
 
