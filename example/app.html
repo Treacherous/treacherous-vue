@@ -10,21 +10,21 @@
             <h1>Treacherous - Vue Examples</h1>
             <p>Here are some simple examples which show how to use treacherous with vue.</p>
             <p>Head to the examples folder in the <a href="https://github.com/grofit/treacherous-vue">source</a> to see how it all works.</p>
-            <fieldset>
+            <fieldset :class="{ invalid: !isBasicValid }">
                 <h3>Basic Usage</h3>
                 <p>
                     This shows the most basic example where you have a single component which validates a single field,
-                    there is also a button to manually trigger progmatic validation, which covers most basic use cases.
+                    there is also a button to trigger validation, which covers the most basic use cases.
                 </p>
-                <basic id="basic-form" ref="basic"></basic>
-                <button id="basic-submit" :class="{ valid: basicState, invalid: !basicState }" @click="validateBasic">Progmatically Validate - {{basicState ? 'Is' : 'Isnt'}} Valid</button>
+                <basic id="basic-form" ref="basic" @model-state-changed="state => isBasicValid = state.isValid"></basic>
             </fieldset>
 
-            <fieldset>
+            <fieldset :class="{ invalid: !isComplexValid }">
                 <h3>More Complex Usage</h3>
                 <p>
                     This shows how to use complex models which may have nested properties or arrays,
-                    there is also a button to manually trigger progmatic validation.
+                    as well as the ability to validate on props. We have also enabled reactive validation
+                    so as and when values change it will automatically update the state.
                 </p>
                 <p>
                     One other interesting thing in this example is that the <strong>age</strong>
@@ -32,8 +32,7 @@
                     differently to the other fields in this example, and all it takes is a single 
                     attribute to swap strategy (and a custom strategy registered, seen in <strong>app.js</strong>)
                 </p>
-                <complex id="complex-form" ref="complex" :dummy-prop="dummyPropData"></complex>
-                <button id="complex-submit" :class="{ valid: complexState, invalid: !complexState }" @click="validateComplex">Progmatically Validate - {{complexState ? 'Is' : 'Isnt'}} Valid</button>
+                <complex id="complex-form" ref="complex" :dummy-prop="dummyPropData" @model-state-changed="state => isComplexValid = state.isValid"></complex>
             </fieldset>
 
             <fieldset>

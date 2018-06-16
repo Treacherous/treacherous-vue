@@ -1,53 +1,46 @@
 import {Ruleset, createGroup, IValidationGroup, IReactiveValidationGroup, PropertyStateChangedEvent} from "treacherous";
 import {viewStrategyRegistry, viewSummaryRegistry, ElementHelper, ValidationState} from "treacherous-view";
 
-import {Vue as VueDescriptor} from "vue/types/vue";
-
 interface RulesetOptions {
-    disableReactiveValidation: boolean;
+    withReactiveValidation: boolean;
     validateProps: boolean;
     validateComputed: boolean;
-}
-
-interface RulesetMixin {
-    use: Ruleset,
-    options: RulesetOptions
-}
-
-type RulesetType = Ruleset |  RulesetMixin;
-
-declare module "vue/types/options" {
-    interface ComponentOptions<V extends VueDescriptor> {
-        ruleset?: RulesetType;
-    }
 }
 
 const ValidationSubKey = "validation-subscriptions";
 const SummarySubKey = "summary-subscriptions";
 
-const mixins = {
-    created: function () {
-        if(!this.$options.ruleset)
-        { return; }
+export const ValidateWith = (ruleset: Ruleset, options?: RulesetOptions) => {
+    return {
+        data() {
+            return {
+                validationGroup: <IValidationGroup>null,
+                modelErrors: {}
+            }
+        },
+        computed: {
+            isValid: function () {
+                return Object.keys(this.modelErrors).length == 0;
+            }
+        },
+        methods: {
+            validate: function() {
+                return this.validationGroup.validate();
+            }
+        },
+        watch: {
+            isValid: function(isValid: boolean) {
+                this.$emit("model-state-changed", { isValid: isValid, errors: this.modelErrors });
+            }
+        },
+        created() {
+            const context = <any>this;
 
-        const context = this;
-        let ruleset: Ruleset;
-        let options:  RulesetOptions;
+            if(!options)
+            { options = { withReactiveValidation: false, validateComputed: false, validateProps: false }; }
 
-        if(this.$options.ruleset instanceof Ruleset)
-        {
-            ruleset = this.$options.ruleset;
-            options = { disableReactiveValidation: false, validateComputed: false, validateProps: false };
-        }
-        else
-        {
-            ruleset = this.$options.ruleset.use;
-            options = this.$options.ruleset.options;
-        }
-
-        const handler = {
-            get (obj: object, prop: PropertyKey) {
-
+            const proxyHandler = {
+                get (obj: object, prop: PropertyKey) {
                 const hasProperty = Reflect.has(obj, prop);
 
                 if(hasProperty)
@@ -58,29 +51,27 @@ const mixins = {
 
                 if(options.validateComputed && Reflect.has(context._computed, prop))
                 { return Reflect.get(context._computed, prop); }
-            }
-        };
 
-        const virtualModel = new Proxy(context._data, handler);
+                return undefined;
+                }
+            };
 
-        if(options.disableReactiveValidation)
-        { context.validationGroup = createGroup().build(virtualModel, ruleset); }
-        else
-        { context.validationGroup = createGroup().asReactiveGroup().build(virtualModel, ruleset); }
+            const virtualModel = new Proxy(context._data, proxyHandler);
 
+            if(options.withReactiveValidation)
+            { context.validationGroup = createGroup().asReactiveGroup().build(virtualModel, ruleset); }
+            else
+            { context.validationGroup = createGroup().build(virtualModel, ruleset); }
 
-        const metadata: any = {};
-        context._validationMetadata = metadata;
+            const metadata: any = {};
+            context._validationMetadata = metadata;
 
-        metadata[ValidationSubKey] = {};        
-        metadata[SummarySubKey] = [];
-    },
-    beforeDestroy: function() {
-        if(!this.$options.ruleset)
-        { return; }
-
-        const context = this;
-        (<IValidationGroup>context.validationGroup).release();
+            metadata[ValidationSubKey] = {};
+            metadata[SummarySubKey] = [];
+        },
+        beforeDestroy() {
+            this.validationGroup.release();
+        }
     }
 };
 
@@ -107,11 +98,13 @@ const showErrorDirective = {
             {
                 viewStrategy.propertyBecomeValid(element, propertyRoute, validationState, viewOptions);
                 validationState = ValidationState.valid;
+                context.$delete(context.modelErrors, propertyRoute);
             }
             else
             {
                 viewStrategy.propertyBecomeInvalid(element, error, propertyRoute, validationState, viewOptions);
                 validationState = ValidationState.invalid;
+                context.$set(context.modelErrors, propertyRoute, error);
             }
         };
 
@@ -209,7 +202,6 @@ const summaryDirective = {
 }
 
 const install = function(Vue: any, options: any) {
-    Vue.mixin(mixins);
     Vue.directive('show-error', showErrorDirective);
     Vue.directive('validation-summary', summaryDirective);
 }

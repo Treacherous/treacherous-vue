@@ -4,55 +4,65 @@ const treacherous_1 = require("treacherous");
 const treacherous_view_1 = require("treacherous-view");
 const ValidationSubKey = "validation-subscriptions";
 const SummarySubKey = "summary-subscriptions";
-const mixins = {
-    created: function () {
-        if (!this.$options.ruleset) {
-            return;
-        }
-        const context = this;
-        let ruleset;
-        let options;
-        if (this.$options.ruleset instanceof treacherous_1.Ruleset) {
-            ruleset = this.$options.ruleset;
-            options = { disableReactiveValidation: false, validateComputed: false, validateProps: false };
-        }
-        else {
-            ruleset = this.$options.ruleset.use;
-            options = this.$options.ruleset.options;
-        }
-        const handler = {
-            get(obj, prop) {
-                const hasProperty = Reflect.has(obj, prop);
-                if (hasProperty) {
-                    return Reflect.get(obj, prop);
-                }
-                if (options.validateProps && Reflect.has(context._props, prop)) {
-                    return Reflect.get(context._props, prop);
-                }
-                if (options.validateComputed && Reflect.has(context._computed, prop)) {
-                    return Reflect.get(context._computed, prop);
-                }
+exports.ValidateWith = (ruleset, options) => {
+    return {
+        data() {
+            return {
+                validationGroup: null,
+                modelErrors: {}
+            };
+        },
+        computed: {
+            isValid: function () {
+                return Object.keys(this.modelErrors).length == 0;
             }
-        };
-        const virtualModel = new Proxy(context._data, handler);
-        if (options.disableReactiveValidation) {
-            context.validationGroup = treacherous_1.createGroup().build(virtualModel, ruleset);
+        },
+        methods: {
+            validate: function () {
+                return this.validationGroup.validate();
+            }
+        },
+        watch: {
+            isValid: function (isValid) {
+                this.$emit("model-state-changed", { isValid: isValid, errors: this.modelErrors });
+            }
+        },
+        created() {
+            const context = this;
+            if (!options) {
+                options = { withReactiveValidation: false, validateComputed: false, validateProps: false };
+            }
+            const proxyHandler = {
+                get(obj, prop) {
+                    const hasProperty = Reflect.has(obj, prop);
+                    if (hasProperty) {
+                        return Reflect.get(obj, prop);
+                    }
+                    if (options.validateProps && Reflect.has(context._props, prop)) {
+                        return Reflect.get(context._props, prop);
+                    }
+                    if (options.validateComputed && Reflect.has(context._computed, prop)) {
+                        return Reflect.get(context._computed, prop);
+                    }
+                    return undefined;
+                }
+            };
+            const virtualModel = new Proxy(context._data, proxyHandler);
+            if (options.withReactiveValidation) {
+                context.validationGroup = treacherous_1.createGroup().asReactiveGroup().build(virtualModel, ruleset);
+            }
+            else {
+                context.validationGroup = treacherous_1.createGroup().build(virtualModel, ruleset);
+            }
+            const metadata = {};
+            context._validationMetadata = metadata;
+            metadata[ValidationSubKey] = {};
+            metadata[SummarySubKey] = [];
+        },
+        beforeDestroy() {
+            this.validationGroup.release();
         }
-        else {
-            context.validationGroup = treacherous_1.createGroup().asReactiveGroup().build(virtualModel, ruleset);
-        }
-        const metadata = {};
-        context._validationMetadata = metadata;
-        metadata[ValidationSubKey] = {};
-        metadata[SummarySubKey] = [];
-    },
-    beforeDestroy: function () {
-        if (!this.$options.ruleset) {
-            return;
-        }
-        const context = this;
-        context.validationGroup.release();
-    }
+    };
 };
 const showErrorDirective = {
     bind: function (element, binding, vnode) {
@@ -77,10 +87,12 @@ const showErrorDirective = {
             if (!error) {
                 viewStrategy.propertyBecomeValid(element, propertyRoute, validationState, viewOptions);
                 validationState = treacherous_view_1.ValidationState.valid;
+                context.$delete(context.modelErrors, propertyRoute);
             }
             else {
                 viewStrategy.propertyBecomeInvalid(element, error, propertyRoute, validationState, viewOptions);
                 validationState = treacherous_view_1.ValidationState.invalid;
+                context.$set(context.modelErrors, propertyRoute, error);
             }
         };
         const handlePropertyStateChange = (args) => {
@@ -171,7 +183,6 @@ const summaryDirective = {
     }
 };
 const install = function (Vue, options) {
-    Vue.mixin(mixins);
     Vue.directive('show-error', showErrorDirective);
     Vue.directive('validation-summary', summaryDirective);
 };

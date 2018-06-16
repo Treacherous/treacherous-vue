@@ -1,20 +1,26 @@
-import { Ruleset } from "treacherous";
-import { Vue as VueDescriptor } from "vue/types/vue";
+import { Ruleset, IValidationGroup } from "treacherous";
 interface RulesetOptions {
-    disableReactiveValidation: boolean;
+    withReactiveValidation: boolean;
     validateProps: boolean;
     validateComputed: boolean;
 }
-interface RulesetMixin {
-    use: Ruleset;
-    options: RulesetOptions;
-}
-declare type RulesetType = Ruleset | RulesetMixin;
-declare module "vue/types/options" {
-    interface ComponentOptions<V extends VueDescriptor> {
-        ruleset?: RulesetType;
-    }
-}
+export declare const ValidateWith: (ruleset: Ruleset, options?: RulesetOptions) => {
+    data(): {
+        validationGroup: IValidationGroup;
+        modelErrors: {};
+    };
+    computed: {
+        isValid: () => boolean;
+    };
+    methods: {
+        validate: () => any;
+    };
+    watch: {
+        isValid: (isValid: boolean) => void;
+    };
+    created(): void;
+    beforeDestroy(): void;
+};
 export { viewStrategyRegistry } from "treacherous-view";
 export { createRuleset, ruleRegistry } from "treacherous";
 declare const _default: {
