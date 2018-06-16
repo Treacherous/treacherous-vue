@@ -13,41 +13,15 @@ viewStrategyRegistry.registerStrategy(new TooltipStrategy());
 import "./components/basic/basic.component";
 import "./components/complex/complex.component";
 
-// Setup basic data placeholders that hook into the validation groups
+// Setup parent data, the validation is handled in the children but the parents can hook in if they need to
 let appData = {
-    basicState: true,
-    complexState: true,
-    validationSummaryGroups: null,
-    dummyPropData: { blah: "dummy value" }
+    isBasicValid: true,                     // Just to show the parent can listen to events from child
+    isComplexValid: true,                   // ^^
+    validationSummaryGroups: null,          // This is used to collate the 2 child validation groups for a summary on parent
+    dummyPropData: { blah: "dummy value" }  // This is just to show you can validate on properties
 };
 
-// Explicitly check to see if the component is valid
-let validateBasicComponent = function() { 
-    let context = this;
-    let basicValidationGroup = context.$refs.basic.validationGroup;
-
-    // We ask the validation group if its valid, which returns a promise
-    basicValidationGroup
-        .validate()
-        .then((isValid) => {
-            context.basicState = isValid
-        });
-};
-
-// Explicitly check to see if the component is valid
-let validateComplexComponent = function() {
-    let context = this;
-    let complexValidationGroup = context.$refs.complex.validationGroup;
-    
-    // We ask the validation group if its valid, which returns a promise
-    complexValidationGroup
-        .validate()
-        .then((isValid) => {
-            context.complexState = isValid
-        });
-};
-
-// Grab the validation groups from the components for use in 
+// Grab the validation groups from the components for use in
 // validation summary, this wont be available at page load
 // but we use v-if in the view to delay this
 let onMounted = function() {
@@ -60,9 +34,5 @@ let onMounted = function() {
 let app = new Vue({
     el: "#app",
     data: appData,
-    methods: {
-        validateBasic: validateBasicComponent,
-        validateComplex: validateComplexComponent
-    },
     mounted: onMounted
 });

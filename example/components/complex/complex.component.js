@@ -4,29 +4,25 @@ import { UserData } from "./user-data.model";
 import { Hobby } from "./hobby.model";
 import { userDataRuleset } from "./user-data.ruleset";
 import template from "./complex.html";
-import {createRuleset, mergeRulesets} from "treacherous";
+import {createRuleset} from "treacherous";
+import {ValidateWith} from "../../../dist/commonjs/plugin";
 
-const propsRuleset = createRuleset()
+// When creating this ruleset we use userDataRuleset as the template
+const complexRuleset = createRuleset(userDataRuleset)
     .forProperty("dummyProp")
-        .nestWithin(x => {
+        .then(x => {
             x.forProperty("blah")
-                .withDisplayName("Property Blah")
                 .required();
         })
     .build();
 
-const complexRuleset = mergeRulesets(userDataRuleset, propsRuleset);
-
 Vue.component('complex', {
-    ruleset: {
-        use: complexRuleset,
-        options: { validateProps: true }
-    },
     data: () => new UserData("Bob", 20, [ 
         new Hobby("reading"), 
         new Hobby("skateboarding"), 
         new Hobby("swimming")
     ]),
     template: template,
-    props: [ "dummyProp" ]
+    props: [ "dummyProp" ],
+    mixins: [ ValidateWith(complexRuleset, { validateProps: true, withReactiveValidation: true }) ] // Enable Prop and Reactive validation
 });

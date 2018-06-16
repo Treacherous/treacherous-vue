@@ -2,6 +2,7 @@ import Vue  from "vue/dist/vue";
 
 import {createRuleset} from "treacherous";
 import template from "./basic.html";
+import {ValidateWith} from "../../../dist/commonjs/plugin";
 
 const dataRuleset = createRuleset()
     .forProperty("username")
@@ -10,7 +11,7 @@ const dataRuleset = createRuleset()
     .build();
 
 Vue.component('basic', {
-    ruleset: dataRuleset,
     data: () => { return { username: "joe.bloggs" } },
-    template: template
+    template: template,
+    mixins: [ ValidateWith(dataRuleset) ]
 });

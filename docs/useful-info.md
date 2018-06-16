@@ -10,7 +10,7 @@ The core part that manages all validation is a `validationGroup` which is automa
 
 The decision was made with this library to have the components own their own validation concerns, which is different to some of the other treacherous view wrappers (knockout, aurelia etc).
 
-Because of the validation concerns being set at the component level, if you want to access the validation data inside the parent vm/component you will need to have a `ref` link to your component, and use that ref to access the internal `validationGroup` property which is appended to any component which provides validation.
+Because of the validation concerns being set at the component level, if you want to access the validation data inside the parent vm/component you will need to have a `ref` link to your component, and use that ref to access the internal `validationGroup` property which is appended to any component which uses the mixin.
 
 This can complicate some scenarios such as view summaries, but it makes it easy to access any of the validation concerns on components and orchestrate from the parent.
 

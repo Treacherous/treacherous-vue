@@ -10,3 +10,9 @@ fieldset {
     border-bottom: 3px solid rgba(0,0,0,0.2);
     border-radius: 0.25em;
 }
+
+fieldset.invalid
+{
+    border-color: #FF0000;
+    background-color: rgba(255, 0, 0, 0.1);
+}

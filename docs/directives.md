@@ -2,22 +2,22 @@
 
 This plugin adds some directives to allow you to hook into the validation system within the view layer, this simplifies the overall use cases without having to litter your view with too much guff.
 
-## v-show-errors
+## v-show-error
 
-To show errors in the view on a per element basis you would need to use the `v-show-errors` directive, which doesn't take any arguments, as it follows the general [`treacherous-view`](https://github.com/grofit/treacherous-view) conventions and uses normal html attributes to infer how to handle validation.
+To show errors in the view on a per element basis you would need to use the `v-show-error` directive, which doesn't take any arguments, as it follows the general [`treacherous-view`](https://github.com/grofit/treacherous-view) conventions and uses normal html attributes to infer how to handle validation.
 
-You can put the `v-show-errors` on any element you want, so you can attach it to the input/element that cotains a binding to the data or you can just put it on some other element anywhere else in the component, as long as you provide it the `validate-property` attribute.
+You can put the `v-show-error` on any element you want, so you can attach it to the input/element that cotains a binding to the data or you can just put it on some other element anywhere else in the component, as long as you provide it the `validate-property` attribute.
 
 ### `validate-property` Attribute
 
-This indicates the property to be validated when showing the errors. So like in the previous example if you had a `name` property and you wanted to show a validation error for that property you can put that property route/name into the attribute for the `v-show-errors` to look at, as mentioned they can be used on any element like so:
+This indicates the property to be validated when showing the errors. So like in the previous example if you had a `name` property and you wanted to show a validation error for that property you can put that property route/name into the attribute for the `v-show-error` to look at, as mentioned they can be used on any element like so:
 
 ```html
 // Just adding view errors to the input
-<input id="name-input" placeholder="Name" validate-property="name" v-show-errors />
+<input id="name-input" placeholder="Name" validate-property="name" v-show-error />
 
 // Adding view errors anywhere else
-<div id="name-error-div" validate-property="name" v-show-errors />
+<div id="name-error-div" validate-property="name" v-show-error />
 
 // Adding view errors for arrays
 <div v-for="(hobby, index) in hobbies">
@@ -35,7 +35,7 @@ This attribute lets you infer what view strategy to use for your error display. 
 
 ```html
 // Telling this error to use a custom tooltip strategy
-<input id="name-input" placeholder="Name" validate-property="name" view-strategy="tooltip" v-show-errors />
+<input id="name-input" placeholder="Name" validate-property="name" view-strategy="tooltip" v-show-error />
 ```
 
 A use case for this can be seen in the [example](https://rawgit.com/grofit/treacherous-vue/master/example/app.html).
