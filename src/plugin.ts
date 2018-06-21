@@ -2,9 +2,9 @@ import {Ruleset, createGroup, IValidationGroup, IReactiveValidationGroup, Proper
 import {viewStrategyRegistry, viewSummaryRegistry, ElementHelper, ValidationState} from "treacherous-view";
 
 interface RulesetOptions {
-    withReactiveValidation: boolean;
-    validateProps: boolean;
-    validateComputed: boolean;
+    withReactiveValidation?: boolean;
+    validateProps?: boolean;
+    validateComputed?: boolean;
 }
 
 const ValidationSubKey = "validation-subscriptions";
@@ -21,11 +21,6 @@ export const ValidateWith = (ruleset: Ruleset, options?: RulesetOptions) => {
         computed: {
             isValid: function () {
                 return Object.keys(this.modelErrors).length == 0;
-            }
-        },
-        methods: {
-            validate: function() {
-                return this.validationGroup.validate();
             }
         },
         watch: {
