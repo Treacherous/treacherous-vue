@@ -12,7 +12,8 @@ const complexRuleset = createRuleset(userDataRuleset)
     .forProperty("dummyProp")
         .then(x => {
             x.forProperty("blah")
-                .required();
+                .required()
+                .withDisplayName("Blah Property");
         })
     .build();
 

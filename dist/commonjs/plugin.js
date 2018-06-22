@@ -4,7 +4,7 @@ const treacherous_1 = require("treacherous");
 const treacherous_view_1 = require("treacherous-view");
 const ValidationSubKey = "validation-subscriptions";
 const SummarySubKey = "summary-subscriptions";
-exports.ValidateWith = (ruleset, options) => {
+exports.ValidateWith = (ruleset, options = {}) => {
     return {
         data() {
             return {
@@ -17,11 +17,6 @@ exports.ValidateWith = (ruleset, options) => {
                 return Object.keys(this.modelErrors).length == 0;
             }
         },
-        methods: {
-            validate: function () {
-                return this.validationGroup.validate();
-            }
-        },
         watch: {
             isValid: function (isValid) {
                 this.$emit("model-state-changed", { isValid: isValid, errors: this.modelErrors });
@@ -29,8 +24,17 @@ exports.ValidateWith = (ruleset, options) => {
         },
         created() {
             const context = this;
-            if (!options) {
-                options = { withReactiveValidation: false, validateComputed: false, validateProps: false };
+            if (options.withReactiveValidation === undefined) {
+                options.withReactiveValidation = false;
+            }
+            if (options.validateComputed === undefined) {
+                options.validateComputed = false;
+            }
+            if (options.validateProps === undefined) {
+                options.validateProps = false;
+            }
+            if (options.validateOnStart === undefined) {
+                options.validateOnStart = false;
             }
             const proxyHandler = {
                 get(obj, prop) {
@@ -48,13 +52,15 @@ exports.ValidateWith = (ruleset, options) => {
                 }
             };
             const virtualModel = new Proxy(context._data, proxyHandler);
+            let validationGroupBuilder = treacherous_1.createGroup();
             if (options.withReactiveValidation) {
-                context.validationGroup = treacherous_1.createGroup().asReactiveGroup().build(virtualModel, ruleset);
+                validationGroupBuilder = validationGroupBuilder.asReactiveGroup();
             }
-            else {
-                context.validationGroup = treacherous_1.createGroup().build(virtualModel, ruleset);
+            if (options.validateOnStart) {
+                validationGroupBuilder = validationGroupBuilder.andValidateOnStart();
             }
             const metadata = {};
+            context.validationGroup = validationGroupBuilder.build(virtualModel, ruleset);
             context._validationMetadata = metadata;
             metadata[ValidationSubKey] = {};
             metadata[SummarySubKey] = [];

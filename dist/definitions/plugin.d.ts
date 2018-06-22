@@ -1,8 +1,9 @@
 import { Ruleset, IValidationGroup } from "treacherous";
-interface RulesetOptions {
-    withReactiveValidation: boolean;
-    validateProps: boolean;
-    validateComputed: boolean;
+export interface RulesetOptions {
+    withReactiveValidation?: boolean;
+    validateOnStart?: boolean;
+    validateProps?: boolean;
+    validateComputed?: boolean;
 }
 export declare const ValidateWith: (ruleset: Ruleset, options?: RulesetOptions) => {
     data(): {
@@ -11,9 +12,6 @@ export declare const ValidateWith: (ruleset: Ruleset, options?: RulesetOptions) 
     };
     computed: {
         isValid: () => boolean;
-    };
-    methods: {
-        validate: () => any;
     };
     watch: {
         isValid: (isValid: boolean) => void;

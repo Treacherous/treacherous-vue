@@ -1,8 +1,17 @@
-import {Ruleset, createGroup, IValidationGroup, IReactiveValidationGroup, PropertyStateChangedEvent} from "treacherous";
+import {
+    Ruleset,
+    createGroup,
+    IValidationGroup,
+    IReactiveValidationGroup,
+    PropertyStateChangedEvent,
+    ReactiveValidationGroupBuilder
+} from "treacherous";
 import {viewStrategyRegistry, viewSummaryRegistry, ElementHelper, ValidationState} from "treacherous-view";
+import {ValidationGroupBuilder} from "treacherous/dist/definitions/builders/validation-group-builder";
 
-interface RulesetOptions {
+export interface RulesetOptions {
     withReactiveValidation?: boolean;
+    validateOnStart?: boolean;
     validateProps?: boolean;
     validateComputed?: boolean;
 }
@@ -10,7 +19,7 @@ interface RulesetOptions {
 const ValidationSubKey = "validation-subscriptions";
 const SummarySubKey = "summary-subscriptions";
 
-export const ValidateWith = (ruleset: Ruleset, options?: RulesetOptions) => {
+export const ValidateWith = (ruleset: Ruleset, options: RulesetOptions = {}) => {
     return {
         data() {
             return {
@@ -31,34 +40,40 @@ export const ValidateWith = (ruleset: Ruleset, options?: RulesetOptions) => {
         created() {
             const context = <any>this;
 
-            if(!options)
-            { options = { withReactiveValidation: false, validateComputed: false, validateProps: false }; }
+            if(options.withReactiveValidation === undefined) { options.withReactiveValidation = false; }
+            if(options.validateComputed === undefined) { options.validateComputed = false; }
+            if(options.validateProps === undefined) { options.validateProps = false; }
+            if(options.validateOnStart === undefined) { options.validateOnStart = false; }
 
             const proxyHandler = {
                 get (obj: object, prop: PropertyKey) {
-                const hasProperty = Reflect.has(obj, prop);
+                    const hasProperty = Reflect.has(obj, prop);
 
-                if(hasProperty)
-                { return Reflect.get(obj, prop); }
+                    if(hasProperty)
+                    { return Reflect.get(obj, prop); }
 
-                if(options.validateProps && Reflect.has(context._props, prop))
-                { return Reflect.get(context._props, prop); }
+                    if(options.validateProps && Reflect.has(context._props, prop))
+                    { return Reflect.get(context._props, prop); }
 
-                if(options.validateComputed && Reflect.has(context._computed, prop))
-                { return Reflect.get(context._computed, prop); }
+                    if(options.validateComputed && Reflect.has(context._computed, prop))
+                    { return Reflect.get(context._computed, prop); }
 
-                return undefined;
+                    return undefined;
                 }
             };
 
             const virtualModel = new Proxy(context._data, proxyHandler);
 
+            let validationGroupBuilder: ValidationGroupBuilder | ReactiveValidationGroupBuilder = createGroup();
+
             if(options.withReactiveValidation)
-            { context.validationGroup = createGroup().asReactiveGroup().build(virtualModel, ruleset); }
-            else
-            { context.validationGroup = createGroup().build(virtualModel, ruleset); }
+            { validationGroupBuilder =  validationGroupBuilder.asReactiveGroup(); }
+
+            if(options.validateOnStart)
+            { validationGroupBuilder = validationGroupBuilder.andValidateOnStart(); }
 
             const metadata: any = {};
+            context.validationGroup = validationGroupBuilder.build(virtualModel, ruleset);
             context._validationMetadata = metadata;
 
             metadata[ValidationSubKey] = {};
