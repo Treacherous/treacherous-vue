@@ -12,7 +12,7 @@
   },
   "dependencies": {
     "vue": "^2.5.16",
-    "treacherous": "^0.17.5",
+    "treacherous": "^0.17.6",
     "treacherous-view": "^0.4.1"
   },
   "devDependencies": {
