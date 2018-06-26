@@ -80,6 +80,7 @@ const showErrorDirective = {
         if (!propertyRoute) {
             return;
         }
+        const propertyNameOrRoute = validationGroup.getPropertyDisplayName(propertyRoute);
         const strategyName = ElementHelper.getViewStrategyFrom(element);
         const viewStrategy = viewStrategyRegistry.getStrategyNamed(strategyName || "inline");
         if (!viewStrategy) {
@@ -91,12 +92,12 @@ const showErrorDirective = {
             if (!error) {
                 viewStrategy.propertyBecomeValid(element, propertyRoute, validationState, viewOptions);
                 validationState = ValidationState.valid;
-                context.$delete(context.modelErrors, propertyRoute);
+                context.$delete(context.modelErrors, propertyNameOrRoute);
             }
             else {
                 viewStrategy.propertyBecomeInvalid(element, error, propertyRoute, validationState, viewOptions);
                 validationState = ValidationState.invalid;
-                context.$set(context.modelErrors, propertyRoute, error);
+                context.$set(context.modelErrors, propertyNameOrRoute, error);
             }
         };
         const handlePropertyStateChange = (args) => {
