@@ -103,9 +103,12 @@ and limitations under the License.
 ***************************************************************************** */
 /* global Reflect, Promise */
 
-var extendStatics = Object.setPrototypeOf ||
-    ({ __proto__: [] } instanceof Array && function (d, b) { d.__proto__ = b; }) ||
-    function (d, b) { for (var p in b) if (b.hasOwnProperty(p)) d[p] = b[p]; };
+var extendStatics = function(d, b) {
+    extendStatics = Object.setPrototypeOf ||
+        ({ __proto__: [] } instanceof Array && function (d, b) { d.__proto__ = b; }) ||
+        function (d, b) { for (var p in b) if (b.hasOwnProperty(p)) d[p] = b[p]; };
+    return extendStatics(d, b);
+};
 
 function __extends(d, b) {
     extendStatics(d, b);
@@ -113,12 +116,15 @@ function __extends(d, b) {
     d.prototype = b === null ? Object.create(b) : (__.prototype = b.prototype, new __());
 }
 
-var __assign = Object.assign || function __assign(t) {
-    for (var s, i = 1, n = arguments.length; i < n; i++) {
-        s = arguments[i];
-        for (var p in s) if (Object.prototype.hasOwnProperty.call(s, p)) t[p] = s[p];
+var __assign = function() {
+    __assign = Object.assign || function __assign(t) {
+        for (var s, i = 1, n = arguments.length; i < n; i++) {
+            s = arguments[i];
+            for (var p in s) if (Object.prototype.hasOwnProperty.call(s, p)) t[p] = s[p];
+        }
+        return t;
     }
-    return t;
+    return __assign.apply(this, arguments);
 }
 
 function __rest(s, e) {
@@ -552,18 +558,18 @@ Object.defineProperty(__webpack_exports__, "__esModule", { value: true });
 /* harmony namespace reexport (by provided) */ __webpack_require__.d(__webpack_exports__, "locale", function() { return __WEBPACK_IMPORTED_MODULE_12__locales_en_us__["a"]; });
 /* harmony import */ var __WEBPACK_IMPORTED_MODULE_13__localization_default_locale_handler__ = __webpack_require__(51);
 /* harmony namespace reexport (by provided) */ __webpack_require__.d(__webpack_exports__, "DefaultLocaleHandler", function() { return __WEBPACK_IMPORTED_MODULE_13__localization_default_locale_handler__["a"]; });
-/* harmony import */ var __WEBPACK_IMPORTED_MODULE_14__processors_field_error_processor__ = __webpack_require__(16);
-/* harmony namespace reexport (by provided) */ __webpack_require__.d(__webpack_exports__, "FieldErrorProcessor", function() { return __WEBPACK_IMPORTED_MODULE_14__processors_field_error_processor__["a"]; });
-/* harmony import */ var __WEBPACK_IMPORTED_MODULE_15__processors_field_has_error__ = __webpack_require__(17);
-/* harmony namespace reexport (by provided) */ __webpack_require__.d(__webpack_exports__, "FieldHasError", function() { return __WEBPACK_IMPORTED_MODULE_15__processors_field_has_error__["a"]; });
-/* harmony import */ var __WEBPACK_IMPORTED_MODULE_16__processors_validation_error__ = __webpack_require__(68);
-/* harmony namespace reexport (by provided) */ __webpack_require__.d(__webpack_exports__, "ValidationError", function() { return __WEBPACK_IMPORTED_MODULE_16__processors_validation_error__["a"]; });
-/* harmony import */ var __WEBPACK_IMPORTED_MODULE_17__promises_promise_counter__ = __webpack_require__(19);
-/* harmony namespace reexport (by provided) */ __webpack_require__.d(__webpack_exports__, "PromiseCounter", function() { return __WEBPACK_IMPORTED_MODULE_17__promises_promise_counter__["a"]; });
-/* harmony import */ var __WEBPACK_IMPORTED_MODULE_18__proxy_model_proxy__ = __webpack_require__(69);
-/* harmony namespace reexport (by provided) */ __webpack_require__.d(__webpack_exports__, "ModelProxy", function() { return __WEBPACK_IMPORTED_MODULE_18__proxy_model_proxy__["a"]; });
-/* harmony import */ var __WEBPACK_IMPORTED_MODULE_19__resolvers_model_resolver__ = __webpack_require__(29);
-/* harmony namespace reexport (by provided) */ __webpack_require__.d(__webpack_exports__, "ModelResolver", function() { return __WEBPACK_IMPORTED_MODULE_19__resolvers_model_resolver__["a"]; });
+/* harmony import */ var __WEBPACK_IMPORTED_MODULE_14__promises_promise_counter__ = __webpack_require__(19);
+/* harmony namespace reexport (by provided) */ __webpack_require__.d(__webpack_exports__, "PromiseCounter", function() { return __WEBPACK_IMPORTED_MODULE_14__promises_promise_counter__["a"]; });
+/* harmony import */ var __WEBPACK_IMPORTED_MODULE_15__resolvers_model_resolver__ = __webpack_require__(29);
+/* harmony namespace reexport (by provided) */ __webpack_require__.d(__webpack_exports__, "ModelResolver", function() { return __WEBPACK_IMPORTED_MODULE_15__resolvers_model_resolver__["a"]; });
+/* harmony import */ var __WEBPACK_IMPORTED_MODULE_16__proxy_model_proxy__ = __webpack_require__(68);
+/* harmony namespace reexport (by provided) */ __webpack_require__.d(__webpack_exports__, "ModelProxy", function() { return __WEBPACK_IMPORTED_MODULE_16__proxy_model_proxy__["a"]; });
+/* harmony import */ var __WEBPACK_IMPORTED_MODULE_17__processors_field_error_processor__ = __webpack_require__(16);
+/* harmony namespace reexport (by provided) */ __webpack_require__.d(__webpack_exports__, "FieldErrorProcessor", function() { return __WEBPACK_IMPORTED_MODULE_17__processors_field_error_processor__["a"]; });
+/* harmony import */ var __WEBPACK_IMPORTED_MODULE_18__processors_field_has_error__ = __webpack_require__(17);
+/* harmony namespace reexport (by provided) */ __webpack_require__.d(__webpack_exports__, "FieldHasError", function() { return __WEBPACK_IMPORTED_MODULE_18__processors_field_has_error__["a"]; });
+/* harmony import */ var __WEBPACK_IMPORTED_MODULE_19__processors_validation_error__ = __webpack_require__(69);
+/* harmony namespace reexport (by provided) */ __webpack_require__.d(__webpack_exports__, "ValidationError", function() { return __WEBPACK_IMPORTED_MODULE_19__processors_validation_error__["a"]; });
 /* harmony import */ var __WEBPACK_IMPORTED_MODULE_20__rules_advanced_regex_rule__ = __webpack_require__(70);
 /* harmony namespace reexport (by provided) */ __webpack_require__.d(__webpack_exports__, "AdvancedRegexValidationRule", function() { return __WEBPACK_IMPORTED_MODULE_20__rules_advanced_regex_rule__["a"]; });
 /* harmony import */ var __WEBPACK_IMPORTED_MODULE_21__rules_date_validation_rule__ = __webpack_require__(32);
@@ -12400,7 +12406,6 @@ class DisplayNameCache {
         };
         this.getDisplayNameFor = (propertyRoute) => {
             const sanitisedDisplayName = propertyRoute.replace(this.propertySanitizerRegex, "");
-            console.log(sanitisedDisplayName);
             return this.propertyNameOverrideCache[sanitisedDisplayName] || propertyRoute;
         };
     }
@@ -14500,21 +14505,6 @@ exports.EventHandler = EventHandler;
 /***/ (function(module, __webpack_exports__, __webpack_require__) {
 
 "use strict";
-class ValidationError {
-    constructor(propertyName, message) {
-        this.propertyName = propertyName;
-        this.message = message;
-    }
-}
-/* harmony export (immutable) */ __webpack_exports__["a"] = ValidationError;
-
-
-
-/***/ }),
-/* 69 */
-/***/ (function(module, __webpack_exports__, __webpack_require__) {
-
-"use strict";
 /* harmony import */ var __WEBPACK_IMPORTED_MODULE_0_event_js__ = __webpack_require__(10);
 /* harmony import */ var __WEBPACK_IMPORTED_MODULE_0_event_js___default = __webpack_require__.n(__WEBPACK_IMPORTED_MODULE_0_event_js__);
 /* harmony import */ var __WEBPACK_IMPORTED_MODULE_1__events_property_changed_event__ = __webpack_require__(11);
@@ -14528,7 +14518,6 @@ class ModelProxy {
             return {
                 set: function (obj, prop, value) {
                     const currentValue = obj[prop];
-                    console.log("SETTING", prop, value, currentValue);
                     if (currentValue !== value) {
                         Reflect.set(obj, prop, value);
                         const propertyChangedArgs = new __WEBPACK_IMPORTED_MODULE_1__events_property_changed_event__["a" /* PropertyChangedEvent */](propertyRoute, value, currentValue);
@@ -14579,6 +14568,21 @@ class ModelProxy {
     }
 }
 /* harmony export (immutable) */ __webpack_exports__["a"] = ModelProxy;
+
+
+
+/***/ }),
+/* 69 */
+/***/ (function(module, __webpack_exports__, __webpack_require__) {
+
+"use strict";
+class ValidationError {
+    constructor(propertyName, message) {
+        this.propertyName = propertyName;
+        this.message = message;
+    }
+}
+/* harmony export (immutable) */ __webpack_exports__["a"] = ValidationError;
 
 
 
