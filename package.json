@@ -11,19 +11,19 @@
     "build": "gulp"
   },
   "dependencies": {
-    "vue": "^2.5.16",
-    "treacherous": "^0.17.6",
-    "treacherous-view": "^0.4.1"
+    "vue": "^2.5.17",
+    "@treacherous/core": "^0.17.6",
+    "@treacherous/view": "^0.4.2"
   },
   "devDependencies": {
     "gulp": "^3.9.1",
-    "gulp-typescript": "^4.0.1",
+    "gulp-typescript": "^4.0.2",
     "merge2": "^1.2.2",
-    "typescript": "^2.9.2",
+    "typescript": "^3.0.3",
     "run-sequence": "^2.2.1",
     "require-dir": "^1.0.0",
     "del": "^3.0.0",
-    "webpack-stream": "^4.0.3",
+    "webpack-stream": "^5.1.1",
     "raw-loader": "^0.5.1"
   }
 }

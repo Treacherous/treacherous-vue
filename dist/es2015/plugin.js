@@ -1,5 +1,5 @@
-import { createGroup } from "treacherous";
-import { viewStrategyRegistry, viewSummaryRegistry, ElementHelper, ValidationState } from "treacherous-view";
+import { createGroup } from "@treacherous/core";
+import { viewStrategyRegistry, viewSummaryRegistry, ElementHelper, ValidationState } from "@treacherous/view";
 const ValidationSubKey = "validation-subscriptions";
 const SummarySubKey = "summary-subscriptions";
 export const ValidateWith = (ruleset, options = {}) => {
@@ -191,8 +191,8 @@ const install = function (Vue, options) {
     Vue.directive('show-error', showErrorDirective);
     Vue.directive('validation-summary', summaryDirective);
 };
-export { viewStrategyRegistry } from "treacherous-view";
-export { createRuleset, ruleRegistry } from "treacherous";
+export { viewStrategyRegistry } from "@treacherous/view";
+export { createRuleset, ruleRegistry } from "@treacherous/core";
 export default {
     install: install
 };

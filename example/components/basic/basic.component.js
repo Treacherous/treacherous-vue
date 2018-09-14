@@ -1,6 +1,6 @@
 import Vue  from "vue/dist/vue";
 
-import {createRuleset} from "treacherous";
+import {createRuleset} from "@treacherous/core";
 import template from "./basic.html";
 import {ValidateWith} from "../../../dist/commonjs/plugin";
 

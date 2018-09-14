@@ -5,8 +5,8 @@ import {
     IReactiveValidationGroup,
     PropertyStateChangedEvent,
     ReactiveValidationGroupBuilder
-} from "treacherous";
-import {viewStrategyRegistry, viewSummaryRegistry, ElementHelper, ValidationState} from "treacherous-view";
+} from "@treacherous/core";
+import {viewStrategyRegistry, viewSummaryRegistry, ElementHelper, ValidationState} from "@treacherous/view";
 import {ValidationGroupBuilder} from "treacherous/dist/definitions/builders/validation-group-builder";
 
 export interface RulesetOptions {
@@ -218,8 +218,8 @@ const install = function(Vue: any, options: any) {
     Vue.directive('validation-summary', summaryDirective);
 }
 
-export {viewStrategyRegistry} from "treacherous-view";
-export {createRuleset, ruleRegistry} from "treacherous";
+export {viewStrategyRegistry} from "@treacherous/view";
+export {createRuleset, ruleRegistry} from "@treacherous/core";
 
 export default {
     install: install
