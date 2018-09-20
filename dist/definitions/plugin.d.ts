@@ -1,4 +1,4 @@
-import { Ruleset, IValidationGroup } from "treacherous";
+import { Ruleset, IValidationGroup } from "@treacherous/core";
 export interface RulesetOptions {
     withReactiveValidation?: boolean;
     validateOnStart?: boolean;
@@ -19,8 +19,8 @@ export declare const ValidateWith: (ruleset: Ruleset, options?: RulesetOptions) 
     created(): void;
     beforeDestroy(): void;
 };
-export { viewStrategyRegistry } from "treacherous-view";
-export { createRuleset, ruleRegistry } from "treacherous";
+export { viewStrategyRegistry } from "@treacherous/view";
+export { createRuleset, ruleRegistry } from "@treacherous/core";
 declare const _default: {
     install: (Vue: any, options: any) => void;
 };

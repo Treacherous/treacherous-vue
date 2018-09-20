@@ -1,4 +1,4 @@
-import {createRuleset} from "treacherous";
+import {createRuleset} from "@treacherous/core";
 import {hobbyRuleset} from "./hobby.ruleset";
 
 export const userDataRuleset = createRuleset()

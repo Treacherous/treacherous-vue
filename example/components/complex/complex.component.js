@@ -4,7 +4,7 @@ import { UserData } from "./user-data.model";
 import { Hobby } from "./hobby.model";
 import { userDataRuleset } from "./user-data.ruleset";
 import template from "./complex.html";
-import {createRuleset} from "treacherous";
+import {createRuleset} from "@treacherous/core";
 import {ValidateWith} from "../../../dist/commonjs/plugin";
 
 // When creating this ruleset we use userDataRuleset as the template

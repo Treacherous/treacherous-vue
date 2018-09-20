@@ -1,4 +1,4 @@
-import {IViewStrategy, ClassHelper, InlineHandler} from "treacherous-view";
+import {IViewStrategy, ClassHelper, InlineHandler} from "@treacherous/view";
 
 export function TooltipStrategy(inlineHandler = new InlineHandler())
 {

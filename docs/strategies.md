@@ -26,7 +26,7 @@ You also need to provide it 2 entry methods, one for when the property becomes v
 The example project contains a custom view strat to show how they work, but here is the code for it:
 
 ```javascript
-import {IViewStrategy, ClassHelper, InlineHandler} from "treacherous-view";
+import {IViewStrategy, ClassHelper, InlineHandler} from "@treacherous/view";
 
 export function TooltipStrategy(inlineHandler = new InlineHandler())
 {
