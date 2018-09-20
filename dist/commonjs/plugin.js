@@ -1,7 +1,7 @@
 "use strict";
 Object.defineProperty(exports, "__esModule", { value: true });
-const treacherous_1 = require("treacherous");
-const treacherous_view_1 = require("treacherous-view");
+const core_1 = require("@treacherous/core");
+const view_1 = require("@treacherous/view");
 const ValidationSubKey = "validation-subscriptions";
 const SummarySubKey = "summary-subscriptions";
 exports.ValidateWith = (ruleset, options = {}) => {
@@ -52,7 +52,7 @@ exports.ValidateWith = (ruleset, options = {}) => {
                 }
             };
             const virtualModel = new Proxy(context._data, proxyHandler);
-            let validationGroupBuilder = treacherous_1.createGroup();
+            let validationGroupBuilder = core_1.createGroup();
             if (options.withReactiveValidation) {
                 validationGroupBuilder = validationGroupBuilder.asReactiveGroup();
             }
@@ -78,27 +78,27 @@ const showErrorDirective = {
             return;
         }
         const metadata = context._validationMetadata;
-        const propertyRoute = treacherous_view_1.ElementHelper.getPropertyRouteFrom(element);
+        const propertyRoute = view_1.ElementHelper.getPropertyRouteFrom(element);
         if (!propertyRoute) {
             return;
         }
         const propertyNameOrRoute = validationGroup.getPropertyDisplayName(propertyRoute);
-        const strategyName = treacherous_view_1.ElementHelper.getViewStrategyFrom(element);
-        const viewStrategy = treacherous_view_1.viewStrategyRegistry.getStrategyNamed(strategyName || "inline");
+        const strategyName = view_1.ElementHelper.getViewStrategyFrom(element);
+        const viewStrategy = view_1.viewStrategyRegistry.getStrategyNamed(strategyName || "inline");
         if (!viewStrategy) {
             return;
         }
-        let validationState = treacherous_view_1.ValidationState.unknown;
-        const viewOptions = treacherous_view_1.ElementHelper.getViewOptionsFrom(element) || {};
+        let validationState = view_1.ValidationState.unknown;
+        const viewOptions = view_1.ElementHelper.getViewOptionsFrom(element) || {};
         let handlePossibleError = (error) => {
             if (!error) {
                 viewStrategy.propertyBecomeValid(element, propertyRoute, validationState, viewOptions);
-                validationState = treacherous_view_1.ValidationState.valid;
+                validationState = view_1.ValidationState.valid;
                 context.$delete(context.modelErrors, propertyNameOrRoute);
             }
             else {
                 viewStrategy.propertyBecomeInvalid(element, error, propertyRoute, validationState, viewOptions);
-                validationState = treacherous_view_1.ValidationState.invalid;
+                validationState = view_1.ValidationState.invalid;
                 context.$set(context.modelErrors, propertyNameOrRoute, error);
             }
         };
@@ -113,7 +113,7 @@ const showErrorDirective = {
     },
     unbind: function (element, binding, vnode) {
         let context = vnode.context;
-        let propertyRoute = treacherous_view_1.ElementHelper.getPropertyRouteFrom(element);
+        let propertyRoute = view_1.ElementHelper.getPropertyRouteFrom(element);
         if (!propertyRoute) {
             return;
         }
@@ -156,12 +156,12 @@ const summaryDirective = {
             });
             return finalName;
         };
-        const strategyName = treacherous_view_1.ElementHelper.getSummaryStrategyFrom(element);
-        const summaryStrategy = treacherous_view_1.viewSummaryRegistry.getSummaryNamed(strategyName || "default");
+        const strategyName = view_1.ElementHelper.getSummaryStrategyFrom(element);
+        const summaryStrategy = view_1.viewSummaryRegistry.getSummaryNamed(strategyName || "default");
         if (!summaryStrategy) {
             return;
         }
-        const viewOptions = treacherous_view_1.ElementHelper.getSummaryOptionsFrom(element) || {};
+        const viewOptions = view_1.ElementHelper.getSummaryOptionsFrom(element) || {};
         summaryStrategy.setupContainer(element, viewOptions);
         const handleStateChange = (eventArgs) => {
             const displayName = getDisplayName(eventArgs.property);
@@ -193,11 +193,11 @@ const install = function (Vue, options) {
     Vue.directive('show-error', showErrorDirective);
     Vue.directive('validation-summary', summaryDirective);
 };
-var treacherous_view_2 = require("treacherous-view");
-exports.viewStrategyRegistry = treacherous_view_2.viewStrategyRegistry;
-var treacherous_2 = require("treacherous");
-exports.createRuleset = treacherous_2.createRuleset;
-exports.ruleRegistry = treacherous_2.ruleRegistry;
+var view_2 = require("@treacherous/view");
+exports.viewStrategyRegistry = view_2.viewStrategyRegistry;
+var core_2 = require("@treacherous/core");
+exports.createRuleset = core_2.createRuleset;
+exports.ruleRegistry = core_2.ruleRegistry;
 exports.default = {
     install: install
 };

@@ -1,6 +1,6 @@
 # Strategies
 
-By default there is an `inline` view strategy and a `default` summary strategy. These are both provided from the [`Trecherous View`](https://github.com/grofit/treacherous-view) library however these are just for default use and you can make your own strategies and register them for use within the system.
+By default there is an `inline` view strategy and a `default` summary strategy. These are both provided from the [`Trecherous View`](https://github.com/treacherous/treacherous-view) library however these are just for default use and you can make your own strategies and register them for use within the system.
 
 ## Creating View Strategies
 
@@ -47,7 +47,7 @@ export function TooltipStrategy(inlineHandler = new InlineHandler())
 }
 ```
 
-This is almost identical to the default handler in `treacherous-view` however we append the `data-tooltip` to the added element in the view which will in turn be displayed as a tooltip for the field that it is linked to.
+This is almost identical to the default handler in `@treacherous/view` however we append the `data-tooltip` to the added element in the view which will in turn be displayed as a tooltip for the field that it is linked to.
 
 ## Creating Summary Strategies
 
@@ -63,7 +63,7 @@ export interface IViewSummaryStrategy
 }
 ```
 
-It is less likely you will want to change how this works, but if you do want to just implement your own version, and feel free to look at the default one provided [HERE](https://github.com/grofit/treacherous-view/blob/master/src/view-summary-strategies/default-summary-strategy.ts).
+It is less likely you will want to change how this works, but if you do want to just implement your own version, and feel free to look at the default one provided [HERE](https://github.com/treacherous/treacherous-view/blob/master/src/view-summary-strategies/default-summary-strategy.ts).
 
 ## Registering Strategies
 

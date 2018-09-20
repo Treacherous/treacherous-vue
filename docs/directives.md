@@ -4,7 +4,7 @@ This plugin adds some directives to allow you to hook into the validation system
 
 ## v-show-error
 
-To show errors in the view on a per element basis you would need to use the `v-show-error` directive, which doesn't take any arguments, as it follows the general [`treacherous-view`](https://github.com/grofit/treacherous-view) conventions and uses normal html attributes to infer how to handle validation.
+To show errors in the view on a per element basis you would need to use the `v-show-error` directive, which doesn't take any arguments, as it follows the general [`@treacherous/view`](https://github.com/treacherous/treacherous-view) conventions and uses normal html attributes to infer how to handle validation.
 
 You can put the `v-show-error` on any element you want, so you can attach it to the input/element that cotains a binding to the data or you can just put it on some other element anywhere else in the component, as long as you provide it the `validate-property` attribute.
 

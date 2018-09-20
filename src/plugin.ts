@@ -4,10 +4,10 @@ import {
     IValidationGroup,
     IReactiveValidationGroup,
     PropertyStateChangedEvent,
-    ReactiveValidationGroupBuilder
+    ReactiveValidationGroupBuilder,
+    ValidationGroupBuilder
 } from "@treacherous/core";
 import {viewStrategyRegistry, viewSummaryRegistry, ElementHelper, ValidationState} from "@treacherous/view";
-import {ValidationGroupBuilder} from "treacherous/dist/definitions/builders/validation-group-builder";
 
 export interface RulesetOptions {
     withReactiveValidation?: boolean;

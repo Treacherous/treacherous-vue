@@ -14,8 +14,8 @@ This is the Vue wrapper for [Treacherous](https://github.com/grofit/treacherous)
 
 It is worth reading over the Treacherous libraries if you want to do more than basic validation scenarios, they can be found:
 
-- [Treacherous](https://github.com/grofit/treacherous)
-- [Trecherous View](https://github.com/grofit/treacherous-view)
+- [@treacherous/core](https://github.com/treacherous/treacherous)
+- [@trecherous/view](https://github.com/treacherous/treacherous-view)
 
 ## Usage
 
@@ -23,14 +23,14 @@ It is worth reading over the Treacherous libraries if you want to do more than b
 To use treacherous in vue you will need to install this module:
 
 ```
-npm install treacherous-vue
+npm install @treacherous/vue
 ```
 
 Then register the plugin with vue:
 
 ```javascript
 import Vue from "vue";
-import TreacherousPlugin from "treacherous-vue";
+import TreacherousPlugin from "@treacherous/vue";
 
 Vue.use(TreacherousPlugin);
 ```
@@ -40,7 +40,7 @@ Once you have done this you can use the `ValidateWith(ruleset, options?)` mixin.
 ### Simple Use Case
 
 ```javascript
-import {createRuleset, ValidateWith} from "treacherous-vue";
+import {createRuleset, ValidateWith} from "@treacherous/vue";
 
 const ruleset = createRuleset()
         .forProperty("name")

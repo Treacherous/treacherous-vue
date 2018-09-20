@@ -1,6 +1,6 @@
 {
-  "name": "treacherous-vue",
-  "version": "0.3.1",
+  "name": "@treacherous/vue",
+  "version": "0.3.2",
   "description": "A vue plugin to use the treacherous validation system",
   "author": "LP",
   "license": "MIT",
