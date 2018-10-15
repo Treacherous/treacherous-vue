@@ -4,6 +4,7 @@ const core_1 = require("@treacherous/core");
 const view_1 = require("@treacherous/view");
 const ValidationSubKey = "validation-subscriptions";
 const SummarySubKey = "summary-subscriptions";
+const ReactiveSubscription = "reactive-subscription";
 exports.ValidateWith = (ruleset, options = {}) => {
     return {
         data() {
@@ -62,10 +63,24 @@ exports.ValidateWith = (ruleset, options = {}) => {
             const metadata = {};
             context.validationGroup = validationGroupBuilder.build(virtualModel, ruleset);
             context._validationMetadata = metadata;
+            if (options.withReactiveValidation) {
+                metadata[ReactiveSubscription] = context.validationGroup.propertyStateChangedEvent.subscribe((args) => {
+                    if (args.isValid) {
+                        context.$delete(context.modelErrors, args.property);
+                    }
+                    else {
+                        context.$set(context.modelErrors, args.property, args.error);
+                    }
+                });
+            }
             metadata[ValidationSubKey] = {};
             metadata[SummarySubKey] = [];
         },
         beforeDestroy() {
+            const metadata = this._validationMetadata;
+            if (metadata[ReactiveSubscription]) {
+                metadata[ReactiveSubscription]();
+            }
             this.validationGroup.release();
         }
     };
@@ -94,12 +109,16 @@ const showErrorDirective = {
             if (!error) {
                 viewStrategy.propertyBecomeValid(element, propertyRoute, validationState, viewOptions);
                 validationState = view_1.ValidationState.valid;
-                context.$delete(context.modelErrors, propertyNameOrRoute);
+                if (!metadata[ReactiveSubscription]) {
+                    context.$delete(context.modelErrors, propertyNameOrRoute);
+                }
             }
             else {
                 viewStrategy.propertyBecomeInvalid(element, error, propertyRoute, validationState, viewOptions);
                 validationState = view_1.ValidationState.invalid;
-                context.$set(context.modelErrors, propertyNameOrRoute, error);
+                if (!metadata[ReactiveSubscription]) {
+                    context.$set(context.modelErrors, propertyNameOrRoute, error);
+                }
             }
         };
         const handlePropertyStateChange = (args) => {

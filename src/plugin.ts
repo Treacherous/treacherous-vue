@@ -18,6 +18,7 @@ export interface RulesetOptions {
 
 const ValidationSubKey = "validation-subscriptions";
 const SummarySubKey = "summary-subscriptions";
+const ReactiveSubscription = "reactive-subscription";
 
 export const ValidateWith = (ruleset: Ruleset, options: RulesetOptions = {}) => {
     return {
@@ -76,10 +77,25 @@ export const ValidateWith = (ruleset: Ruleset, options: RulesetOptions = {}) => 
             context.validationGroup = validationGroupBuilder.build(virtualModel, ruleset);
             context._validationMetadata = metadata;
 
+            if(options.withReactiveValidation)
+            {
+                metadata[ReactiveSubscription] = context.validationGroup.propertyStateChangedEvent.subscribe((args: any) => {
+                    if(args.isValid) 
+                    { context.$delete(context.modelErrors, args.property); }
+                    else
+                    { context.$set(context.modelErrors, args.property, args.error); }
+                });
+            }
+
             metadata[ValidationSubKey] = {};
             metadata[SummarySubKey] = [];
         },
         beforeDestroy() {
+            const metadata = this._validationMetadata;
+
+            if(metadata[ReactiveSubscription])
+            { metadata[ReactiveSubscription](); }
+
             this.validationGroup.release();
         }
     }
@@ -110,13 +126,17 @@ const showErrorDirective = {
             {
                 viewStrategy.propertyBecomeValid(element, propertyRoute, validationState, viewOptions);
                 validationState = ValidationState.valid;
-                context.$delete(context.modelErrors, propertyNameOrRoute);
+
+                if(!metadata[ReactiveSubscription])
+                { context.$delete(context.modelErrors, propertyNameOrRoute); }
             }
             else
             {
                 viewStrategy.propertyBecomeInvalid(element, error, propertyRoute, validationState, viewOptions);
                 validationState = ValidationState.invalid;
-                context.$set(context.modelErrors, propertyNameOrRoute, error);
+
+                if(!metadata[ReactiveSubscription])
+                { context.$set(context.modelErrors, propertyNameOrRoute, error); }
             }
         };
 
