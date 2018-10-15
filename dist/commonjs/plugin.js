@@ -205,7 +205,9 @@ const summaryDirective = {
     unbind: function (element, binding, vnode) {
         const context = vnode.context;
         const metadata = context._validationMetadata;
-        metadata[SummarySubKey].foreach((x) => x());
+        if (metadata[SummarySubKey]) {
+            metadata[SummarySubKey].forEach((x) => x());
+        }
     }
 };
 const install = function (Vue, options) {

@@ -229,7 +229,9 @@ const summaryDirective = {
     unbind: function (element: HTMLElement, binding: any, vnode: any) {
         const context = vnode.context;
         const metadata = context._validationMetadata;
-        metadata[SummarySubKey].foreach((x: Function) => x());
+
+        if(metadata[SummarySubKey])
+        { metadata[SummarySubKey].forEach((x: Function) => x()); }
     }
 }
 
