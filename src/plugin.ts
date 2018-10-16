@@ -213,18 +213,29 @@ const summaryDirective = {
             { summaryStrategy.propertyBecomeInvalid(element, eventArgs.error, displayName, viewOptions); }
         };
 
+        const showErrorsFromGroup = (validationGroup: IValidationGroup) => {
+          validationGroup.getModelErrors(false)
+            .then(errors => {
+              for(const propertyKey in errors){
+                handleStateChange(new PropertyStateChangedEvent(propertyKey, false, errors[propertyKey]));
+              }
+            });
+        }
+
         if(isArray)
         {
             validationGroups.forEach((validationGroup: IReactiveValidationGroup) => {
                 const sub = validationGroup.propertyStateChangedEvent.subscribe(handleStateChange);
                 metadata[SummarySubKey].push(sub);
+                showErrorsFromGroup(validationGroup);
             });
         }
         else
         {
             const sub = validationGroups.propertyStateChangedEvent.subscribe(handleStateChange);
             metadata[SummarySubKey].push(sub);
-        }        
+            showErrorsFromGroup(validationGroups);
+        }  
     },
     unbind: function (element: HTMLElement, binding: any, vnode: any) {
         const context = vnode.context;
