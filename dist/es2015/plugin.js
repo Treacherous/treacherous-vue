@@ -1,4 +1,4 @@
-import { createGroup } from "@treacherous/core";
+import { createGroup, PropertyStateChangedEvent } from "@treacherous/core";
 import { viewStrategyRegistry, viewSummaryRegistry, ElementHelper, ValidationState } from "@treacherous/view";
 const ValidationSubKey = "validation-subscriptions";
 const SummarySubKey = "summary-subscriptions";
@@ -189,15 +189,25 @@ const summaryDirective = {
                 summaryStrategy.propertyBecomeInvalid(element, eventArgs.error, displayName, viewOptions);
             }
         };
+        const showErrorsFromGroup = (validationGroup) => {
+            validationGroup.getModelErrors(false)
+                .then(errors => {
+                for (const propertyKey in errors) {
+                    handleStateChange(new PropertyStateChangedEvent(propertyKey, false, errors[propertyKey]));
+                }
+            });
+        };
         if (isArray) {
             validationGroups.forEach((validationGroup) => {
                 const sub = validationGroup.propertyStateChangedEvent.subscribe(handleStateChange);
                 metadata[SummarySubKey].push(sub);
+                showErrorsFromGroup(validationGroup);
             });
         }
         else {
             const sub = validationGroups.propertyStateChangedEvent.subscribe(handleStateChange);
             metadata[SummarySubKey].push(sub);
+            showErrorsFromGroup(validationGroups);
         }
     },
     unbind: function (element, binding, vnode) {

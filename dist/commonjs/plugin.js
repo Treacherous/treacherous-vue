@@ -191,15 +191,25 @@ const summaryDirective = {
                 summaryStrategy.propertyBecomeInvalid(element, eventArgs.error, displayName, viewOptions);
             }
         };
+        const showErrorsFromGroup = (validationGroup) => {
+            validationGroup.getModelErrors(false)
+                .then(errors => {
+                for (const propertyKey in errors) {
+                    handleStateChange(new core_1.PropertyStateChangedEvent(propertyKey, false, errors[propertyKey]));
+                }
+            });
+        };
         if (isArray) {
             validationGroups.forEach((validationGroup) => {
                 const sub = validationGroup.propertyStateChangedEvent.subscribe(handleStateChange);
                 metadata[SummarySubKey].push(sub);
+                showErrorsFromGroup(validationGroup);
             });
         }
         else {
             const sub = validationGroups.propertyStateChangedEvent.subscribe(handleStateChange);
             metadata[SummarySubKey].push(sub);
+            showErrorsFromGroup(validationGroups);
         }
     },
     unbind: function (element, binding, vnode) {
