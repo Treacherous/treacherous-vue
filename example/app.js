@@ -26,8 +26,8 @@ let appData = {
 // but we use v-if in the view to delay this
 let onMounted = function() {
     this.validationSummaryGroups = [];
-    this.validationSummaryGroups.push(this.$refs.basic.validationGroup);
-    this.validationSummaryGroups.push(this.$refs.complex.validationGroup);
+    this.validationSummaryGroups.push(this.$refs.basic.getValidationGroup());
+    this.validationSummaryGroups.push(this.$refs.complex.getValidationGroup());
 }
 
 // Start the app

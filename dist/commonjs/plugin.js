@@ -9,7 +9,6 @@ exports.ValidateWith = (ruleset, options = {}) => {
     return {
         data() {
             return {
-                validationGroup: null,
                 modelErrors: {}
             };
         },
@@ -22,6 +21,9 @@ exports.ValidateWith = (ruleset, options = {}) => {
             isValid: function (isValid) {
                 this.$emit("model-state-changed", { isValid: isValid, errors: this.modelErrors });
             }
+        },
+        methods: {
+            getValidationGroup: function () { return this._validationGroup; }
         },
         created() {
             const context = this;
@@ -61,10 +63,10 @@ exports.ValidateWith = (ruleset, options = {}) => {
                 validationGroupBuilder = validationGroupBuilder.andValidateOnStart();
             }
             const metadata = {};
-            context.validationGroup = validationGroupBuilder.build(virtualModel, ruleset);
+            context._validationGroup = validationGroupBuilder.build(virtualModel, ruleset);
             context._validationMetadata = metadata;
             if (options.withReactiveValidation) {
-                metadata[ReactiveSubscription] = context.validationGroup.propertyStateChangedEvent.subscribe((args) => {
+                metadata[ReactiveSubscription] = context._validationGroup.propertyStateChangedEvent.subscribe((args) => {
                     if (args.isValid) {
                         context.$delete(context.modelErrors, args.property);
                     }
@@ -81,14 +83,14 @@ exports.ValidateWith = (ruleset, options = {}) => {
             if (metadata[ReactiveSubscription]) {
                 metadata[ReactiveSubscription]();
             }
-            this.validationGroup.release();
+            this._validationGroup.release();
         }
     };
 };
 const showErrorDirective = {
     bind: function (element, binding, vnode) {
         const context = vnode.context;
-        const validationGroup = context.validationGroup;
+        const validationGroup = context._validationGroup;
         if (!validationGroup) {
             return;
         }
@@ -156,7 +158,7 @@ const summaryDirective = {
             validationGroups = binding.value;
         }
         else {
-            validationGroups = context.validationGroup;
+            validationGroups = context._validationGroup;
         }
         if (!validationGroups) {
             return;

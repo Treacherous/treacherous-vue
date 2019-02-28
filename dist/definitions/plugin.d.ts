@@ -1,4 +1,4 @@
-import { Ruleset, IValidationGroup } from "@treacherous/core";
+import { Ruleset } from "@treacherous/core";
 export interface RulesetOptions {
     withReactiveValidation?: boolean;
     validateOnStart?: boolean;
@@ -7,7 +7,6 @@ export interface RulesetOptions {
 }
 export declare const ValidateWith: (ruleset: Ruleset, options?: RulesetOptions) => {
     data(): {
-        validationGroup: IValidationGroup;
         modelErrors: {};
     };
     computed: {
@@ -15,6 +14,9 @@ export declare const ValidateWith: (ruleset: Ruleset, options?: RulesetOptions) 
     };
     watch: {
         isValid: (isValid: boolean) => void;
+    };
+    methods: {
+        getValidationGroup: () => any;
     };
     created(): void;
     beforeDestroy(): void;
