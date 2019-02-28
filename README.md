@@ -37,6 +37,9 @@ Vue.use(TreacherousPlugin);
 
 Once you have done this you can use the `ValidateWith(ruleset, options?)` mixin.
 
+#### HALP! I DONT USE MODULES
+if you are living in the era before modules just grab the UMD module which adds you the `TreacherousVue` object, and you would do `Vue.use(TreacherousVue.default);`.
+
 ### Simple Use Case
 
 ```javascript
@@ -62,10 +65,24 @@ So as seen above you can optionally provide for any component a `ruleset` proper
 
 When you register the mixin you get:
 
-- `validationGroup` data object, which is the underlying validation group
 - `modelErrors` data object, which is kept up to date by the validation system
 - `isValid` computed, which monitors the modelErrors and gives a high level true/false accessor
 - `model-state-changed` event, which is raised whenever the validation state changes (passes out `{ isValid, modelErrors }`
+- `getValidationGroup()` method, which gets the underlying validation group
+
+### What are the options I can provide?
+
+- `withReactiveValidation: boolean` makes the view react to validation changes without you progmatically validating
+- `validateOnStart: boolean` validates the model when the component is created and shows errors up front, rather than waiting for changes/progmatic validation calls
+- `validateProps: boolean` enables validation of `props` fields (by default only `data` fields are used)
+- `validateComputed: boolean` enables validation of `computed` fields (by default only `data` fields are used)
+
+## What are the directives
+
+- `v-show-error` this tells the element to display errors for validation elements (required you to set target property via `validate-property="some-data-property"`)
+- `v-validation-summary` this should be passed the validation group/s you want to output a summary for
+
+See examples for use cases on both of these directives.
 
 ## Docs
 
