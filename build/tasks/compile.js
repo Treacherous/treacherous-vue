@@ -33,6 +33,13 @@ gulp.task("compile-webpack", function() {
                 filename: "treacherous.vue.umd.js",
                 library: "TreacherousVue",
                 libraryTarget: "umd"
+            },
+            externals: {
+                "@treacherous/core": {
+                    root: "Treacherous",
+                    commonjs: "@treacherous/core",
+                    commonjs2: "@treacherous/core"
+                }
             }
         }))
         .pipe(gulp.dest(`${paths.dist}/umd`))

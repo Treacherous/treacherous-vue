@@ -40,6 +40,8 @@ Once you have done this you can use the `ValidateWith(ruleset, options?)` mixin.
 #### HALP! I DONT USE MODULES
 if you are living in the era before modules just grab the UMD module which adds you the `TreacherousVue` object, and you would do `Vue.use(TreacherousVue.default);`.
 
+You will still need to include the treacherous UMD module which will provide `Treacherous` global for use.
+
 ### Simple Use Case
 
 ```javascript
@@ -48,7 +50,7 @@ import {createRuleset, ValidateWith} from "@treacherous/vue";
 const ruleset = createRuleset()
         .forProperty("name")
             .addRule("required")
-        .build()
+        .build();
 
 Vue.component('my-component', {
     data: function() {
