@@ -17,6 +17,7 @@ export declare const ValidateWith: (ruleset: Ruleset, options?: RulesetOptions) 
     };
     methods: {
         getValidationGroup: () => any;
+        refreshValidation: () => Promise<void>;
     };
     created(): void;
     beforeDestroy(): void;

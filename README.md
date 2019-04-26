@@ -71,6 +71,7 @@ When you register the mixin you get:
 - `isValid` computed, which monitors the modelErrors and gives a high level true/false accessor
 - `model-state-changed` event, which is raised whenever the validation state changes (passes out `{ isValid, modelErrors }`
 - `getValidationGroup()` method, which gets the underlying validation group
+- `refreshValidation()` method, which manually refreshes the underlying validation state
 
 ### What are the options I can provide?
 

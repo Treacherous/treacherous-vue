@@ -1,6 +1,6 @@
 {
   "name": "@treacherous/vue",
-  "version": "0.4.1",
+  "version": "0.4.2",
   "description": "A vue plugin to use the treacherous validation system",
   "author": "LP",
   "license": "MIT",
@@ -12,18 +12,18 @@
   },
   "dependencies": {
     "vue": "^2.5.17",
-    "@treacherous/core": "^0.17.6",
-    "@treacherous/view": "^0.4.2"
+    "@treacherous/core": "^0.17.7",
+    "@treacherous/view": "^0.4.4"
   },
   "devDependencies": {
     "gulp": "^3.9.1",
-    "gulp-typescript": "^4.0.2",
-    "merge2": "^1.2.2",
-    "typescript": "^3.0.3",
+    "gulp-typescript": "^5.0.1",
+    "merge2": "^1.2.3",
+    "typescript": "^3.4.5",
     "run-sequence": "^2.2.1",
-    "require-dir": "^1.0.0",
-    "del": "^3.0.0",
-    "webpack-stream": "^5.1.1",
-    "raw-loader": "^0.5.1"
+    "require-dir": "^1.2.0",
+    "del": "^4.1.0",
+    "webpack-stream": "^5.2.1",
+    "raw-loader": "^2.0.0"
   }
 }

@@ -20,6 +20,17 @@ const ValidationSubKey = "validation-subscriptions";
 const SummarySubKey = "summary-subscriptions";
 const ReactiveSubscription = "reactive-subscription";
 
+
+const clearProperties = (obj: any) => {
+    for(const key in obj)
+    { delete obj[key]; }
+}
+
+const populateProperties = (objA: any, objB: any) => {
+    for(const key in objB)
+    { objA[key] = objB[key]; }
+}
+
 export const ValidateWith = (ruleset: Ruleset, options: RulesetOptions = {}) => {
     return {
         data() {
@@ -38,7 +49,12 @@ export const ValidateWith = (ruleset: Ruleset, options: RulesetOptions = {}) => 
             }
         },
         methods: {
-            getValidationGroup: function() { return this._validationGroup; }
+            getValidationGroup: function() { return this._validationGroup; },
+            refreshValidation: async function() {
+                const newErrors = await (<IValidationGroup>this._validationGroup).getModelErrors(true);
+                clearProperties(this.modelErrors);
+                populateProperties(this.modelErrors, newErrors);
+            }
         },
         created() {
             const context = <any>this;

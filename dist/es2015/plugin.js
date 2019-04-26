@@ -1,8 +1,26 @@
+var __awaiter = (this && this.__awaiter) || function (thisArg, _arguments, P, generator) {
+    return new (P || (P = Promise))(function (resolve, reject) {
+        function fulfilled(value) { try { step(generator.next(value)); } catch (e) { reject(e); } }
+        function rejected(value) { try { step(generator["throw"](value)); } catch (e) { reject(e); } }
+        function step(result) { result.done ? resolve(result.value) : new P(function (resolve) { resolve(result.value); }).then(fulfilled, rejected); }
+        step((generator = generator.apply(thisArg, _arguments || [])).next());
+    });
+};
 import { createGroup, PropertyStateChangedEvent } from "@treacherous/core";
 import { viewStrategyRegistry, viewSummaryRegistry, ElementHelper, ValidationState } from "@treacherous/view";
 const ValidationSubKey = "validation-subscriptions";
 const SummarySubKey = "summary-subscriptions";
 const ReactiveSubscription = "reactive-subscription";
+const clearProperties = (obj) => {
+    for (const key in obj) {
+        delete obj[key];
+    }
+};
+const populateProperties = (objA, objB) => {
+    for (const key in objB) {
+        objA[key] = objB[key];
+    }
+};
 export const ValidateWith = (ruleset, options = {}) => {
     return {
         data() {
@@ -21,7 +39,14 @@ export const ValidateWith = (ruleset, options = {}) => {
             }
         },
         methods: {
-            getValidationGroup: function () { return this._validationGroup; }
+            getValidationGroup: function () { return this._validationGroup; },
+            refreshValidation: function () {
+                return __awaiter(this, void 0, void 0, function* () {
+                    const newErrors = yield this._validationGroup.getModelErrors(true);
+                    clearProperties(this.modelErrors);
+                    populateProperties(this.modelErrors, newErrors);
+                });
+            }
         },
         created() {
             const context = this;
