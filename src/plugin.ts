@@ -7,7 +7,9 @@ import {
     ReactiveValidationGroupBuilder,
     ValidationGroupBuilder
 } from "@treacherous/core";
+
 import {viewStrategyRegistry, viewSummaryRegistry, ElementHelper, ValidationState} from "@treacherous/view";
+import Vue from "vue";
 
 export interface RulesetOptions {
     withReactiveValidation?: boolean;
@@ -23,13 +25,13 @@ const ReactiveSubscription = "reactive-subscription";
 
 const clearProperties = (obj: any) => {
     for(const key in obj)
-    { delete obj[key]; }
-}
+    { Vue.delete(obj, key); }
+};
 
 const populateProperties = (objA: any, objB: any) => {
     for(const key in objB)
-    { objA[key] = objB[key]; }
-}
+    { Vue.set(objA, key, objB[key]); }
+};
 
 export const ValidateWith = (ruleset: Ruleset, options: RulesetOptions = {}) => {
     return {

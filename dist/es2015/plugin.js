@@ -8,17 +8,18 @@ var __awaiter = (this && this.__awaiter) || function (thisArg, _arguments, P, ge
 };
 import { createGroup, PropertyStateChangedEvent } from "@treacherous/core";
 import { viewStrategyRegistry, viewSummaryRegistry, ElementHelper, ValidationState } from "@treacherous/view";
+import Vue from "vue";
 const ValidationSubKey = "validation-subscriptions";
 const SummarySubKey = "summary-subscriptions";
 const ReactiveSubscription = "reactive-subscription";
 const clearProperties = (obj) => {
     for (const key in obj) {
-        delete obj[key];
+        Vue.delete(obj, key);
     }
 };
 const populateProperties = (objA, objB) => {
     for (const key in objB) {
-        objA[key] = objB[key];
+        Vue.set(objA, key, objB[key]);
     }
 };
 export const ValidateWith = (ruleset, options = {}) => {

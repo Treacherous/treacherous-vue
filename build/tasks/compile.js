@@ -39,7 +39,8 @@ gulp.task("compile-webpack", function() {
                     root: "Treacherous",
                     commonjs: "@treacherous/core",
                     commonjs2: "@treacherous/core"
-                }
+                },
+                "vue": "var Vue"
             }
         }))
         .pipe(gulp.dest(`${paths.dist}/umd`))

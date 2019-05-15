@@ -10,17 +10,18 @@ var __awaiter = (this && this.__awaiter) || function (thisArg, _arguments, P, ge
 Object.defineProperty(exports, "__esModule", { value: true });
 const core_1 = require("@treacherous/core");
 const view_1 = require("@treacherous/view");
+const vue_1 = require("vue");
 const ValidationSubKey = "validation-subscriptions";
 const SummarySubKey = "summary-subscriptions";
 const ReactiveSubscription = "reactive-subscription";
 const clearProperties = (obj) => {
     for (const key in obj) {
-        delete obj[key];
+        vue_1.default.delete(obj, key);
     }
 };
 const populateProperties = (objA, objB) => {
     for (const key in objB) {
-        objA[key] = objB[key];
+        vue_1.default.set(objA, key, objB[key]);
     }
 };
 exports.ValidateWith = (ruleset, options = {}) => {

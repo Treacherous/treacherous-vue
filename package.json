@@ -11,11 +11,12 @@
     "build": "gulp"
   },
   "dependencies": {
-    "vue": "^2.5.17",
+    "vue": "^2.6.10",
     "@treacherous/core": "^0.17.7",
     "@treacherous/view": "^0.4.4"
   },
   "devDependencies": {
+    "@types/vue": "^2.0.0",
     "gulp": "^3.9.1",
     "gulp-typescript": "^5.0.1",
     "merge2": "^1.2.3",
