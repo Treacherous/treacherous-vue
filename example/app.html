@@ -18,7 +18,6 @@
                 </p>
                 <basic id="basic-form" ref="basic" @model-state-changed="state => isBasicValid = state.isValid"></basic>
             </fieldset>
-
             <fieldset :class="{ invalid: !isComplexValid }">
                 <h3>More Complex Usage</h3>
                 <p>
@@ -29,7 +28,7 @@
                 <p>
                     One other interesting thing in this example is that the <strong>age</strong>
                     is configured to use a custom view strategy, so that will handle the validation
-                    differently to the other fields in this example, and all it takes is a single 
+                    differently to the other fields in this example, and all it takes is a single
                     attribute to swap strategy (and a custom strategy registered, seen in <strong>app.js</strong>)
                 </p>
                 <complex id="complex-form" ref="complex" :dummy-prop="dummyPropData" @model-state-changed="state => isComplexValid = state.isValid"></complex>
@@ -38,12 +37,11 @@
             <fieldset>
                 <h3>Validation Summaries</h3>
                 <p>In some cases you will have multiple components on the page which have their own validation concerns, but want to display all the validation errors as a singular summary to the user.</p>
-                <p>Because the validation groups come from refs, they are not available initially available until the parent has been mounted. This is why we have the <code>v-if</code> here to stop the 
+                <p>Because the validation groups come from refs, they are not available initially available until the parent has been mounted. This is why we have the <code>v-if</code> here to stop the
                     directive running until the validation groups have been setup.</p>
                 <div id="validation-summary" v-if="validationSummaryGroups != null" v-validation-summary="validationSummaryGroups"></div>
             </fieldset>
         </div>
-
         <script type="text/javascript" src="compiled.js"></script>
     </body>
 </html>

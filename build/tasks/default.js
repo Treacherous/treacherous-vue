@@ -1,6 +1,7 @@
-const gulp = require("gulp");
-const runSequence = require("run-sequence");
+const {clean} = require("./clean");
+const {compile} = require("./compile");
+const {example} = require("./examples");
+const {series} = require("gulp");
 
-gulp.task("default", function(callback) {
-  runSequence("clean", "compile", "example", callback);
-});
+exports.defaultTask = series(clean, compile, example);
+exports.example = example;

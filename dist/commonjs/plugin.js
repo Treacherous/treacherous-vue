@@ -1,30 +1,31 @@
 "use strict";
 var __awaiter = (this && this.__awaiter) || function (thisArg, _arguments, P, generator) {
+    function adopt(value) { return value instanceof P ? value : new P(function (resolve) { resolve(value); }); }
     return new (P || (P = Promise))(function (resolve, reject) {
         function fulfilled(value) { try { step(generator.next(value)); } catch (e) { reject(e); } }
         function rejected(value) { try { step(generator["throw"](value)); } catch (e) { reject(e); } }
-        function step(result) { result.done ? resolve(result.value) : new P(function (resolve) { resolve(result.value); }).then(fulfilled, rejected); }
+        function step(result) { result.done ? resolve(result.value) : adopt(result.value).then(fulfilled, rejected); }
         step((generator = generator.apply(thisArg, _arguments || [])).next());
     });
 };
 Object.defineProperty(exports, "__esModule", { value: true });
+exports.ruleRegistry = exports.createRuleset = exports.viewStrategyRegistry = exports.ValidateWith = void 0;
 const core_1 = require("@treacherous/core");
 const view_1 = require("@treacherous/view");
-const vue_1 = require("vue");
 const ValidationSubKey = "validation-subscriptions";
 const SummarySubKey = "summary-subscriptions";
 const ReactiveSubscription = "reactive-subscription";
 const clearProperties = (obj) => {
     for (const key in obj) {
-        vue_1.default.delete(obj, key);
+        delete obj.key;
     }
 };
 const populateProperties = (objA, objB) => {
     for (const key in objB) {
-        vue_1.default.set(objA, key, objB[key]);
+        objA[key] = objB[key];
     }
 };
-exports.ValidateWith = (ruleset, options = {}) => {
+const ValidateWith = (ruleset, options = {}) => {
     return {
         data() {
             return {
@@ -51,7 +52,7 @@ exports.ValidateWith = (ruleset, options = {}) => {
                 });
             }
         },
-        created() {
+        beforeMount() {
             const context = this;
             if (options.withReactiveValidation === undefined) {
                 options.withReactiveValidation = false;
@@ -71,16 +72,16 @@ exports.ValidateWith = (ruleset, options = {}) => {
                     if (hasProperty) {
                         return Reflect.get(obj, prop);
                     }
-                    if (options.validateProps && Reflect.has(context._props, prop)) {
-                        return Reflect.get(context._props, prop);
+                    if (options.validateProps && Reflect.has(context.$props, prop)) {
+                        return Reflect.get(context.$props, prop);
                     }
-                    if (options.validateComputed && Reflect.has(context._computed, prop)) {
-                        return Reflect.get(context._computed, prop);
+                    if (options.validateComputed && Reflect.has(context.$computed, prop)) {
+                        return Reflect.get(context.$computed, prop);
                     }
                     return undefined;
                 }
             };
-            const virtualModel = new Proxy(context._data, proxyHandler);
+            const virtualModel = new Proxy(context.$data, proxyHandler);
             let validationGroupBuilder = core_1.createGroup();
             if (options.withReactiveValidation) {
                 validationGroupBuilder = validationGroupBuilder.asReactiveGroup();
@@ -94,17 +95,17 @@ exports.ValidateWith = (ruleset, options = {}) => {
             if (options.withReactiveValidation) {
                 metadata[ReactiveSubscription] = context._validationGroup.propertyStateChangedEvent.subscribe((args) => {
                     if (args.isValid) {
-                        context.$delete(context.modelErrors, args.property);
+                        delete context.modelErrors[args.property];
                     }
                     else {
-                        context.$set(context.modelErrors, args.property, args.error);
+                        context.modelErrors[args.property] = args.error;
                     }
                 });
             }
             metadata[ValidationSubKey] = {};
             metadata[SummarySubKey] = [];
         },
-        beforeDestroy() {
+        beforeUnmount() {
             const metadata = this._validationMetadata;
             if (metadata[ReactiveSubscription]) {
                 metadata[ReactiveSubscription]();
@@ -113,9 +114,10 @@ exports.ValidateWith = (ruleset, options = {}) => {
         }
     };
 };
+exports.ValidateWith = ValidateWith;
 const showErrorDirective = {
-    bind: function (element, binding, vnode) {
-        const context = vnode.context;
+    beforeMount: function (element, binding) {
+        const context = binding.instance;
         const validationGroup = context._validationGroup;
         if (!validationGroup) {
             return;
@@ -138,14 +140,14 @@ const showErrorDirective = {
                 viewStrategy.propertyBecomeValid(element, propertyRoute, validationState, viewOptions);
                 validationState = view_1.ValidationState.valid;
                 if (!metadata[ReactiveSubscription]) {
-                    context.$delete(context.modelErrors, propertyNameOrRoute);
+                    delete context.modelErrors[propertyNameOrRoute];
                 }
             }
             else {
                 viewStrategy.propertyBecomeInvalid(element, error, propertyRoute, validationState, viewOptions);
                 validationState = view_1.ValidationState.invalid;
                 if (!metadata[ReactiveSubscription]) {
-                    context.$set(context.modelErrors, propertyNameOrRoute, error);
+                    context.modelErrors[propertyNameOrRoute] = error;
                 }
             }
         };
@@ -158,8 +160,8 @@ const showErrorDirective = {
         const sub = validationGroup.propertyStateChangedEvent.subscribe(handlePropertyStateChange, propertyPredicate);
         metadata[ValidationSubKey][propertyRoute] = sub;
     },
-    unbind: function (element, binding, vnode) {
-        let context = vnode.context;
+    unmounted: function (element, binding) {
+        let context = binding.instance;
         let propertyRoute = view_1.ElementHelper.getPropertyRouteFrom(element);
         if (!propertyRoute) {
             return;
@@ -172,8 +174,8 @@ const showErrorDirective = {
     }
 };
 const summaryDirective = {
-    bind: function (element, binding, vnode) {
-        const context = vnode.context;
+    beforeMount: function (element, binding) {
+        const context = binding.instance;
         if (!context._validationMetadata) {
             context._validationMetadata = {};
             context._validationMetadata[SummarySubKey] = [];
@@ -240,23 +242,23 @@ const summaryDirective = {
             showErrorsFromGroup(validationGroups);
         }
     },
-    unbind: function (element, binding, vnode) {
-        const context = vnode.context;
+    unmounted: function (element, binding) {
+        const context = binding.instance;
         const metadata = context._validationMetadata;
         if (metadata[SummarySubKey]) {
             metadata[SummarySubKey].forEach((x) => x());
         }
     }
 };
-const install = function (Vue, options) {
-    Vue.directive('show-error', showErrorDirective);
-    Vue.directive('validation-summary', summaryDirective);
+const install = function (app, options) {
+    app.directive('show-error', showErrorDirective);
+    app.directive('validation-summary', summaryDirective);
 };
 var view_2 = require("@treacherous/view");
-exports.viewStrategyRegistry = view_2.viewStrategyRegistry;
+Object.defineProperty(exports, "viewStrategyRegistry", { enumerable: true, get: function () { return view_2.viewStrategyRegistry; } });
 var core_2 = require("@treacherous/core");
-exports.createRuleset = core_2.createRuleset;
-exports.ruleRegistry = core_2.ruleRegistry;
+Object.defineProperty(exports, "createRuleset", { enumerable: true, get: function () { return core_2.createRuleset; } });
+Object.defineProperty(exports, "ruleRegistry", { enumerable: true, get: function () { return core_2.ruleRegistry; } });
 exports.default = {
     install: install
 };

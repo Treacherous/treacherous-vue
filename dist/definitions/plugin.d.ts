@@ -19,12 +19,12 @@ export declare const ValidateWith: (ruleset: Ruleset, options?: RulesetOptions) 
         getValidationGroup: () => any;
         refreshValidation: () => Promise<void>;
     };
-    created(): void;
-    beforeDestroy(): void;
+    beforeMount(): void;
+    beforeUnmount(): void;
 };
 export { viewStrategyRegistry } from "@treacherous/view";
 export { createRuleset, ruleRegistry } from "@treacherous/core";
 declare const _default: {
-    install: (Vue: any, options: any) => void;
+    install: (app: any, options: any) => void;
 };
 export default _default;

@@ -1,1 +1,4 @@
-require("require-dir")("build/tasks");
+const {defaultTask, example} = require("./build/tasks/default");
+
+exports.default = defaultTask;
+exports.example = example;

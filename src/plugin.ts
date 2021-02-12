@@ -9,7 +9,6 @@ import {
 } from "@treacherous/core";
 
 import {viewStrategyRegistry, viewSummaryRegistry, ElementHelper, ValidationState} from "@treacherous/view";
-import Vue from "vue";
 
 export interface RulesetOptions {
     withReactiveValidation?: boolean;
@@ -25,12 +24,12 @@ const ReactiveSubscription = "reactive-subscription";
 
 const clearProperties = (obj: any) => {
     for(const key in obj)
-    { Vue.delete(obj, key); }
+    { delete obj.key; }
 };
 
 const populateProperties = (objA: any, objB: any) => {
     for(const key in objB)
-    { Vue.set(objA, key, objB[key]); }
+    { objA[key] = objB[key]; }
 };
 
 export const ValidateWith = (ruleset: Ruleset, options: RulesetOptions = {}) => {
@@ -58,7 +57,7 @@ export const ValidateWith = (ruleset: Ruleset, options: RulesetOptions = {}) => 
                 populateProperties(this.modelErrors, newErrors);
             }
         },
-        created() {
+        beforeMount() {
             const context = <any>this;
 
             if(options.withReactiveValidation === undefined) { options.withReactiveValidation = false; }
@@ -73,17 +72,17 @@ export const ValidateWith = (ruleset: Ruleset, options: RulesetOptions = {}) => 
                     if(hasProperty)
                     { return Reflect.get(obj, prop); }
 
-                    if(options.validateProps && Reflect.has(context._props, prop))
-                    { return Reflect.get(context._props, prop); }
+                    if(options.validateProps && Reflect.has(context.$props, prop))
+                    { return Reflect.get(context.$props, prop); }
 
-                    if(options.validateComputed && Reflect.has(context._computed, prop))
-                    { return Reflect.get(context._computed, prop); }
+                    if(options.validateComputed && Reflect.has(context.$computed, prop))
+                    { return Reflect.get(context.$computed, prop); }
 
                     return undefined;
                 }
             };
 
-            const virtualModel = new Proxy(context._data, proxyHandler);
+            const virtualModel = new Proxy(context.$data, proxyHandler);
 
             let validationGroupBuilder: ValidationGroupBuilder | ReactiveValidationGroupBuilder = createGroup();
 
@@ -101,16 +100,16 @@ export const ValidateWith = (ruleset: Ruleset, options: RulesetOptions = {}) => 
             {
                 metadata[ReactiveSubscription] = context._validationGroup.propertyStateChangedEvent.subscribe((args: any) => {
                     if(args.isValid) 
-                    { context.$delete(context.modelErrors, args.property); }
+                    { delete context.modelErrors[args.property]; }
                     else
-                    { context.$set(context.modelErrors, args.property, args.error); }
+                    { context.modelErrors[args.property] = args.error; }
                 });
             }
 
             metadata[ValidationSubKey] = {};
             metadata[SummarySubKey] = [];
         },
-        beforeDestroy() {
+        beforeUnmount() {
             const metadata = this._validationMetadata;
 
             if(metadata[ReactiveSubscription])
@@ -122,8 +121,8 @@ export const ValidateWith = (ruleset: Ruleset, options: RulesetOptions = {}) => 
 };
 
 const showErrorDirective = {
-    bind: function (element: HTMLElement, binding: any, vnode: any) {
-        const context = vnode.context;
+    beforeMount: function (element: HTMLElement, binding: any) {
+        const context = binding.instance;
         const validationGroup = <IReactiveValidationGroup>context._validationGroup;
         if(!validationGroup) { return; }
 
@@ -148,7 +147,7 @@ const showErrorDirective = {
                 validationState = ValidationState.valid;
 
                 if(!metadata[ReactiveSubscription])
-                { context.$delete(context.modelErrors, propertyNameOrRoute); }
+                { delete context.modelErrors[propertyNameOrRoute]; }
             }
             else
             {
@@ -156,7 +155,7 @@ const showErrorDirective = {
                 validationState = ValidationState.invalid;
 
                 if(!metadata[ReactiveSubscription])
-                { context.$set(context.modelErrors, propertyNameOrRoute, error); }
+                { context.modelErrors[propertyNameOrRoute] = error; }
             }
         };
 
@@ -171,8 +170,8 @@ const showErrorDirective = {
         const sub = validationGroup.propertyStateChangedEvent.subscribe(handlePropertyStateChange, propertyPredicate);
         metadata[ValidationSubKey][propertyRoute] = sub;
     },
-    unbind: function (element: HTMLElement, binding: any, vnode: any) {
-        let context = vnode.context;
+    unmounted: function (element: HTMLElement, binding: any) {
+        let context = binding.instance;
         let propertyRoute = ElementHelper.getPropertyRouteFrom(element);
         if(!propertyRoute) { return; }
 
@@ -183,8 +182,8 @@ const showErrorDirective = {
 }
 
 const summaryDirective = {
-    bind: function (element: HTMLElement, binding: any, vnode: any) {
-        const context = vnode.context;
+    beforeMount: function (element: HTMLElement, binding: any) {
+        const context = binding.instance;
 
         if(!context._validationMetadata)
         { 
@@ -257,8 +256,8 @@ const summaryDirective = {
             showErrorsFromGroup(validationGroups);
         }  
     },
-    unbind: function (element: HTMLElement, binding: any, vnode: any) {
-        const context = vnode.context;
+    unmounted: function (element: HTMLElement, binding: any) {
+        const context = binding.instance;
         const metadata = context._validationMetadata;
 
         if(metadata[SummarySubKey])
@@ -266,9 +265,9 @@ const summaryDirective = {
     }
 }
 
-const install = function(Vue: any, options: any) {
-    Vue.directive('show-error', showErrorDirective);
-    Vue.directive('validation-summary', summaryDirective);
+const install = function(app: any, options: any) {
+    app.directive('show-error', showErrorDirective);
+    app.directive('validation-summary', summaryDirective);
 }
 
 export {viewStrategyRegistry} from "@treacherous/view";

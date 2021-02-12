@@ -1,7 +1,7 @@
 <section>
     <div>
         <label>Username</label>
-        <input type="text" class="u-full-width" id="username" v-model="username" v-show-error validate-property="username" placeholder="Username" />
+        <input type="text" class="u-full-width" id="username" v-model="username" validate-property="username" v-show-error placeholder="Username" />
     </div>
-    <button id="submit" :class="{ valid: isValid, invalid: !isValid }" @click="getValidationGroup().validate()">Progmatically Validate - {{isValid ? 'Is' : 'Isnt'}} Valid</button>
+    <button id="submit" :class="{ valid: isValid, invalid: !isValid }" @click="refreshValidation()">Progmatically Validate - {{isValid ? 'Is' : 'Isnt'}} Valid</button>
 </section>

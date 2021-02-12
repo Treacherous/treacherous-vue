@@ -1,9 +1,9 @@
-var gulp = require('gulp');
-var webpack = require('webpack-stream');
-var examplesDir = "example";
+const {src, dest} = require('gulp');
+const webpack = require('webpack-stream');
+const examplesDir = "example";
 
-gulp.task('example', function() {
-    return gulp.src(`${examplesDir}/app.js`)
+function example() {
+    return src(`${examplesDir}/app.js`)
         .pipe(webpack({
             module: {
                 rules: [
@@ -12,7 +12,12 @@ gulp.task('example', function() {
             },
             output: {
                 filename: "compiled.js"
-            }
+            },
+            optimization: {
+                minimize: false
+            },
         }))
-        .pipe(gulp.dest(`${examplesDir}`));
-});
+        .pipe(dest(`${examplesDir}`));
+}
+
+exports.example = example;

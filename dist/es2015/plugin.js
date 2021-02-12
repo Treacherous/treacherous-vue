@@ -1,25 +1,25 @@
 var __awaiter = (this && this.__awaiter) || function (thisArg, _arguments, P, generator) {
+    function adopt(value) { return value instanceof P ? value : new P(function (resolve) { resolve(value); }); }
     return new (P || (P = Promise))(function (resolve, reject) {
         function fulfilled(value) { try { step(generator.next(value)); } catch (e) { reject(e); } }
         function rejected(value) { try { step(generator["throw"](value)); } catch (e) { reject(e); } }
-        function step(result) { result.done ? resolve(result.value) : new P(function (resolve) { resolve(result.value); }).then(fulfilled, rejected); }
+        function step(result) { result.done ? resolve(result.value) : adopt(result.value).then(fulfilled, rejected); }
         step((generator = generator.apply(thisArg, _arguments || [])).next());
     });
 };
 import { createGroup, PropertyStateChangedEvent } from "@treacherous/core";
 import { viewStrategyRegistry, viewSummaryRegistry, ElementHelper, ValidationState } from "@treacherous/view";
-import Vue from "vue";
 const ValidationSubKey = "validation-subscriptions";
 const SummarySubKey = "summary-subscriptions";
 const ReactiveSubscription = "reactive-subscription";
 const clearProperties = (obj) => {
     for (const key in obj) {
-        Vue.delete(obj, key);
+        delete obj.key;
     }
 };
 const populateProperties = (objA, objB) => {
     for (const key in objB) {
-        Vue.set(objA, key, objB[key]);
+        objA[key] = objB[key];
     }
 };
 export const ValidateWith = (ruleset, options = {}) => {
@@ -49,7 +49,7 @@ export const ValidateWith = (ruleset, options = {}) => {
                 });
             }
         },
-        created() {
+        beforeMount() {
             const context = this;
             if (options.withReactiveValidation === undefined) {
                 options.withReactiveValidation = false;
@@ -69,16 +69,16 @@ export const ValidateWith = (ruleset, options = {}) => {
                     if (hasProperty) {
                         return Reflect.get(obj, prop);
                     }
-                    if (options.validateProps && Reflect.has(context._props, prop)) {
-                        return Reflect.get(context._props, prop);
+                    if (options.validateProps && Reflect.has(context.$props, prop)) {
+                        return Reflect.get(context.$props, prop);
                     }
-                    if (options.validateComputed && Reflect.has(context._computed, prop)) {
-                        return Reflect.get(context._computed, prop);
+                    if (options.validateComputed && Reflect.has(context.$computed, prop)) {
+                        return Reflect.get(context.$computed, prop);
                     }
                     return undefined;
                 }
             };
-            const virtualModel = new Proxy(context._data, proxyHandler);
+            const virtualModel = new Proxy(context.$data, proxyHandler);
             let validationGroupBuilder = createGroup();
             if (options.withReactiveValidation) {
                 validationGroupBuilder = validationGroupBuilder.asReactiveGroup();
@@ -92,17 +92,17 @@ export const ValidateWith = (ruleset, options = {}) => {
             if (options.withReactiveValidation) {
                 metadata[ReactiveSubscription] = context._validationGroup.propertyStateChangedEvent.subscribe((args) => {
                     if (args.isValid) {
-                        context.$delete(context.modelErrors, args.property);
+                        delete context.modelErrors[args.property];
                     }
                     else {
-                        context.$set(context.modelErrors, args.property, args.error);
+                        context.modelErrors[args.property] = args.error;
                     }
                 });
             }
             metadata[ValidationSubKey] = {};
             metadata[SummarySubKey] = [];
         },
-        beforeDestroy() {
+        beforeUnmount() {
             const metadata = this._validationMetadata;
             if (metadata[ReactiveSubscription]) {
                 metadata[ReactiveSubscription]();
@@ -112,8 +112,8 @@ export const ValidateWith = (ruleset, options = {}) => {
     };
 };
 const showErrorDirective = {
-    bind: function (element, binding, vnode) {
-        const context = vnode.context;
+    beforeMount: function (element, binding) {
+        const context = binding.instance;
         const validationGroup = context._validationGroup;
         if (!validationGroup) {
             return;
@@ -136,14 +136,14 @@ const showErrorDirective = {
                 viewStrategy.propertyBecomeValid(element, propertyRoute, validationState, viewOptions);
                 validationState = ValidationState.valid;
                 if (!metadata[ReactiveSubscription]) {
-                    context.$delete(context.modelErrors, propertyNameOrRoute);
+                    delete context.modelErrors[propertyNameOrRoute];
                 }
             }
             else {
                 viewStrategy.propertyBecomeInvalid(element, error, propertyRoute, validationState, viewOptions);
                 validationState = ValidationState.invalid;
                 if (!metadata[ReactiveSubscription]) {
-                    context.$set(context.modelErrors, propertyNameOrRoute, error);
+                    context.modelErrors[propertyNameOrRoute] = error;
                 }
             }
         };
@@ -156,8 +156,8 @@ const showErrorDirective = {
         const sub = validationGroup.propertyStateChangedEvent.subscribe(handlePropertyStateChange, propertyPredicate);
         metadata[ValidationSubKey][propertyRoute] = sub;
     },
-    unbind: function (element, binding, vnode) {
-        let context = vnode.context;
+    unmounted: function (element, binding) {
+        let context = binding.instance;
         let propertyRoute = ElementHelper.getPropertyRouteFrom(element);
         if (!propertyRoute) {
             return;
@@ -170,8 +170,8 @@ const showErrorDirective = {
     }
 };
 const summaryDirective = {
-    bind: function (element, binding, vnode) {
-        const context = vnode.context;
+    beforeMount: function (element, binding) {
+        const context = binding.instance;
         if (!context._validationMetadata) {
             context._validationMetadata = {};
             context._validationMetadata[SummarySubKey] = [];
@@ -238,17 +238,17 @@ const summaryDirective = {
             showErrorsFromGroup(validationGroups);
         }
     },
-    unbind: function (element, binding, vnode) {
-        const context = vnode.context;
+    unmounted: function (element, binding) {
+        const context = binding.instance;
         const metadata = context._validationMetadata;
         if (metadata[SummarySubKey]) {
             metadata[SummarySubKey].forEach((x) => x());
         }
     }
 };
-const install = function (Vue, options) {
-    Vue.directive('show-error', showErrorDirective);
-    Vue.directive('validation-summary', summaryDirective);
+const install = function (app, options) {
+    app.directive('show-error', showErrorDirective);
+    app.directive('validation-summary', summaryDirective);
 };
 export { viewStrategyRegistry } from "@treacherous/view";
 export { createRuleset, ruleRegistry } from "@treacherous/core";

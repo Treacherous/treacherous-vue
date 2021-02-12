@@ -6,6 +6,9 @@
 
 It is a validation plugin for Vue that lets you validate on data, props, computed properties within your components.
 
+- For Vue 2.x support use 0.4.x versions
+- Version >= 0.5.x are for Vue 3.x 
+
 **VIEW THE EXAMPLE/DEMO [HERE](https://rawgit.com/grofit/treacherous-vue/master/example/app.html)**
 
 ### Treacherous info
@@ -32,7 +35,7 @@ Then register the plugin with vue:
 import Vue from "vue";
 import TreacherousPlugin from "@treacherous/vue";
 
-Vue.use(TreacherousPlugin);
+myApp.use(TreacherousPlugin);
 ```
 
 Once you have done this you can use the `ValidateWith(ruleset, options?)` mixin.
@@ -52,7 +55,7 @@ const ruleset = createRuleset()
             .addRule("required")
         .build();
 
-Vue.component('my-component', {
+myApp.component('my-component', {
     data: function() {
         name: "Bob"
     },

@@ -1,5 +1,3 @@
-import Vue  from "vue/dist/vue";
-
 import { UserData } from "./user-data.model";
 import { Hobby } from "./hobby.model";
 import { userDataRuleset } from "./user-data.ruleset";
@@ -17,7 +15,7 @@ const complexRuleset = createRuleset(userDataRuleset)
         })
     .build();
 
-Vue.component('complex', {
+export const complexComponent = {
     data: () => new UserData("Bob", 20, [ 
         new Hobby("reading"), 
         new Hobby("skateboarding"), 
@@ -26,4 +24,4 @@ Vue.component('complex', {
     template: template,
     props: [ "dummyProp" ],
     mixins: [ ValidateWith(complexRuleset, { validateProps: true, withReactiveValidation: true }) ] // Enable Prop and Reactive validation
-});
+};

@@ -1,9 +1,11 @@
-var gulp = require("gulp");
-var del = require("del");
-var fs = require('fs');
-var paths = require("../paths");
+const del = require("del");
+const paths = require("../paths");
 
-gulp.task("clean", function(callback) {
-    del.sync(paths.dist);
-    callback();
-});
+function clean() {
+    return new Promise((resolve, reject) => {
+        del.sync(paths.dist);
+        resolve();
+    });
+}
+
+exports.clean = clean;
